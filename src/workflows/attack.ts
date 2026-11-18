@@ -1,163 +1,176 @@
 import {
   attackBlocker,
   canDodge,
-  damageApplicationFrom,
   resolveAttack,
+  type AttackKind,
   type Defense,
 } from "../domain/attack-rules";
-import { isUndoable } from "../domain/gm-request";
-import { dvForDistance, meleeInReach } from "../domain/range";
+import {
+  aimedEffect,
+  attackProfile,
+  autofireMultiplier,
+  modeBlocker,
+  type AimLocation,
+} from "../domain/modes";
+import { meleeInReach } from "../domain/range";
 import { resolutionAudience } from "../domain/routing";
-import { rollAttack, rollDamage, type NativeRollOptions } from "../integrations/cpr/attack-adapter";
+import { rollDamage } from "../integrations/cpr/attack-adapter";
+import { combatantSnapshot, findItem, pickWeapon } from "../integrations/cpr/weapon-adapter";
 import {
-  combatantSnapshot,
-  findItem,
-  loadDvBands,
-  pickWeapon,
-  type WeaponSnapshot,
-} from "../integrations/cpr/weapon-adapter";
-import { requestGm } from "../integrations/foundry/gm-executor";
-import { attackTokens, distanceBetween, squareSize } from "../integrations/foundry/tokens";
-import { executorId, responderId } from "../integrations/foundry/users";
+  attackerToken,
+  distanceBetween,
+  singleTarget,
+  squareSize,
+} from "../integrations/foundry/tokens";
+import { executorId } from "../integrations/foundry/users";
+import { newState, postResolutionCard, type TargetResult } from "../ui/resolution-card";
+import { explosiveAttack, shellAttack } from "./area";
+import { dvFor, nativeAttack } from "./attack-steps";
 import {
-  markUndone,
-  postResolutionCard,
-  type ResolutionDamage,
-  type ResolutionState,
-} from "../ui/resolution-card";
+  applicationFor,
+  applyTo,
+  speakerFor,
+  targetEntry,
+  warn,
+  type AttackContext,
+  type AttackOptions,
+} from "./combat-common";
 import { requestDefense } from "./defense";
+import { suppressiveFire } from "./suppressive";
 
-export interface AttackOptions {
-  weaponId?: string;
-  skipDialog?: boolean;
-}
-
-function warn(key: string, data?: Record<string, string>): void {
-  ui.notifications.warn(data ? game.i18n.format(key, data) : game.i18n.localize(key));
-}
-
-async function rangeCheck(
-  weapon: WeaponSnapshot,
-  distance: number,
-): Promise<{ dv: number | null; inRange: boolean } | "no-table"> {
-  if (weapon.kind === "melee") return { dv: null, inRange: meleeInReach(distance, squareSize()) };
-  const bands = await loadDvBands(weapon.dvTable);
-  if (!bands) return "no-table";
-  const dv = dvForDistance(bands, distance);
-  return { dv, inRange: dv !== null };
-}
-
-async function damageStep(
-  weaponItem: Item,
-  roll: NativeRollOptions,
-  attackerUuid: string,
-  targetUuid: string,
-): Promise<ResolutionDamage | null> {
-  const damage = await rollDamage(weaponItem, roll);
-  if (!damage) return null;
-  const result = await requestGm({
-    op: "applyDamage",
-    attackerUuid,
-    targetUuid,
-    damage: damageApplicationFrom(damage),
-  });
-  if (!result.ok) warn(`CCK.Gm.${result.error}`);
+function buildContext(options: AttackOptions): AttackContext | null {
+  const token = attackerToken();
+  if (typeof token === "string") {
+    warn(`CCK.Attack.${token}`);
+    return null;
+  }
+  const actor = token.actor;
+  if (!actor) return null;
+  if (!executorId()) {
+    warn("CCK.Gm.no-gm");
+    return null;
+  }
+  const weapon = pickWeapon(actor, options.weaponId);
+  const item = weapon ? findItem(actor, weapon.id) : undefined;
+  if (!weapon || !item) {
+    warn("CCK.Attack.no-weapon");
+    return null;
+  }
+  const profile = attackProfile(weapon, options.mode ?? "single");
+  const blocker = modeBlocker(weapon, profile);
+  if (blocker) {
+    warn(`CCK.Attack.${blocker}`);
+    return null;
+  }
   return {
-    total: damage.total,
-    critical: damage.critical,
-    applied: result.ok ? result.result : null,
-    error: result.ok ? null : `CCK.Gm.${result.error}`,
+    token,
+    actor,
+    attacker: combatantSnapshot(actor),
+    weapon,
+    item,
+    profile,
+    roll: { actor, tokenId: token.id, skipDialog: options.skipDialog ?? false },
   };
 }
 
-export async function attack(options: AttackOptions = {}): Promise<void> {
-  const tokens = attackTokens();
-  if (typeof tokens === "string") return warn(`CCK.Attack.${tokens}`);
-  const attackerActor = tokens.attacker.actor;
-  const targetActor = tokens.target.actor;
-  if (!attackerActor || !targetActor) return warn("CCK.Attack.no-target");
-  if (!executorId()) return warn("CCK.Gm.no-gm");
-
-  const weapon = pickWeapon(attackerActor, options.weaponId);
-  const weaponItem = weapon ? findItem(attackerActor, weapon.id) : undefined;
-  const distance = distanceBetween(tokens.attacker, tokens.target);
-  const range = weapon ? await rangeCheck(weapon, distance) : { dv: null, inRange: false };
-  if (range === "no-table") return warn("CCK.Attack.no-table");
+async function singleAttack(context: AttackContext, options: AttackOptions): Promise<void> {
+  const targetToken = singleTarget();
+  if (typeof targetToken === "string") return warn(`CCK.Attack.${targetToken}`);
+  const targetActor = targetToken.actor;
+  if (!targetActor) return warn("CCK.Attack.no-target");
+  const { profile, weapon } = context;
+  const kind: AttackKind = profile.dvSource === "none" ? "melee" : "ranged";
+  const distance = distanceBetween(context.token, targetToken);
+  const dv = await dvFor(context, distance);
+  if (dv === "no-table") return warn("CCK.Attack.no-table");
   const blocker = attackBlocker({
-    hasWeapon: !!weapon && !!weaponItem,
-    equipped: weapon?.equipped ?? false,
-    kind: weapon?.kind ?? "melee",
-    magazine: weapon?.magazine ?? null,
-    inRange: range.inRange,
+    hasWeapon: true,
+    equipped: weapon.equipped,
+    kind: profile.bullets > 0 ? "ranged" : "melee",
+    magazine: weapon.magazine,
+    inRange: kind === "melee" ? meleeInReach(distance, squareSize()) : dv !== null,
   });
-  if (blocker || !weapon || !weaponItem) return warn(`CCK.Attack.${blocker ?? "no-weapon"}`);
+  if (blocker) return warn(`CCK.Attack.${blocker}`);
 
-  const rollOptions: NativeRollOptions = {
-    actor: attackerActor,
-    tokenId: tokens.attacker.id,
-    skipDialog: options.skipDialog ?? false,
-  };
-  const attackRoll = await rollAttack(weaponItem, rollOptions);
+  const attackRoll = await nativeAttack(context, options.location);
   if (!attackRoll) return;
-
-  const attacker = combatantSnapshot(attackerActor);
+  const location = (attackRoll.location as AimLocation | undefined) ?? options.location ?? "head";
   const defender = combatantSnapshot(targetActor);
-  let defense: Defense | null = range.dv === null ? null : { kind: "dv", value: range.dv };
-  if (canDodge(weapon.kind, defender.ref)) {
-    const responder = responderId(targetActor);
-    const answer = responder
-      ? await requestDefense(responder, {
-          attackerName: attacker.name,
-          defenderUuid: defender.uuid,
-          defenderTokenId: tokens.target.id,
-          weaponName: weapon.name,
-          kind: weapon.kind,
-          dv: range.dv,
-        })
-      : ({ choice: "no-answer" } as const);
-    if (answer.choice === "dodge") {
-      defense = { kind: weapon.kind === "melee" ? "evasion" : "dodge", total: answer.total };
+  let defense: Defense | null = dv === null ? null : { kind: "dv", value: dv };
+  if (canDodge(kind, defender.ref)) {
+    const answer = await requestDefense(targetActor, {
+      purpose: kind,
+      skill: "evasion",
+      optional: kind === "ranged",
+      attackerName: context.attacker.name,
+      defenderUuid: defender.uuid,
+      defenderTokenId: targetToken.id,
+      weaponName: weapon.name,
+      dv,
+    });
+    if (answer.choice === "rolled") {
+      defense = { kind: kind === "melee" ? "evasion" : "dodge", total: answer.total };
     }
   }
   if (!defense) return warn("CCK.Attack.no-defense", { defender: defender.name });
 
   const outcome = resolveAttack(attackRoll.total, defense);
-  const damage = outcome.hit
-    ? await damageStep(weaponItem, rollOptions, attacker.uuid, defender.uuid)
-    : null;
-
-  const state: ResolutionState = {
-    attackerUuid: attacker.uuid,
-    attackerName: attacker.name,
-    targetUuid: defender.uuid,
-    targetName: defender.name,
-    weaponName: weapon.name,
-    kind: weapon.kind,
-    distance: Number.isFinite(distance) ? distance : null,
-    attackTotal: attackRoll.total,
+  let target: TargetResult = {
+    ...targetEntry(defender.uuid, defender.name),
     defense,
-    hit: outcome.hit,
-    damage,
-    undone: false,
+    outcome: outcome.hit ? "hit" : "miss",
   };
+  let damageTotal: number | null = null;
+  let critical = false;
+  let multiplier: number | null = null;
+  if (outcome.hit && profile.damageType) {
+    multiplier =
+      profile.mode === "autofire"
+        ? autofireMultiplier(outcome.attackTotal, outcome.defenseValue, weapon.autofireMax)
+        : null;
+    const damage = await rollDamage(context.item, profile.damageType, context.roll, (native) => {
+      if (multiplier !== null) native.autofireMultiplier = multiplier;
+      if (profile.mode === "aimed") native.location = location;
+    });
+    if (damage) {
+      damageTotal = damage.total;
+      critical = damage.critical;
+      target = await applyTo(
+        context.attacker.uuid,
+        target,
+        applicationFor(damage, profile.ignoreArmor),
+      );
+      if (profile.mode === "aimed") {
+        const effect = aimedEffect(location, target.applied?.hpReduction ?? 0);
+        target = { ...target, effect: effect ? `CCK.Aimed.${effect}` : null };
+      }
+    }
+  }
+
   await postResolutionCard(
-    state,
-    ChatMessage.getSpeaker({ actor: attackerActor, token: tokens.attacker.document }),
-    resolutionAudience(attacker.isNpc, defender.isNpc),
+    newState({
+      attackerUuid: context.attacker.uuid,
+      attackerName: context.attacker.name,
+      weaponName: weapon.name,
+      mode: profile.mode === "aimed" ? `aimed-${location}` : profile.mode,
+      distance: Number.isFinite(distance) ? distance : null,
+      attackTotal: attackRoll.total,
+      dv: null,
+      damageTotal,
+      multiplier,
+      critical,
+      targets: [target],
+    }),
+    speakerFor(context),
+    resolutionAudience(context.attacker.isNpc, defender.isNpc),
   );
 }
 
-export async function undoDamage(message: ChatMessage, state: ResolutionState): Promise<void> {
-  const applied = state.damage?.applied ?? null;
-  if (!applied || state.undone || !isUndoable(applied)) return;
-  const result = await requestGm({
-    op: "reverseDamage",
-    attackerUuid: state.attackerUuid,
-    targetUuid: state.targetUuid,
-    hpReduction: applied.hpReduction,
-    location: applied.location,
-    ablation: applied.ablation,
-  });
-  if (!result.ok) return warn(`CCK.Gm.${result.error}`);
-  await markUndone(message, state);
+export async function attack(options: AttackOptions = {}): Promise<void> {
+  const context = buildContext(options);
+  if (!context) return;
+  if (context.profile.mode === "suppressive") return suppressiveFire(context);
+  if (context.profile.area === "shell") return shellAttack(context);
+  if (context.profile.area === "explosion") return explosiveAttack(context);
+  return singleAttack(context, options);
 }

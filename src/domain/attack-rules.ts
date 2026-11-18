@@ -6,7 +6,9 @@ export const CRITICAL_SIXES = 2;
 export type Defense =
   | { kind: "dv"; value: number }
   | { kind: "evasion"; total: number }
-  | { kind: "dodge"; total: number };
+  | { kind: "dodge"; total: number }
+  | { kind: "resist"; total: number }
+  | { kind: "contest"; total: number };
 
 export interface AttackOutcome {
   hit: boolean;

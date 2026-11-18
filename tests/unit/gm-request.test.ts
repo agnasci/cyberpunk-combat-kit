@@ -120,3 +120,35 @@ describe("roteamento padrão do card de resolução (R13)", () => {
     expect(resolutionAudience(false, false)).toBe("public");
   });
 });
+
+describe("pedidos do agarrão ao executor", () => {
+  it("aceita estrangular e derrubar com BODY inteiro", () => {
+    expect(
+      parseGmRequest({ op: "choke", attackerUuid: "T.a", targetUuid: "T.b", body: 6, round: 2 }),
+    ).toEqual({ op: "choke", attackerUuid: "T.a", targetUuid: "T.b", body: 6, round: 2 });
+    expect(
+      parseGmRequest({ op: "choke", attackerUuid: "T.a", targetUuid: "T.b", body: 6, round: null }),
+    ).toMatchObject({ round: null });
+    expect(
+      parseGmRequest({ op: "throwDown", attackerUuid: "T.a", targetUuid: "T.b", body: 6 }),
+    ).toEqual({ op: "throwDown", attackerUuid: "T.a", targetUuid: "T.b", body: 6 });
+  });
+
+  it("recusa BODY inválido ou rodada inválida", () => {
+    expect(
+      parseGmRequest({ op: "choke", attackerUuid: "a", targetUuid: "b", body: -1, round: 1 }),
+    ).toBeNull();
+    expect(
+      parseGmRequest({ op: "choke", attackerUuid: "a", targetUuid: "b", body: 6, round: "x" }),
+    ).toBeNull();
+  });
+
+  it("aceita começar e terminar agarrão", () => {
+    expect(parseGmRequest({ op: "grappleStart", attackerUuid: "a", targetUuid: "b" })).toEqual({
+      op: "grappleStart",
+      attackerUuid: "a",
+      targetUuid: "b",
+    });
+    expect(parseGmRequest({ op: "grappleEnd", attackerUuid: "a", targetUuid: "b" })).not.toBeNull();
+  });
+});

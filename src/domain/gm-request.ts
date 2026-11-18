@@ -16,7 +16,40 @@ export interface ReverseDamageRequest {
   ablation: number;
 }
 
-export type GmRequest = ApplyDamageRequest | ReverseDamageRequest;
+export interface ChokeRequest {
+  op: "choke";
+  attackerUuid: string;
+  targetUuid: string;
+  body: number;
+  round: number | null;
+}
+
+export interface ThrowDownRequest {
+  op: "throwDown";
+  attackerUuid: string;
+  targetUuid: string;
+  body: number;
+}
+
+export interface GrappleStartRequest {
+  op: "grappleStart";
+  attackerUuid: string;
+  targetUuid: string;
+}
+
+export interface GrappleEndRequest {
+  op: "grappleEnd";
+  attackerUuid: string;
+  targetUuid: string;
+}
+
+export type GmRequest =
+  | ApplyDamageRequest
+  | ReverseDamageRequest
+  | ChokeRequest
+  | ThrowDownRequest
+  | GrappleStartRequest
+  | GrappleEndRequest;
 
 export interface DamageResult {
   hpBefore: number;
@@ -24,6 +57,7 @@ export interface DamageResult {
   hpReduction: number;
   ablation: number;
   location: "body" | "head";
+  knockedOut?: boolean;
 }
 
 export function isUndoable(result: DamageResult | null): boolean {
@@ -38,6 +72,8 @@ const LIMITS = {
   belowSP: 100,
   hp: 1000,
   text: 60,
+  body: 30,
+  round: 100000,
 } as const;
 
 function record(value: unknown): Record<string, unknown> | null {
@@ -118,6 +154,17 @@ export function parseGmRequest(value: unknown): GmRequest | null {
       location: where,
       ablation,
     };
+  }
+  if (data.op === "choke" || data.op === "throwDown") {
+    const body = intIn(data.body, LIMITS.body);
+    if (body === null) return null;
+    if (data.op === "throwDown") return { op: "throwDown", attackerUuid, targetUuid, body };
+    const round = data.round === null ? null : intIn(data.round, LIMITS.round);
+    if (round === null && data.round !== null) return null;
+    return { op: "choke", attackerUuid, targetUuid, body, round };
+  }
+  if (data.op === "grappleStart" || data.op === "grappleEnd") {
+    return { op: data.op, attackerUuid, targetUuid };
   }
   return null;
 }

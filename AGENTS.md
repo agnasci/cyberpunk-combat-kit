@@ -27,7 +27,7 @@ A ficha e o pipeline de rolagem do sistema são a fonte de verdade.
 
 ## Regras de trabalho
 
-- E0 e E1 existem: ataque simples, defesa, dano pelo mestre; menu e modos ainda não.
+- E0, E1 e E3 existem: ataques, modos, áreas e agarrão pela API; o menu (E2) ainda não.
 - Separe requisito do usuário, proposta técnica e fato verificado. Não invente
   APIs, campos de ficha, fórmulas, compatibilidade, testes ou resultados.
 - Execute uma tarefa pequena por vez; não implemente etapas futuras por antecipação.

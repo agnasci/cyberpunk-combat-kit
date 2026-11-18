@@ -43,6 +43,16 @@ Implementado na E1 (tiro único à distância e arma branca; modos especiais na 
    "Desfazer dano" (mestre ou autor do card), que chama `_reverseDamage` pelo executor.
 7. Eventos `cck.attack.*` para efeitos e API: E4/E8.
 
+Modos da E3 (`src/workflows/`): `attack({weaponId?, mode?, location?, skipDialog?})` escolhe o
+perfil pelo domínio (`src/domain/modes.ts`): `single`, `aimed` (+ `location`), `autofire`,
+`suppressive` e `thrown`; o tipo de área sai da munição carregada (cartucho → `area.ts`
+`shellAttack`; granada/foguete → `explosiveAttack`, com `detonatePending` para o mestre no
+erro). Áreas (D24): `integrations/foundry/area-placement.ts` faz a pré-visualização com o
+mouse, coleta os tokens (geometria pura em `domain/area.ts` + paredes) e mostra/apaga o
+template; `ui/placement-hint.ts` mostra a instrução. `grapple({action})` cuida de `grab`, `choke`, `throw`, `release` e `escape`; o
+executor do mestre ganhou `choke`, `throwDown`, `grappleStart` e `grappleEnd`. O card de
+resolução tem uma lista de alvos, cada um com resultado, dano e "Desfazer".
+
 ## Executor do mestre (R14)
 
 - Um único mestre ativo (o de menor id entre os ativos) executa pedidos recebidos por socket.

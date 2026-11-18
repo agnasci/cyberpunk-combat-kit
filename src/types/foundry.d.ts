@@ -5,6 +5,7 @@ interface FoundryUser {
   readonly active: boolean;
   readonly character: FoundryActor | null;
   readonly targets: Set<FoundryToken>;
+  can(permission: string): boolean;
 }
 
 interface FoundryItem {
@@ -26,27 +27,62 @@ interface FoundryActor {
   readonly system: unknown;
   readonly items: { find(fn: (item: FoundryItem) => boolean): FoundryItem | undefined };
   readonly itemTypes: Record<string, FoundryItem[] | undefined>;
+  readonly effects: FoundryActiveEffect[];
   testUserPermission(user: FoundryUser, level: string): boolean;
   update(data: Record<string, unknown>): Promise<unknown>;
+  createEmbeddedDocuments(name: string, data: Record<string, unknown>[]): Promise<unknown[]>;
+  deleteEmbeddedDocuments(name: string, ids: string[]): Promise<unknown[]>;
+  toggleStatusEffect(id: string, options: { active: boolean }): Promise<unknown>;
+}
+
+interface FoundryActiveEffect {
+  readonly id: string;
+  getFlag(scope: string, key: string): unknown;
 }
 
 interface FoundryTokenDocument {
   readonly id: string;
   readonly uuid: string;
   readonly name: string;
+  readonly documentName: "Token";
   readonly x: number;
   readonly y: number;
   readonly width: number;
   readonly height: number;
   readonly actor: FoundryActor | null;
+  getFlag(scope: string, key: string): unknown;
+  setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
+  unsetFlag(scope: string, key: string): Promise<unknown>;
 }
 
 interface FoundryToken {
   readonly id: string;
   readonly name: string;
   readonly isOwner: boolean;
+  readonly visible: boolean;
   readonly actor: FoundryActor | null;
   readonly document: FoundryTokenDocument;
+}
+
+interface FoundryMeasuredTemplateDocument {
+  readonly id: string;
+  readonly uuid: string;
+  readonly x: number;
+  readonly y: number;
+  readonly distance: number;
+  readonly direction: number;
+  getFlag(scope: string, key: string): unknown;
+  delete(): Promise<unknown>;
+}
+
+interface FoundryTemplatePreview {
+  readonly renderFlags: { set(flags: Record<string, boolean>): void };
+  draw(): Promise<unknown>;
+  destroy(): void;
+}
+
+interface FoundryTemplateSource {
+  updateSource(data: Record<string, unknown>): unknown;
 }
 
 interface FoundryChatMessage {
@@ -83,12 +119,16 @@ declare global {
   type Actor = FoundryActor;
   type Item = FoundryItem;
   type Token = FoundryToken;
+  type TokenDocument = FoundryTokenDocument;
+  type MeasuredTemplateDocument = FoundryMeasuredTemplateDocument;
   type User = FoundryUser;
   type ChatMessage = FoundryChatMessage;
   type RollTable = FoundryRollTable;
 
   const Hooks: {
     once(hook: "init" | "ready", fn: () => void): number;
+    on(hook: "canvasTearDown", fn: () => void): number;
+    off(hook: string, id: number): void;
     on(
       hook: "renderChatMessage",
       fn: (message: FoundryChatMessage, html: JQuery | HTMLElement) => void,
@@ -112,6 +152,7 @@ declare global {
       format(key: string, data?: Record<string, string>): string;
     };
     settings: { get(namespace: string, key: string): unknown };
+    combat: { readonly round: number; readonly started: boolean } | null;
     socket: {
       on(event: string, fn: (data: unknown, senderId: string) => void): void;
       emit(event: string, data: unknown): void;
@@ -122,16 +163,65 @@ declare global {
 
   const canvas:
     | {
-        readonly scene: { readonly grid: { readonly distance: number } } | null;
+        readonly scene: {
+          readonly grid: { readonly distance: number };
+          readonly templates: {
+            get(id: string): FoundryMeasuredTemplateDocument | undefined;
+            filter(
+              fn: (template: FoundryMeasuredTemplateDocument) => boolean,
+            ): FoundryMeasuredTemplateDocument[];
+          };
+          deleteEmbeddedDocuments(name: "MeasuredTemplate", ids: string[]): Promise<unknown[]>;
+          createEmbeddedDocuments(
+            name: "MeasuredTemplate",
+            data: Record<string, unknown>[],
+          ): Promise<FoundryMeasuredTemplateDocument[]>;
+        } | null;
         readonly tokens: {
           readonly controlled: readonly FoundryToken[];
+          readonly placeables: readonly FoundryToken[];
         } | null;
+        readonly app: {
+          readonly view: HTMLCanvasElement;
+          readonly screen: { readonly width: number; readonly height: number };
+        };
+        readonly stage: {
+          readonly worldTransform: {
+            applyInverse(point: { x: number; y: number }): { x: number; y: number };
+          };
+        };
+        readonly templates: {
+          readonly preview: { addChild(child: unknown): unknown } | null;
+        } | null;
+        readonly hud: { readonly token: { clear(): void } | null } | null;
         readonly grid: {
           readonly size: number;
+          getCenterPoint(point: { x: number; y: number }): { x: number; y: number };
           measurePath(waypoints: { x: number; y: number }[]): { distance: number };
         };
       }
     | undefined;
+
+  const CONFIG: {
+    Canvas: {
+      polygonBackends: {
+        sight: {
+          testCollision(
+            origin: { x: number; y: number },
+            destination: { x: number; y: number },
+            options: { type: string; mode: "any" },
+          ): boolean;
+        };
+      };
+    };
+    MeasuredTemplate: {
+      documentClass: new (
+        data: Record<string, unknown>,
+        context: { parent: unknown },
+      ) => FoundryTemplateSource;
+      objectClass: new (document: FoundryTemplateSource) => FoundryTemplatePreview;
+    };
+  };
 
   function fromUuid(uuid: string): Promise<unknown>;
   function renderTemplate(path: string, data: Record<string, unknown>): Promise<string>;

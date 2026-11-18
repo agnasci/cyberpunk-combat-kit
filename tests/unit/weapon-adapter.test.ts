@@ -7,7 +7,15 @@ import {
   pickWeapon,
   weaponSnapshot,
 } from "../../src/integrations/cpr/weapon-adapter";
-import { actor, emptyPistol, evasion, heavyPistol, knife, vest } from "../fixtures/cpr-actors";
+import {
+  actor,
+  emptyPistol,
+  evasion,
+  heavyPistol,
+  item,
+  knife,
+  vest,
+} from "../fixtures/cpr-actors";
 
 describe("snapshot de arma (campos do CPR v0.92.4, docs/COMPATIBILITY.md)", () => {
   it("lê arma à distância com pente e tabela de DV", () => {
@@ -15,9 +23,36 @@ describe("snapshot de arma (campos do CPR v0.92.4, docs/COMPATIBILITY.md)", () =
       id: "pistol0000000001",
       name: "Pistola sintética",
       kind: "ranged",
+      weaponType: "",
       equipped: true,
       magazine: 8,
       dvTable: "DV Pistol",
+      ammoVariety: null,
+      autofireMax: 0,
+      suppressive: false,
+    });
+  });
+
+  it("lê tipo, modos de fogo e a munição carregada", () => {
+    const rifle = item({
+      id: "rifle00000000001",
+      name: "Fuzil sintético",
+      type: "weapon",
+      system: {
+        isRanged: true,
+        equipped: "equipped",
+        weaponType: "assaultRifle",
+        dvTable: "DV Assault Rifle",
+        magazine: { value: 25, max: 25 },
+        fireModes: { autoFire: 0, suppressiveFire: true },
+      },
+    });
+    const loaded = Object.assign(rifle, { _getLoadedAmmoProp: () => "rifle" });
+    expect(weaponSnapshot(loaded)).toMatchObject({
+      weaponType: "assaultRifle",
+      autofireMax: 4,
+      suppressive: true,
+      ammoVariety: "rifle",
     });
   });
 

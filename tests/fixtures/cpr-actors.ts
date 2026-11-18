@@ -79,6 +79,10 @@ export function actor(options: {
     items: { find: (fn) => options.items.find(fn) },
     itemTypes: byType,
     testUserPermission: () => true,
+    effects: [],
+    createEmbeddedDocuments: async () => [],
+    deleteEmbeddedDocuments: async () => [],
+    toggleStatusEffect: async () => undefined,
     update: async () => undefined,
   };
 }

@@ -1,24 +1,26 @@
-import type { AttackKind } from "../domain/attack-rules";
-import { rollEvasion } from "../integrations/cpr/attack-adapter";
-import { findEvasion } from "../integrations/cpr/weapon-adapter";
+import { rollSkill } from "../integrations/cpr/attack-adapter";
+import { findSkill, SKILLS, type SkillKey } from "../integrations/cpr/weapon-adapter";
 import { registerHandler, request } from "../integrations/foundry/socket";
-import { userCanOwn } from "../integrations/foundry/users";
-import { askDefense } from "../ui/defense-prompt";
+import { responderId, userCanOwn } from "../integrations/foundry/users";
+import { askDefense, type DefensePurpose } from "../ui/defense-prompt";
 
 const KIND = "defense";
 const TIMEOUT_MS = 60000;
+const PURPOSES: readonly DefensePurpose[] = ["ranged", "melee", "area", "suppression", "grapple"];
 
 export interface DefenseRequest {
+  purpose: DefensePurpose;
+  skill: SkillKey;
+  optional: boolean;
   attackerName: string;
   defenderUuid: string;
   defenderTokenId: string | null;
   weaponName: string;
-  kind: AttackKind;
   dv: number | null;
 }
 
 export type DefenseAnswer =
-  { choice: "dodge"; total: number } | { choice: "none" } | { choice: "no-answer" };
+  { choice: "rolled"; total: number } | { choice: "declined" } | { choice: "no-answer" };
 
 function isActor(value: unknown): value is Actor {
   const actor = value as Partial<Actor> | null;
@@ -28,19 +30,24 @@ function isActor(value: unknown): value is Actor {
 function parseRequest(payload: unknown): DefenseRequest | null {
   const data = payload as Partial<DefenseRequest> | null;
   if (
-    typeof data?.attackerName !== "string" ||
+    !data ||
+    !PURPOSES.includes(data.purpose as DefensePurpose) ||
+    typeof data.skill !== "string" ||
+    !(data.skill in SKILLS) ||
+    typeof data.attackerName !== "string" ||
     typeof data.defenderUuid !== "string" ||
-    typeof data.weaponName !== "string" ||
-    (data.kind !== "ranged" && data.kind !== "melee")
+    typeof data.weaponName !== "string"
   ) {
     return null;
   }
   return {
+    purpose: data.purpose as DefensePurpose,
+    skill: data.skill,
+    optional: data.optional === true,
     attackerName: data.attackerName,
     defenderUuid: data.defenderUuid,
     defenderTokenId: typeof data.defenderTokenId === "string" ? data.defenderTokenId : null,
     weaponName: data.weaponName,
-    kind: data.kind,
     dv: typeof data.dv === "number" ? data.dv : null,
   };
 }
@@ -50,22 +57,23 @@ async function answerDefense(payload: unknown): Promise<DefenseAnswer> {
   if (!data) throw new Error("invalid");
   const defender = await fromUuid(data.defenderUuid);
   if (!isActor(defender) || !userCanOwn(game.user.id, defender)) throw new Error("forbidden");
-  const choice = await askDefense({
+  const wantsToRoll = await askDefense({
+    purpose: data.purpose,
+    optional: data.optional,
     attackerName: data.attackerName,
     defenderName: defender.name,
     weaponName: data.weaponName,
-    kind: data.kind,
     dv: data.dv,
   });
-  if (choice === "none") return { choice: "none" };
-  const evasion = findEvasion(defender);
-  if (!evasion) throw new Error("no-evasion");
-  const roll = await rollEvasion(evasion, {
+  if (!wantsToRoll) return { choice: "declined" };
+  const skill = findSkill(defender, data.skill);
+  if (!skill) throw new Error(`no-skill:${SKILLS[data.skill]}`);
+  const roll = await rollSkill(skill, {
     actor: defender,
     tokenId: data.defenderTokenId,
     skipDialog: false,
   });
-  return roll ? { choice: "dodge", total: roll.total } : { choice: "none" };
+  return roll ? { choice: "rolled", total: roll.total } : { choice: "declined" };
 }
 
 export function initDefense(): void {
@@ -73,17 +81,19 @@ export function initDefense(): void {
 }
 
 export async function requestDefense(
-  responder: string,
+  defender: Actor,
   defenseRequest: DefenseRequest,
 ): Promise<DefenseAnswer> {
+  const responder = responderId(defender);
+  if (!responder) return { choice: "no-answer" };
   const result = await request(KIND, responder, defenseRequest, TIMEOUT_MS);
   if (!result.ok) {
     if (result.error !== "timeout") console.error(`cyberpunk-combat-kit | ${result.error}`);
     return { choice: "no-answer" };
   }
   const answer = result.value as Partial<DefenseAnswer> | null;
-  if (answer?.choice === "dodge" && typeof answer.total === "number") {
-    return { choice: "dodge", total: answer.total };
+  if (answer?.choice === "rolled" && typeof answer.total === "number") {
+    return { choice: "rolled", total: answer.total };
   }
-  return answer?.choice === "none" ? { choice: "none" } : { choice: "no-answer" };
+  return answer?.choice === "declined" ? { choice: "declined" } : { choice: "no-answer" };
 }

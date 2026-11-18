@@ -1,14 +1,21 @@
-import type { AttackKind } from "../domain/attack-rules";
-
-export type DefenseChoice = "dodge" | "none";
+export type DefensePurpose = "ranged" | "melee" | "area" | "suppression" | "grapple";
 
 export interface DefensePromptData {
+  purpose: DefensePurpose;
+  optional: boolean;
   attackerName: string;
   defenderName: string;
   weaponName: string;
-  kind: AttackKind;
   dv: number | null;
 }
+
+const HINTS: Record<DefensePurpose, string> = {
+  ranged: "CCK.Defense.RangedHint",
+  melee: "CCK.Defense.MeleeHint",
+  area: "CCK.Defense.AreaHint",
+  suppression: "CCK.Defense.SuppressionHint",
+  grapple: "CCK.Defense.GrappleHint",
+};
 
 function escape(text: string): string {
   const element = document.createElement("span");
@@ -23,28 +30,24 @@ function format(key: string, data: Record<string, string>): string {
   return game.i18n.format(key, safe);
 }
 
-export async function askDefense(data: DefensePromptData): Promise<DefenseChoice> {
+export async function askDefense(data: DefensePromptData): Promise<boolean> {
   const intro = format("CCK.Defense.Intro", {
     attacker: data.attackerName,
     defender: data.defenderName,
     weapon: data.weaponName,
   });
-  const detail =
-    data.kind === "melee"
-      ? game.i18n.localize("CCK.Defense.MeleeHint")
-      : format("CCK.Defense.RangedHint", { dv: String(data.dv ?? "?") });
-  const buttons =
-    data.kind === "melee"
-      ? [{ action: "dodge", label: game.i18n.localize("CCK.Defense.RollDefense"), default: true }]
-      : [
-          { action: "dodge", label: game.i18n.localize("CCK.Defense.Dodge"), default: true },
-          { action: "none", label: game.i18n.localize("CCK.Defense.NoDodge") },
-        ];
+  const detail = format(HINTS[data.purpose], { dv: String(data.dv ?? "?") });
+  const buttons = data.optional
+    ? [
+        { action: "roll", label: game.i18n.localize("CCK.Defense.Dodge"), default: true },
+        { action: "skip", label: game.i18n.localize("CCK.Defense.NoDodge") },
+      ]
+    : [{ action: "roll", label: game.i18n.localize("CCK.Defense.RollDefense"), default: true }];
   const choice = await foundry.applications.api.DialogV2.wait({
     window: { title: game.i18n.localize("CCK.Defense.Title") },
     content: `<div class="cck-defense"><p>${intro}</p><p>${detail}</p></div>`,
     buttons,
     rejectClose: false,
   });
-  return choice === "dodge" ? "dodge" : "none";
+  return choice === "roll";
 }

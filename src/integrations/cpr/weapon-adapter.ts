@@ -1,15 +1,21 @@
 import type { AttackKind } from "../../domain/attack-rules";
+import { autofireMax, type ModeWeapon } from "../../domain/modes";
 import { dvBandsFromResults, type DvBand } from "../../domain/range";
 
-export const EVASION_SKILL = "Evasion";
+export const SKILLS = {
+  evasion: "Evasion",
+  concentration: "Concentration",
+  brawling: "Brawling",
+  athletics: "Athletics",
+} as const;
+export type SkillKey = keyof typeof SKILLS;
+export const THROWN_DV_TABLE = "DV Thrown Weapon";
 const DV_TABLE_SETTING = "dvRollTableCompendium";
 
-export interface WeaponSnapshot {
+export interface WeaponSnapshot extends ModeWeapon {
   id: string;
   name: string;
-  kind: AttackKind;
   equipped: boolean;
-  magazine: number | null;
   dvTable: string;
 }
 
@@ -17,7 +23,19 @@ export interface CombatantSnapshot {
   uuid: string;
   name: string;
   ref: number;
+  body: number;
   isNpc: boolean;
+}
+
+interface LoadableItem {
+  _getLoadedAmmoProp?: (prop: string) => unknown;
+}
+
+function loadedAmmoVariety(item: Item): string | null {
+  const reader = (item as Item & LoadableItem)._getLoadedAmmoProp;
+  if (typeof reader !== "function") return null;
+  const variety = reader.call(item, "variety");
+  return typeof variety === "string" && variety.length > 0 ? variety : null;
 }
 
 function field(source: unknown, key: string): unknown {
@@ -36,13 +54,19 @@ export function weaponSnapshot(item: Item): WeaponSnapshot | null {
   const system = item.system;
   const kind: AttackKind = field(system, "isRanged") === true ? "ranged" : "melee";
   const dvTable = field(system, "dvTable");
+  const weaponType = field(system, "weaponType");
+  const type = typeof weaponType === "string" ? weaponType : "";
   return {
     id: item.id,
     name: item.name,
     kind,
+    weaponType: type,
     equipped: field(system, "equipped") === "equipped",
     magazine: kind === "ranged" ? numberAt(system, "magazine", "value") : null,
     dvTable: typeof dvTable === "string" ? dvTable : "",
+    ammoVariety: kind === "ranged" ? loadedAmmoVariety(item) : null,
+    autofireMax: autofireMax(type, numberAt(system, "fireModes", "autoFire") ?? 0),
+    suppressive: field(field(system, "fireModes"), "suppressiveFire") === true,
   };
 }
 
@@ -63,6 +87,7 @@ export function combatantSnapshot(actor: Actor): CombatantSnapshot {
     uuid: actor.uuid,
     name: actor.name,
     ref: numberAt(actor.system, "stats", "ref", "value") ?? 0,
+    body: numberAt(actor.system, "stats", "body", "value") ?? 0,
     isNpc: !actor.hasPlayerOwner,
   };
 }
@@ -71,8 +96,12 @@ export function findItem(actor: Actor, id: string): Item | undefined {
   return actor.items.find((item) => item.id === id);
 }
 
+export function findSkill(actor: Actor, skill: SkillKey): Item | undefined {
+  return actor.items.find((item) => item.type === "skill" && item.name === SKILLS[skill]);
+}
+
 export function findEvasion(actor: Actor): Item | undefined {
-  return actor.items.find((item) => item.type === "skill" && item.name === EVASION_SKILL);
+  return findSkill(actor, "evasion");
 }
 
 export function hitPoints(actor: Actor): number {

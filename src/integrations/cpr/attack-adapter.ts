@@ -2,13 +2,15 @@ import type { NativeDamageRoll } from "../../domain/attack-rules";
 
 const SYSTEM_ROOT = "/systems/cyberpunk-red-core/modules";
 
-interface CprRoll {
+export interface CprRoll {
   resultTotal: number;
   faces: number[];
   luck?: number;
   bonusDamage?: number;
   isAimed?: boolean;
   location?: string;
+  autofireMultiplier?: number;
+  autofireMultiplierMax?: number;
   rollCardExtraArgs?: Record<string, unknown>;
   entityData?: Record<string, unknown>;
   handleRollDialog(event: unknown, actor: Actor, item: Item | null): Promise<boolean>;
@@ -47,7 +49,10 @@ export interface NativeRollResult {
   total: number;
   faces: number[];
   critical: boolean;
+  location: string;
 }
+
+export type Prepare = (roll: CprRoll) => void;
 
 function syntheticEvent(skipDialog: boolean): Record<string, unknown> {
   return { ctrlKey: skipDialog, metaKey: false, type: "cck" };
@@ -65,9 +70,11 @@ async function runNativeRoll(
   type: string,
   info: Record<string, unknown> | undefined,
   options: NativeRollOptions,
+  prepare?: Prepare,
 ): Promise<CprRoll | null> {
   const { chat, utils } = await loadSystem();
   let roll = item.createRoll(type, options.actor, info) as CprRoll;
+  prepare?.(roll);
   const keepRolling = await roll.handleRollDialog(
     syntheticEvent(options.skipDialog),
     options.actor,
@@ -88,18 +95,25 @@ async function runNativeRoll(
 }
 
 function summary(roll: CprRoll): NativeRollResult {
-  return { total: roll.resultTotal, faces: [...roll.faces], critical: roll.wasCritical() };
+  return {
+    total: roll.resultTotal,
+    faces: [...roll.faces],
+    critical: roll.wasCritical(),
+    location: roll.location ?? "body",
+  };
 }
 
 export async function rollAttack(
   weapon: Item,
+  type: "attack" | "aimed" | "autofire" | "suppressive",
   options: NativeRollOptions,
+  prepare?: Prepare,
 ): Promise<NativeRollResult | null> {
-  const roll = await runNativeRoll(weapon, "attack", undefined, options);
+  const roll = await runNativeRoll(weapon, type, undefined, options, prepare);
   return roll ? summary(roll) : null;
 }
 
-export async function rollEvasion(
+export async function rollSkill(
   skill: Item,
   options: NativeRollOptions,
 ): Promise<NativeRollResult | null> {
@@ -115,11 +129,15 @@ function count(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
 }
 
+export type NativeDamage = NativeDamageRoll & { faces: number[] };
+
 export async function rollDamage(
   weapon: Item,
+  damageType: "attack" | "aimed" | "autofire",
   options: NativeRollOptions,
-): Promise<(NativeDamageRoll & { faces: number[] }) | null> {
-  const roll = await runNativeRoll(weapon, "damage", { damageType: "attack" }, options);
+  prepare?: Prepare,
+): Promise<NativeDamage | null> {
+  const roll = await runNativeRoll(weapon, "damage", { damageType }, options, prepare);
   if (!roll) return null;
   const extra = roll.rollCardExtraArgs ?? {};
   return {

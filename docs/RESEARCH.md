@@ -42,6 +42,10 @@ respostas individuais e dispersão; agarrão completo; Quickhacks; EMP; barra de
 contadores de movimento; biomonitor; mensagens privadas no HUD; rolagens manuais; regras
 caseiras opcionais. ~120 arquivos TypeScript, muitos ajustes e regras caseiras.
 
+Ideias adotadas (pedido do usuário, sem copiar código): áreas posicionadas com o mouse que
+pegam todos dentro e somem sozinhas (D24, na E3) e o menu no clique direito sobre o token
+com as armas e itens utilizáveis (E2).
+
 Lições: o volume de opções e integrações (libWrapper, barra própria, HUD, biomonitor) torna
 o módulo pesado. Aqui: núcleo do livro primeiro, regras caseiras só sob pedido, biomonitor
 fica no Character Panel, sem libWrapper salvo necessidade provada (E0-02).

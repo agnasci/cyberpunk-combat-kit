@@ -53,3 +53,60 @@
 .cck-card__undo {
   width: 100%;
 }
+
+.cck-card__targets {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cck-card__target {
+  --cck-accent: var(--cck-hit);
+  border-left: 3px solid var(--cck-accent);
+  padding: 2px 6px;
+}
+
+.cck-card__target--bad {
+  --cck-accent: var(--cck-miss);
+}
+
+.cck-card__target-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: bold;
+}
+
+.cck-card__outcome {
+  color: var(--cck-accent);
+}
+
+.cck-card__detail {
+  font-size: 0.9em;
+}
+
+.cck-card__detonate {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.cck-placement {
+  position: fixed;
+  left: 50%;
+  top: 72px;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border-highlight, #ff6400);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--color-text-light-highlight, #f0f0e0);
+  pointer-events: none;
+}

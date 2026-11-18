@@ -60,6 +60,18 @@ export async function applyNativeDamage(
   };
 }
 
+export async function setHitPointsDirect(actor: Actor, hpAfter: number): Promise<DamageResult> {
+  const hpBefore = hitPoints(actor);
+  await actor.update({ "system.derivedStats.hp.value": hpAfter });
+  return {
+    hpBefore,
+    hpAfter,
+    hpReduction: Math.max(hpBefore - hpAfter, 0),
+    ablation: 0,
+    location: "body",
+  };
+}
+
 export async function reverseNativeDamage(
   actor: Actor,
   hpReduction: number,

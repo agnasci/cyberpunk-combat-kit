@@ -107,3 +107,34 @@ Conferido no texto em português (páginas do PDF) e no comportamento do sistema
 - Dano na cabeça dobrado: feito pelo `_applyDamage`; só entra com tiro mirado (E3-01).
 - Distância fracionária: arredondada para cima antes de procurar a faixa da tabela de DV
   (proposta técnica; as faixas do sistema são inteiras).
+
+## Leituras conferidas (E3, 2026-11-17)
+
+Páginas do PDF em português; implementação em `src/domain/modes.ts`, `area.ts` e
+`grapple.ts`, com testes que citam a página.
+
+- Tiro mirado (p. 171): um ataque por ação, −8; cabeça dobra o dano que passa da armadura;
+  item segurado ou perna exigem que ao menos 1 ponto passe (soltar o item; lesão de perna).
+- Fogo automático (p. 173): uma ação e 10 balas, perícia própria e tabela própria; dano 2d6
+  multiplicado por quanto superou a DV (ou a esquiva), até o máximo da arma; dois 6 = lesão;
+  não combina com tiro mirado; REF 8+ pode esquivar.
+- Supressivo (p. 174): 10 balas; quem está a pé, a até 25 m, fora de cobertura e na linha de
+  visão resiste com VON + Concentração contra o ataque; quem falha usa o próximo movimento
+  (e, se preciso, a ação) para buscar cobertura. Cobertura e linha de visão ficam a cargo de
+  quem marca os alvos.
+- Cartucho de espingarda (p. 174): um ataque contra DV 13; acertando, cada alvo visível à
+  frente a até 6 m leva 3d6 (dano vem da munição no sistema); REF 8+ esquiva individualmente.
+  O texto não dá ângulo; a área usada é uma faixa de 3 × 3 quadrados à frente (D18). A
+  figura de exemplo da página não foi conferida em imagem.
+- Explosivos (p. 174): quadrado de 10 m centrado no alvo pretendido, um dano para todos;
+  errando, o mestre decide onde caiu; REF 8+ esquiva superando a rolagem de ataque e sai da
+  área; cobertura que o dano não destrói protege (marcação manual por ora).
+- Arremesso (p. 178): DES + Atletismo, até 25 m, tabela de DV do lança-granadas; arma branca
+  arremessada causa o dano dela sem reduzir a armadura pela metade. O sistema traz a tabela
+  "DV Thrown Weapon" e a arma "Thrown Weapon" para granadas.
+- Briga (p. 177): dano pelo BODY (sistema), armadura inteira. Artes Marciais (p. 179): dano
+  pelo BODY, metade da armadura; movimentos especiais ficam para depois.
+- Agarrão (p. 178): mão livre; DES + Briga contra DES + Briga; os dois com −2 em tudo;
+  defensor não usa movimento. Estrangular: BODY direto nos PV, sem armadura; de mais de 1 PV
+  para menos de 0 fica com 1 e desmaia; 3 rodadas seguidas desmaiam. Derrubar: BODY direto,
+  fim do agarrão, alvo caído. Escapar: teste resistido de Briga; quem agarra solta sem ação.
