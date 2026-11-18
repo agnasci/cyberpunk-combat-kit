@@ -1,0 +1,18 @@
+{
+  "id": "personal",
+  "version": "0.0.0",
+  "title": "Pacote pessoal (exemplo fictício)",
+  "kinds": ["cues", "quickhacks"],
+  "assets": {},
+  "cues": {},
+  "quickhacks": [
+    {
+      "id": "exemplo",
+      "name": "Exemplo",
+      "tier": 1,
+      "dv": 6,
+      "icon": "icons/exemplo.webp",
+      "effect": { "type": "guided" }
+    }
+  ]
+}

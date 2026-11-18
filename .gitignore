@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+*.tsbuildinfo
+# Edição pessoal: nunca versionar (docs/PERSONAL.md).
+private/
+dist-personal/
+# Dados locais de testes; nunca versionar uma instalação/mundo real do Foundry.
+.local/
+foundry-data/

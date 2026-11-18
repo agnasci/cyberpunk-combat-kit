@@ -1,0 +1,7 @@
+dist/
+dist-personal/
+private/
+coverage/
+package-lock.json
+*.md
+*.hbs
