@@ -1,0 +1,35 @@
+<div class="cck-card {{#if hit}}cck-card--hit{{else}}cck-card--miss{{/if}}">
+  <header class="cck-card__header">
+    <span class="cck-card__title">{{attackerName}} → {{targetName}}</span>
+    <span class="cck-card__weapon">{{weaponName}}{{#if distance}} · {{distance}} m{{/if}}</span>
+  </header>
+  <dl class="cck-card__rows">
+    <dt>{{localize "CCK.Card.Attack"}}</dt>
+    <dd>{{attackTotal}}</dd>
+    <dt>{{localize defenseLabel}}</dt>
+    <dd>{{defenseValue}}</dd>
+  </dl>
+  <p class="cck-card__result">
+    {{#if hit}}{{localize "CCK.Card.Hit"}}{{else}}{{localize "CCK.Card.Miss"}}{{/if}}
+  </p>
+  {{#if damage}}
+    <dl class="cck-card__rows">
+      <dt>{{localize "CCK.Card.Damage"}}</dt>
+      <dd>{{damage.total}}{{#if damage.critical}} · {{localize "CCK.Card.Critical"}}{{/if}}</dd>
+      {{#if damage.applied}}
+        <dt>{{localize "CCK.Card.HpLost"}}</dt>
+        <dd>{{damage.applied.hpReduction}}</dd>
+      {{/if}}
+    </dl>
+    {{#if damage.error}}
+      <p class="cck-card__warning">{{localize damage.error}}</p>
+    {{/if}}
+    {{#if undone}}
+      <p class="cck-card__note">{{localize "CCK.Card.Undone"}}</p>
+    {{else if canUndo}}
+      <button type="button" class="cck-card__undo" data-cck-action="undo">
+        {{localize "CCK.Card.Undo"}}
+      </button>
+    {{/if}}
+  {{/if}}
+</div>

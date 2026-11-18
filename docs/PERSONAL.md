@@ -39,11 +39,23 @@ dados fictícios, para recriar `private/` numa máquina nova.
 
 ## Guardas contra vazamento (parte do `npm run check`)
 
+`scripts/check-private.mjs` (`npm run check:private`; testes em
+`tests/unit/check-private.test.ts`). Arquivos verificados: os versionados, os novos não
+ignorados pelo Git e `dist/`.
+
 1. `git ls-files private dist-personal` precisa estar vazio.
-2. Nenhum arquivo em `dist/` pode ter o mesmo hash de um arquivo de `private/`.
-3. Nenhum id de Quickhack/item do manifesto pessoal pode aparecer em `src/`, `lang/`,
-   `templates/`, `docs/` ou `dist/`.
-4. Release (`gh release create`) só a partir de `dist/`; checklist em docs/LEGAL.md.
+2. Nenhum arquivo verificado pode ter o mesmo hash de um arquivo não vazio de `private/`.
+3. Nenhum id pessoal pode aparecer em arquivo verificado (inclusive docs): ids de
+   Quickhack e chaves de `assets` de `private/pack/cck-pack.json`, `_id` e `quickhackId`
+   das fontes em `private/compendium/src/`.
+4. Nenhum nome de arquivo de `private/` pode aparecer em `src/`, `lang/`, `templates/`,
+   `styles/` ou `dist/` (docs podem citar nomes de arquivos dos módulos de referência).
+5. Release (`gh release create`) só a partir de `dist/`; checklist em docs/LEGAL.md.
+
+Tokens com menos de 4 caracteres e tudo o que vem de `private.example/` (ids, nomes e
+conteúdo idêntico) são ignorados. `build:personal` recusa versão sem `-personal`, remove
+`manifest` e `download` (valor `null` na sobreposição apaga a chave) e, por enquanto, só
+avisa que a compilação do compêndio é da P-03.
 
 ## Fontes do conteúdo pessoal
 

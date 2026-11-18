@@ -1,0 +1,55 @@
+.cck-card {
+  --cck-hit: #2e8b57;
+  --cck-miss: #a33a3a;
+  --cck-accent: var(--cck-miss);
+  border-left: 4px solid var(--cck-accent);
+  padding: 4px 8px;
+}
+
+.cck-card--hit {
+  --cck-accent: var(--cck-hit);
+}
+
+.cck-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cck-card__title {
+  font-weight: bold;
+}
+
+.cck-card__weapon,
+.cck-card__note {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+.cck-card__rows {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  margin: 6px 0;
+}
+
+.cck-card__rows dd {
+  margin: 0;
+  font-weight: bold;
+  text-align: right;
+}
+
+.cck-card__result {
+  margin: 4px 0;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--cck-accent);
+}
+
+.cck-card__warning {
+  color: var(--cck-miss);
+}
+
+.cck-card__undo {
+  width: 100%;
+}

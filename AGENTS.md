@@ -27,7 +27,7 @@ A ficha e o pipeline de rolagem do sistema são a fonte de verdade.
 
 ## Regras de trabalho
 
-- Esta base contém documentação de planejamento, não um módulo funcional.
+- E0 e E1 existem: ataque simples, defesa, dano pelo mestre; menu e modos ainda não.
 - Separe requisito do usuário, proposta técnica e fato verificado. Não invente
   APIs, campos de ficha, fórmulas, compatibilidade, testes ou resultados.
 - Execute uma tarefa pequena por vez; não implemente etapas futuras por antecipação.

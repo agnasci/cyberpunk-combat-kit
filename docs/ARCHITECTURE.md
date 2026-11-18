@@ -22,18 +22,26 @@ então existe um **executor do mestre** (D04).
 
 ## Fluxo de um ataque (R01–R03)
 
-1. Menu rápido (ou macro/API) recebe `{attacker, target, weaponId, mode}`.
-2. `workflows/attack` valida (alvo visível, arma equipada, munição) e mede distância.
-3. Domínio calcula a DV pela tabela da arma e decide se o alvo **pode** esquivar.
-4. Se pode, o dono do alvo (ou o mestre) recebe o pedido "Esquivar / Não esquivar"
-   (socket); sem resposta em X s ou PdM com opção automática, usa a DV.
-5. O atacante rola pelo pipeline nativo (`item.createRoll` + `confirmRoll` + `roll()`), com o
-   alvo marcado para o card nativo sair igual ao da ficha.
-6. Domínio resolve acerto/erro; card de resolução próprio mostra o resultado conforme o
-   roteamento (R13).
-7. Acerto: rolagem de dano nativa; lesão crítica se houver dois 6; o **executor do mestre**
-   chama `target.actor._applyDamage(...)`; o card guarda o necessário para desfazer.
-8. Cada etapa emite um evento (`cck.attack.*`) que o motor de efeitos e a API consomem.
+Implementado na E1 (tiro único à distância e arma branca; modos especiais na E3):
+
+1. Entrada: `api.attack({weaponId?, skipDialog?})` usa o token controlado e o único alvo do
+   usuário (o menu da E2 vai chamar o mesmo workflow).
+2. `workflows/attack` recusa sem mestre ativo (R14) e valida arma, equipamento, munição e
+   alcance (DV `N/A` = fora de alcance; corpo a corpo = até um quadrado). Distância medida
+   pela posição gravada dos tokens, não pela animada.
+3. O atacante rola pelo pipeline nativo (`createRoll` → `handleRollDialog` → `confirmRoll` →
+   `roll` → LUCK → `RenderRollCard`, igual à ficha). Cancelar o diálogo encerra o fluxo
+   antes de incomodar o defensor.
+4. Se o alvo pode defender (corpo a corpo sempre; à distância com REF 8+), o jogador dono
+   ativo (ou o mestre executor) recebe por socket "Esquivar / Não esquivar" (ou "Rolar
+   defesa" no corpo a corpo) e rola Evasão pelo diálogo nativo. Sem resposta em 60 s: à
+   distância vale a DV; no corpo a corpo o ataque fica sem resolução, com aviso.
+5. Domínio resolve; acerto rola o dano nativo e o **executor do mestre** chama
+   `_applyDamage` com os mesmos parâmetros do card de dano do sistema; PV e ablação antes e
+   depois voltam no resultado.
+6. Card de resolução próprio (flag `resolution`) com ataque, defesa, resultado, dano e
+   "Desfazer dano" (mestre ou autor do card), que chama `_reverseDamage` pelo executor.
+7. Eventos `cck.attack.*` para efeitos e API: E4/E8.
 
 ## Executor do mestre (R14)
 

@@ -5,8 +5,9 @@ automática, defesa, dano aplicado com armadura e ablação, modos de fogo e ár
 combate no clique direito, efeitos audiovisuais configuráveis e pacotes de conteúdo
 importáveis. Integra-se ao Character Panel quando os dois estão ativos.
 
-**Estado:** planejamento. Ainda não há módulo instalável. Veja [STATUS.md](STATUS.md) e
-[SPEC.md](SPEC.md).
+**Estado:** alfa (0.0.1). Ataque à distância (tiro único) e com arma branca, defesa, dano
+aplicado pelo mestre e desfazer; ainda sem menu (entrada pela API). Veja
+[STATUS.md](STATUS.md) e [SPEC.md](SPEC.md).
 
 ## Unofficial content
 

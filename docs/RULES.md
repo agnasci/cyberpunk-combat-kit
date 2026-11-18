@@ -91,7 +91,19 @@ de tabela vêm do sistema em execução (compêndios `internal_dv-tables` e
 - Itens do CEMK (Edgerunners Armory, p. 31–37) e os Quickhacks não estão no sistema: são o
   alvo do compêndio pessoal (docs/PERSONAL.md).
 
-## Pendências de leitura
+## Leituras conferidas (E1-01, 2026-11-17)
 
-Conferir no texto, durante E1-01, cada regra marcada "a confirmar" e os arredondamentos
-(metade da armadura, dano de cabeça) contra o comportamento do `_applyDamage`.
+Conferido no texto em português (páginas do PDF) e no comportamento do sistema:
+
+- Esquiva à distância só com REF 8 ou mais (p. 173, nota do ataque à distância); empate
+  favorece o defensor (p. 173 e 177). Implementado em `src/domain/attack-rules.ts`.
+- Armas brancas (p. 177) e Artes Marciais (p. 179) ignoram metade da armadura, arredondando
+  para cima. O `_applyDamage` faz `Math.round(SP − SP × 50%)`, que para SP inteiro dá o
+  mesmo resultado (SP 7 → 4; SP 11 → 6). A arma corpo a corpo do sistema já traz
+  `ignoreArmorPercent: 50`; testado no Foundry (6 de dano contra SP 7 → 2 PV).
+- Lesão crítica com dois ou mais 6 no dano, +5 direto nos PV, sem ablação e sem
+  multiplicador de local (p. 188; o livro impresso numera 187). O sistema marca o crítico
+  (`wasCritSuccess`) e passa o bônus; a rolagem na tabela de lesões continua no card nativo.
+- Dano na cabeça dobrado: feito pelo `_applyDamage`; só entra com tiro mirado (E3-01).
+- Distância fracionária: arredondada para cima antes de procurar a faixa da tabela de DV
+  (proposta técnica; as faixas do sistema são inteiras).
