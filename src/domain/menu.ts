@@ -427,3 +427,45 @@ export function moveFocus(index: number, enabled: readonly boolean[], step: 1 | 
   }
   return index;
 }
+
+export interface DrawerItem {
+  id: string;
+  label: MenuText[];
+  hint: MenuText | null;
+  disabled: MenuText | null;
+  action: MenuAction | null;
+}
+
+export interface DrawerSection {
+  id: string;
+  title: MenuText | null;
+  items: DrawerItem[];
+}
+
+function drawerItems(entry: MenuEntry, prefix: MenuText[]): DrawerItem[] {
+  const label = [...prefix, entry.label];
+  if (entry.children.length === 0 || entry.disabled) {
+    return [
+      { id: entry.id, label, hint: entry.hint, disabled: entry.disabled, action: entry.action },
+    ];
+  }
+  return entry.children.flatMap((child) => drawerItems(child, label));
+}
+
+export function drawerSections(entries: readonly MenuEntry[]): DrawerSection[] {
+  const sections: DrawerSection[] = [];
+  const loose: DrawerItem[] = [];
+  for (const entry of entries) {
+    if (entry.children.length === 0) {
+      loose.push(...drawerItems(entry, []));
+      continue;
+    }
+    sections.push({
+      id: entry.id,
+      title: entry.label,
+      items: entry.children.flatMap((child) => drawerItems(child, [])),
+    });
+  }
+  if (loose.length > 0) sections.push({ id: "other", title: null, items: loose });
+  return sections;
+}

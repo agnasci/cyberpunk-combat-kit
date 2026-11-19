@@ -280,5 +280,11 @@
   "CCK.Menu.Why-no-quickhacks": "nenhum pacote ativo traz Quickhacks",
   "CCK.Menu.Why-no-intruder": "nenhuma invasão conhecida",
   "CCK.Menu.Why-self": "não é possível hackear a si mesmo",
-  "CCK.Card.Dv": "DV"
+  "CCK.Card.Dv": "DV",
+  "CCK.Panel.Combat": "Combate",
+  "CCK.Panel.Attack": "Atacar o alvo marcado",
+  "CCK.Panel.AttackWith": "Atacar o alvo marcado com {weapon}",
+  "CCK.Panel.Menu": "Menu de combate do alvo marcado",
+  "CCK.Panel.NoTarget": "Marque um alvo (tecla T ou clique direito no token) para ver as ações de combate.",
+  "CCK.Panel.NoToken": "Combat Kit: o personagem do painel não tem token nesta cena."
 }

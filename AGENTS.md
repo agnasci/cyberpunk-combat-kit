@@ -27,9 +27,9 @@ A ficha e o pipeline de rolagem do sistema são a fonte de verdade.
 
 ## Regras de trabalho
 
-- E0 a E6 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito, pacotes,
-  editor de efeitos e Quickhacks (desligados por padrão). Próximo: E8-01 ou P-02 (E7 espera
-  o painel).
+- E0 a E7 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito, pacotes,
+  editor de efeitos, Quickhacks (desligados por padrão) e encaixe no Character Panel.
+  Próximo: E8-01 ou P-02.
 - Separe requisito do usuário, proposta técnica e fato verificado. Não invente
   APIs, campos de ficha, fórmulas, compatibilidade, testes ou resultados.
 - Execute uma tarefa pequena por vez; não implemente etapas futuras por antecipação.

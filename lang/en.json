@@ -280,5 +280,11 @@
   "CCK.Menu.Why-no-quickhacks": "no active pack provides Quickhacks",
   "CCK.Menu.Why-no-intruder": "no known intrusion",
   "CCK.Menu.Why-self": "you cannot hack yourself",
-  "CCK.Card.Dv": "DV"
+  "CCK.Card.Dv": "DV",
+  "CCK.Panel.Combat": "Combat",
+  "CCK.Panel.Attack": "Attack the marked target",
+  "CCK.Panel.AttackWith": "Attack the marked target with {weapon}",
+  "CCK.Panel.Menu": "Combat menu for the marked target",
+  "CCK.Panel.NoTarget": "Mark a target (T key or right-click the token) to see combat actions.",
+  "CCK.Panel.NoToken": "Combat Kit: the panel character has no token in this scene."
 }

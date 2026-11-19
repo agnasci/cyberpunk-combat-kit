@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildMenu,
+  drawerSections,
   dvKey,
   menuModes,
   menuOpens,
@@ -321,5 +322,32 @@ describe("netrunning no menu (R09)", () => {
     });
     const other = buildMenu(input({ net: net({ rank: 0, intruders, targetUuid: "Token.x" }) }));
     expect(find(other.entries, "net")).toBeUndefined();
+  });
+});
+
+describe("aba Combate do painel (E7-02)", () => {
+  it("cada grupo vira seção; mirado vira itens com o rótulo do modo", () => {
+    const sections = drawerSections(buildMenu(input()).entries);
+    const weapon = sections.find((section) => section.id === "weapon:pistol");
+    expect(weapon?.items.map((item) => item.id)).toEqual([
+      "pistol:single",
+      "pistol:aimed:head",
+      "pistol:aimed:heldItem",
+      "pistol:aimed:leg",
+    ]);
+    expect(weapon?.items[1]?.label.map((part) => part.key)).toEqual([
+      "CCK.Menu.Mode-aimed",
+      "CCK.Menu.Aim-head",
+    ]);
+    const other = sections.at(-1);
+    expect(other?.title).toBeNull();
+    expect(other?.items.map((item) => item.id)).toEqual(["target"]);
+  });
+
+  it("modo bloqueado continua um item desligado com o motivo", () => {
+    const far = drawerSections(buildMenu(input({ dvs: {} })).entries);
+    const aimed = far.flatMap((section) => section.items).find((i) => i.id === "pistol:aimed");
+    expect(aimed?.disabled?.key).toBe("CCK.Menu.Why-out-of-range");
+    expect(aimed?.action).toBeNull();
   });
 });

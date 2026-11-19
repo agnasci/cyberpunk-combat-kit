@@ -97,6 +97,7 @@ interface FoundryToken {
     options?: { releaseOthers?: boolean; groupSelection?: boolean },
   ): void;
   readonly center: { readonly x: number; readonly y: number };
+  control(options?: { releaseOthers?: boolean }): boolean;
   readonly actor: FoundryActor | null;
   readonly document: FoundryTokenDocument;
 }
@@ -230,6 +231,11 @@ declare global {
     on(
       hook: "updateToken",
       fn: (token: FoundryTokenDocument, changes: Record<string, unknown>) => void,
+    ): number;
+    on(
+      hook:
+        "ccpReady" | "ccpRendered" | "targetToken" | "controlToken" | "updateActor" | "updateItem",
+      fn: (...args: unknown[]) => void,
     ): number;
     callAll(hook: string, ...args: unknown[]): boolean;
   };
@@ -387,7 +393,11 @@ declare global {
   };
 
   const foundry: {
-    utils: { randomID(length?: number): string; getRoute(path: string): string };
+    utils: {
+      randomID(length?: number): string;
+      getRoute(path: string): string;
+      debounce<T extends (...args: never[]) => void>(fn: T, delay: number): T;
+    };
     audio: {
       AudioHelper: {
         play(

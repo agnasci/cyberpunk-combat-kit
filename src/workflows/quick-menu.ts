@@ -76,7 +76,7 @@ function formatDistance(distance: number | null): string | null {
   });
 }
 
-async function viewFor(target: Token) {
+export async function menuViewFor(target: Token) {
   const attacker = attackerToken();
   const problem = typeof attacker === "string" ? attacker : null;
   const acting = typeof attacker === "string" ? null : attacker;
@@ -106,7 +106,7 @@ async function viewFor(target: Token) {
   };
 }
 
-async function run(action: MenuAction, target: Token): Promise<void> {
+export async function runMenuAction(action: MenuAction, target: Token): Promise<void> {
   switch (action.kind) {
     case "target":
       return toggleTarget(target);
@@ -130,18 +130,22 @@ async function run(action: MenuAction, target: Token): Promise<void> {
   }
 }
 
+let closeMenu: (() => void) | null = null;
+let menuGeneration = 0;
+
+export async function openMenuFor(target: Token, position: { x: number; y: number }) {
+  closeMenu?.();
+  closeMenu = null;
+  const current = ++menuGeneration;
+  const view = await menuViewFor(target);
+  if (current !== menuGeneration) return;
+  closeMenu = openQuickMenu(view, position, (action) => {
+    void runMenuAction(action, target);
+  });
+}
+
 export function initQuickMenu(): void {
-  let close: (() => void) | null = null;
-  let generation = 0;
-  const open = async (click: TokenClick) => {
-    close?.();
-    close = null;
-    const current = ++generation;
-    const view = await viewFor(click.token);
-    if (current !== generation) return;
-    close = openQuickMenu(view, { x: click.clientX, y: click.clientY }, (action) => {
-      void run(action, click.token);
-    });
-  };
-  onTokenRightClick((click) => void open(click));
+  onTokenRightClick((click: TokenClick) => {
+    void openMenuFor(click.token, { x: click.clientX, y: click.clientY });
+  });
 }

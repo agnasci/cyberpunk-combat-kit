@@ -121,8 +121,9 @@ Como ficou na E6 (decisão D28):
 
 ## Integração com o Character Panel (R10)
 
-O painel ainda não expõe a API (tarefa E6-01 de lá). Contrato esperado (proposta do painel,
-D12 de lá), consumido só por `src/integrations/panel/`:
+API v1 do painel implementada na E6-01 de lá (D12 e D46 de lá, commit `f6e17c4` no
+repositório do painel). Consumida só por `src/integrations/panel/panel-bridge.ts`; os slots
+ficam em `src/workflows/panel-slots.ts` (E7, D29):
 
 | Uso | Membro do painel |
 |---|---|
@@ -137,8 +138,25 @@ Regras: o combate não lê DOM do painel; se `api.version` for diferente de 1, d
 integração com aviso no console. Sem painel, o módulo mostra uma barra mínima própria
 (arma ativa + atalhos) opcional. O painel nunca depende deste módulo.
 
-Pedidos que este projeto fará ao painel (registrar lá quando E6-01 começar): região `quick`
-existir mesmo recolhido; `onAction` receber o evento para modificadores (Shift/Ctrl).
+Como ficou na E7:
+
+- Ponte: no `ready` lê `api` do painel ativo e também ouve `ccpReady` (a ordem de carga dos
+  módulos não importa). Versão diferente de 1: aviso no console e nenhuma integração.
+- Paleta: `getPalette()` na conexão e a cada `ccpRendered` grava `--cck-panel-accent` e
+  `--cck-panel-soft` na raiz do documento; o menu do clique direito e os slots usam essas
+  variáveis, com o laranja do Foundry como reserva sem painel.
+- `cck-weapon` (`bar-end`): arma equipada e munição; clique ataca o alvo marcado no modo
+  simples.
+- `cck-quick` (`quick`, visível com o painel recolhido): ícones de atacar e de abrir o menu de
+  combate do alvo marcado junto ao botão.
+- `cck-drawer` (`drawer`, aba "Combate"): as mesmas entradas do menu do clique direito para o
+  alvo marcado (`drawerSections` em `src/domain/menu.ts` achata grupos e o mirado), com DV,
+  motivo de cada bloqueio e Netrunning quando ligado. Sem um alvo marcado: explica como marcar.
+- Antes de agir, o token do personagem do painel é selecionado (o fluxo de ataque usa o token
+  controlado). Sem token na cena: aviso.
+- Atualiza (debounce de 120 ms) com `targetToken` do próprio usuário, `controlToken`,
+  `updateToken` e mudanças no ator/itens do personagem mostrado.
+- Sem painel não há barra própria (opcional no R10, não feita).
 
 ## API pública (R11)
 

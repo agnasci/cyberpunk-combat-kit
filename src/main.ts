@@ -20,6 +20,7 @@ import { bindResolutionCards, RESOLUTION_TEMPLATE } from "./ui/resolution-card";
 import { detonatePending } from "./workflows/area";
 import { undoTarget } from "./workflows/combat-common";
 import { initDefense } from "./workflows/defense";
+import { initPanelSlots } from "./workflows/panel-slots";
 import { initQuickMenu } from "./workflows/quick-menu";
 import { availableQuickhacks, initQuickhacks } from "./workflows/quickhack";
 
@@ -70,6 +71,7 @@ Hooks.once("ready", () => {
   void initPacks();
   initQuickMenu();
   initQuickhacks();
+  initPanelSlots();
   void preloadDvTables();
   void removeLeftoverAreas();
   const module = game.modules.get(MODULE_ID);
