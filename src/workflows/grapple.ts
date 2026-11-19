@@ -19,6 +19,7 @@ import {
   type TargetResult,
 } from "../ui/resolution-card";
 import { speakerFor, targetEntry, warn } from "./combat-common";
+import { cueGrapple, cueOutcomes } from "./combat-cues";
 import { requestDefense } from "./defense";
 
 export type GrappleAction = "grab" | "choke" | "throw" | "release" | "escape";
@@ -134,6 +135,7 @@ async function grab(self: Actorish, skipDialog: boolean): Promise<void> {
       targetUuid: targetToken.document.uuid,
     });
     if (!started.ok) target = { ...target, error: `CCK.Gm.${started.error}` };
+    else cueGrapple("grapple.start", self.token, targetToken);
   }
   await postGrappleCard(self, "grab", target, result.mine, !targetToken.actor.hasPlayerOwner);
 }
@@ -163,25 +165,21 @@ async function partnerAction(self: Actorish, action: "choke" | "throw"): Promise
   );
   const outcome: Outcome = "applied";
   const applied = result.ok ? result.result : null;
+  const entry = {
+    ...targetEntry(link.partnerUuid, partner.actor.name),
+    outcome,
+    applied,
+    error: result.ok ? null : `CCK.Gm.${result.error}`,
+  };
+  if (result.ok) cueOutcomes(self.token, ["grapple", "melee"], [entry], false);
+  if (result.ok && action === "throw") cueGrapple("grapple.end", self.token, partner);
   const effect =
     action === "throw"
       ? "CCK.Grapple.Prone"
       : applied?.knockedOut
         ? "CCK.Grapple.KnockedOut"
         : null;
-  await postGrappleCard(
-    self,
-    action,
-    {
-      ...targetEntry(link.partnerUuid, partner.actor.name),
-      outcome,
-      applied,
-      effect,
-      error: result.ok ? null : `CCK.Gm.${result.error}`,
-    },
-    null,
-    !partner.actor.hasPlayerOwner,
-  );
+  await postGrappleCard(self, action, { ...entry, effect }, null, !partner.actor.hasPlayerOwner);
 }
 
 async function release(self: Actorish): Promise<void> {
@@ -193,6 +191,8 @@ async function release(self: Actorish): Promise<void> {
     targetUuid: link.partnerUuid,
   });
   if (!result.ok) return warn(`CCK.Gm.${result.error}`);
+  const partner = tokenObject(link.partnerUuid);
+  cueGrapple("grapple.end", self.token, partner ?? undefined);
   ui.notifications.info(game.i18n.localize("CCK.Grapple.Released"));
 }
 
@@ -216,6 +216,7 @@ async function escape(self: Actorish, skipDialog: boolean): Promise<void> {
       targetUuid: link.partnerUuid,
     });
     if (!ended.ok) target = { ...target, error: `CCK.Gm.${ended.error}` };
+    else cueGrapple("grapple.end", self.token, partner);
   }
   await postGrappleCard(self, "escape", target, result.mine, !partner.actor.hasPlayerOwner);
 }

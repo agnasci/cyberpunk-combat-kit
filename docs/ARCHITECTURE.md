@@ -64,14 +64,22 @@ resolução tem uma lista de alvos, cada um com resultado, dano e "Desfazer".
 
 - Clique direito sobre token **não possuído**: abre o menu do módulo no lugar do nada atual.
 - Dono/mestre: mantém o Token HUD nativo; o menu abre com modificador (Alt+clique direito,
-  configurável) ou por opção "sempre usar menu de combate".
-- Itens: armas equipadas (com modos disponíveis), mirar, medir DV, marcar alvo, Quickhacks
-  (só se R09 ligado e o ator for Netrunner), ações de agarrão quando aplicável.
-- Teclado: setas, Enter, Esc; foco volta ao canvas ao fechar.
+  configurável) ou pela opção "menu em tokens não selecionados" (D26).
+- Itens: armas equipadas (com modos disponíveis e a DV até o alvo), mirar (cabeça, item,
+  perna), marcar/desmarcar alvo, ações de agarrão quando aplicável. Quickhacks entram com
+  R09 (E5+).
+- Teclado: setas, Home/End, Enter/Espaço/→ entram, ←/Backspace/Esc voltam, Esc na raiz
+  fecha; foco volta para onde estava (o canvas) ao fechar.
+- Arquivos (E2): `src/domain/menu.ts` (monta o menu e decide quando abre, testado),
+  `src/integrations/foundry/token-click.ts` (ouvinte em captura no `document`, acha o token,
+  marca alvo), `src/ui/quick-menu.ts` (DOM e teclado), `src/workflows/quick-menu.ts` (junta
+  ator, armas, DV e agarrão; chama `attack`/`grapple` com o token clicado como único alvo).
+  A DV vem do mesmo `dvLookup` do ataque; as tabelas de DV do sistema são lidas uma vez e
+  ficam em cache (pré-carregadas no `ready`).
 
 ## Efeitos (R07–R08)
 
-Ver [EFFECTS.md](EFFECTS.md). Motor de cues desacoplado: workflows emitem eventos; o motor
+Ver [EFFECTS.md](EFFECTS.md) (seção "Como ficou na E4"). Motor de cues desacoplado: workflows emitem eventos; o motor
 procura o efeito associado ao evento (pacote ativo → padrão próprio) e toca localmente em
 cada cliente, sem tráfego de quadro a quadro pelo servidor.
 

@@ -23,8 +23,22 @@ interface ResponseEnvelope {
   error?: string;
 }
 
+interface BroadcastEnvelope {
+  type: "broadcast";
+  kind: string;
+  payload: unknown;
+}
+
+export type Listener = (payload: unknown, senderId: string) => void;
+
 const handlers = new Map<string, Handler>();
+const listeners = new Map<string, Listener>();
 const pending = new Map<string, (result: RequestResult) => void>();
+
+function isBroadcast(data: unknown): data is BroadcastEnvelope {
+  const value = data as Partial<BroadcastEnvelope> | null;
+  return value?.type === "broadcast" && typeof value.kind === "string";
+}
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -66,6 +80,10 @@ function isResponse(data: unknown): data is ResponseEnvelope {
 
 export function initSocket(): void {
   game.socket.on(CHANNEL, (data, senderId) => {
+    if (isBroadcast(data)) {
+      listeners.get(data.kind)?.(data.payload, senderId);
+      return;
+    }
     if (isResponse(data)) {
       if (data.to !== game.user.id) return;
       const resolve = pending.get(data.requestId);
@@ -90,6 +108,15 @@ export function initSocket(): void {
 
 export function registerHandler(kind: string, handler: Handler): void {
   handlers.set(kind, handler);
+}
+
+export function listen(kind: string, listener: Listener): void {
+  listeners.set(kind, listener);
+}
+
+export function broadcast(kind: string, payload: unknown): void {
+  const envelope: BroadcastEnvelope = { type: "broadcast", kind, payload };
+  game.socket.emit(CHANNEL, envelope);
 }
 
 export function request(

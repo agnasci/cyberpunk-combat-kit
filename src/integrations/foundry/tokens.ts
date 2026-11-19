@@ -47,3 +47,12 @@ export function distanceToPoint(token: Token, point: Point): number {
   if (!canvas) return Number.NaN;
   return canvas.grid.measurePath([restingCenter(token), point]).distance;
 }
+
+export function tokenForUuid(uuid: string): Token | null {
+  const placeables = canvas?.tokens?.placeables ?? [];
+  return (
+    placeables.find((token) => token.document.uuid === uuid) ??
+    placeables.find((token) => token.actor?.uuid === uuid) ??
+    null
+  );
+}

@@ -69,7 +69,8 @@ SP 7, 40 PV).
 |---|---|
 | Sistema não dispara hooks próprios de combate; não há API pública de ataque (`game.cpr.api` só tem `empableItems`) | Lido |
 | Clique direito em token: o `MouseInteractionManager` só chama `Token#_onClickRight` se `_canHUD(user)` (dono ou mestre). Jogador em token alheio: nada acontece (sem HUD). Mestre: HUD abre também com Alt | Testado |
-| Interceptar sem tocar no Foundry: ouvinte `pointerdown` em captura em `canvas.app.view`, `button === 2`, `canvas.canvasCoordinatesFromClient` e `token.bounds.contains(x, y)` identifica o token e `altKey`. Jogador e mestre testados; impedir o HUD no Alt fica para a tarefa do menu | Testado |
+| Interceptar sem tocar no Foundry: ouvinte `pointerdown` em captura em `canvas.app.view`, `button === 2`, `canvas.canvasCoordinatesFromClient` e `token.bounds.contains(x, y)` identifica o token e `altKey`. Jogador e mestre testados | Testado |
+| O HUD abre já no `pointerdown` do botão direito (`MouseInteractionManager#handleRightDown` → `Token#_onClickRight`, que também seleciona o token). Ouvinte `pointerdown` em captura no `document` com `stopImmediatePropagation` quando `event.target === canvas.app.view` impede HUD, seleção e arrasto do mapa. `token.setTarget(bool, {releaseOthers, groupSelection})` e `token.isTargeted` funcionam para jogador em token alheio. `token.document.displayName` 30/50 = nome visível a todos | Testado (E2, mestre com mouse real; jogador com evento sintético) |
 | `game.socket` com `"socket": true`: `game.socket.on("module.cyberpunk-combat-kit", (data, senderId) => …)` recebe o id do usuário que enviou como segundo argumento; ida e volta jogador → mestre → jogador funcionou e o card de dano saiu como autor Gamemaster | Testado |
 | Mudança de `module.json` exige reiniciar o mundo | Testado |
 | `canvas.grid.measurePath([a, b])` → `{distance, spaces, cost}` em unidades da cena (10 quadrados = 20 m); `measureDistance` também existe | Testado |
@@ -84,7 +85,10 @@ SP 7, 40 PV).
 | Linha de visão por paredes: `CONFIG.Canvas.polygonBackends.sight.testCollision(a, b, {type: "sight", mode: "any"})` devolve `true` quando uma parede bloqueia | Testado (E3: parede entre dois alvos tirou o de trás do supressivo e do cartucho) |
 | `canvas.grid.getCenterPoint(point)` dá o centro do quadrado (V12) | Testado (E3) |
 | `foundry.audio.AudioHelper.play({src, volume, autoplay, loop}, false)` toca localmente (`Sound`); antes do primeiro gesto do usuário `game.audio.locked` é `true` e a promessa espera o desbloqueio | Testado |
-| Sprite PIXI: `loadTexture(src)` + `new PIXI.Sprite(tex)` em `canvas.interface` aparece sobre o token; remover com `removeChild` + `destroy` | Testado |
+| Sprite PIXI: `loadTexture(src)` + `new PIXI.Sprite(tex)` em `canvas.interface`; remover com `removeChild` + `destroy`. `canvas.interface` ordena os filhos por `zIndex` (camadas de 0 a 1100): com `zIndex` 0 o efeito fica **escondido atrás da arte do token**; com 950 fica por cima (contagem de pixels na E4) | Testado (E4) |
+| `game.audio.interface` (V12) só existe depois do primeiro gesto do usuário: é um `AudioContext` com `gainNode` que aplica o volume de interface; antes disso `game.audio.locked` é `true` | Testado (E4) |
+| `canvas.visibility.testVisibility(ponto)` devolve `false` para jogador em cena **sem** visão de token (`tokenVision` falso), mesmo com o token visível; checar `tokenVision` antes | Testado (E4, Runner) |
+| `canvas.app.ticker.add/remove` anima PIXI; ticker com `maxFPS` só chama ouvintes quando o tempo avança | Testado (E4) |
 | Compêndio do módulo: pacote declarado em `packs` sem pasta no disco **não** é criado pelo Foundry (erro "Failed to connect to database" e pacote ausente de `game.packs`); uma pasta LevelDB com chave `!items!<id>` gravada por `classic-level` carrega como compêndio travado e o documento vira `CPRGearItem`. O build pessoal precisa gerar o LevelDB (P-03) | Testado |
 | Sequencer (módulo opcional) detectável por `game.modules.get("sequencer")?.active` | Testado: `undefined` quando não instalado (não instalado no Foundry local) |
 | Aba do navegador oculta não pinta quadros: animações e fechamento de diálogos do CPR não terminam (igual ao Netrunner HUD) | Testado |

@@ -1,15 +1,21 @@
 import { createApi } from "./api";
 import { MODULE_ID, SYSTEM_ID, TESTED_SYSTEM_VERSION } from "./constants";
 import { checkSystemCompatibility } from "./domain/compatibility";
+import { initEffects } from "./effects/engine";
 import { removeLeftoverAreas } from "./integrations/foundry/area-placement";
+import { preloadDvTables } from "./integrations/cpr/weapon-adapter";
 import { initGmExecutor } from "./integrations/foundry/gm-executor";
+import { registerEffectSettings, registerMenuSettings } from "./integrations/foundry/settings";
 import { initSocket } from "./integrations/foundry/socket";
 import { bindResolutionCards, RESOLUTION_TEMPLATE } from "./ui/resolution-card";
 import { detonatePending } from "./workflows/area";
 import { undoTarget } from "./workflows/combat-common";
 import { initDefense } from "./workflows/defense";
+import { initQuickMenu } from "./workflows/quick-menu";
 
 Hooks.once("init", () => {
+  registerEffectSettings();
+  registerMenuSettings();
   void loadTemplates([RESOLUTION_TEMPLATE]);
   bindResolutionCards({ undo: undoTarget, detonate: detonatePending });
 });
@@ -31,6 +37,9 @@ Hooks.once("ready", () => {
   initSocket();
   initGmExecutor();
   initDefense();
+  initEffects();
+  initQuickMenu();
+  void preloadDvTables();
   void removeLeftoverAreas();
   const module = game.modules.get(MODULE_ID);
   if (module) module.api = createApi();

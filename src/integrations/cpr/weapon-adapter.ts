@@ -115,25 +115,36 @@ export function armorAblation(actor: Actor, location: "body" | "head"): number {
     .reduce((max, armor) => Math.max(max, numberAt(armor.system, key, "ablation") ?? 0), 0);
 }
 
-const dvCache = new Map<string, DvBand[]>();
+let dvTables: Promise<Map<string, DvBand[]>> | null = null;
 
 function isRollTable(value: unknown): value is RollTable {
   return typeof field(value, "name") === "string" && field(value, "results") !== undefined;
 }
 
-export async function loadDvBands(tableName: string): Promise<DvBand[] | null> {
-  if (!tableName) return null;
-  const cached = dvCache.get(tableName);
-  if (cached) return cached;
+async function readDvTables(): Promise<Map<string, DvBand[]>> {
   const packId = game.settings.get(game.system.id, DV_TABLE_SETTING);
   const pack = typeof packId === "string" ? game.packs.get(packId) : undefined;
-  if (!pack) return null;
+  if (!pack) return new Map();
   const tables = (await pack.getDocuments()).filter(isRollTable);
-  const table = tables.find((entry) => entry.name === tableName);
-  if (!table) return null;
-  const bands = dvBandsFromResults(
-    table.results.contents.map((result) => ({ range: result.range, text: result.text })),
+  return new Map(
+    tables.map((table) => [
+      table.name,
+      dvBandsFromResults(
+        table.results.contents.map((result) => ({ range: result.range, text: result.text })),
+      ),
+    ]),
   );
-  dvCache.set(tableName, bands);
-  return bands;
+}
+
+export function preloadDvTables(): Promise<Map<string, DvBand[]>> {
+  dvTables ??= readDvTables().catch(() => {
+    dvTables = null;
+    return new Map<string, DvBand[]>();
+  });
+  return dvTables;
+}
+
+export async function loadDvBands(tableName: string): Promise<DvBand[] | null> {
+  if (!tableName) return null;
+  return (await preloadDvTables()).get(tableName) ?? null;
 }

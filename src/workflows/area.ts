@@ -23,6 +23,7 @@ import {
   restingCenter,
   squareSize,
   targetedTokens,
+  tokenForUuid,
 } from "../integrations/foundry/tokens";
 import { showPlacementHint } from "../ui/placement-hint";
 import {
@@ -33,6 +34,7 @@ import {
   type TargetResult,
 } from "../ui/resolution-card";
 import { dvLookup, nativeAttack } from "./attack-steps";
+import { cueArea, cueFire, cueOutcomes, qualifiersFor } from "./combat-cues";
 import {
   applicationFor,
   applyTo,
@@ -59,6 +61,7 @@ async function choose(
 
 async function withArea<T>(area: AreaShape, run: () => Promise<T>): Promise<T> {
   const template = await showArea(area);
+  cueArea("area.place", area.t === "rect" ? blastCenter(area) : area);
   try {
     return await run();
   } finally {
@@ -168,6 +171,7 @@ export async function shellAttack(context: AttackContext): Promise<void> {
   await withArea(area, async () => {
     const attackRoll = await nativeAttack(context);
     if (!attackRoll) return;
+    cueFire(context, tokens);
     let targets: TargetResult[];
     if (attackRoll.total <= SHELL_DV) {
       targets = tokens.map((token) => {
@@ -214,6 +218,7 @@ export async function shellAttack(context: AttackContext): Promise<void> {
         tokens.map((token) => token.actor as Actor),
       ),
     );
+    cueOutcomes(context.token, qualifiersFor(context), summary.targets, summary.critical);
   });
 }
 
@@ -227,6 +232,7 @@ interface Detonation {
 }
 
 async function detonate(area: AreaShape, detonation: Detonation) {
+  cueArea("area.detonate", blastCenter(area));
   const tokens = tokensInArea(area, { sightFrom: blastCenter(area) });
   const defended = await gatherDodges(tokens, {
     purpose: "area",
@@ -271,6 +277,7 @@ export async function explosiveAttack(context: AttackContext): Promise<void> {
   await withArea(area, async () => {
     const attackRoll = await nativeAttack(context);
     if (!attackRoll) return;
+    cueFire(context, [], center);
     const base = {
       attackerUuid: context.attacker.uuid,
       attackerName: context.attacker.name,
@@ -318,6 +325,7 @@ export async function explosiveAttack(context: AttackContext): Promise<void> {
       speakerFor(context),
       areaAudience(context.attacker.isNpc, result.actors),
     );
+    cueOutcomes(context.token, qualifiersFor(context), result.targets, result.critical);
   });
 }
 
@@ -350,5 +358,6 @@ export async function detonatePending(message: ChatMessage, state: ResolutionSta
       critical: result.critical,
       targets: result.targets,
     });
+    cueOutcomes(tokenForUuid(pending.attackerTokenUuid), [], result.targets, result.critical);
   });
 }

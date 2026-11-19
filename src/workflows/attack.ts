@@ -26,6 +26,7 @@ import { executorId } from "../integrations/foundry/users";
 import { newState, postResolutionCard, type TargetResult } from "../ui/resolution-card";
 import { explosiveAttack, shellAttack } from "./area";
 import { dvFor, nativeAttack } from "./attack-steps";
+import { cueFire, cueOutcomes, qualifiersFor } from "./combat-cues";
 import {
   applicationFor,
   applyTo,
@@ -94,6 +95,7 @@ async function singleAttack(context: AttackContext, options: AttackOptions): Pro
 
   const attackRoll = await nativeAttack(context, options.location);
   if (!attackRoll) return;
+  cueFire(context, [targetToken]);
   const location = (attackRoll.location as AimLocation | undefined) ?? options.location ?? "head";
   const defender = combatantSnapshot(targetActor);
   let defense: Defense | null = dv === null ? null : { kind: "dv", value: dv };
@@ -164,6 +166,7 @@ async function singleAttack(context: AttackContext, options: AttackOptions): Pro
     speakerFor(context),
     resolutionAudience(context.attacker.isNpc, defender.isNpc),
   );
+  cueOutcomes(context.token, qualifiersFor(context), [target], critical);
 }
 
 export async function attack(options: AttackOptions = {}): Promise<void> {

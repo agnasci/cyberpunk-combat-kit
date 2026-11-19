@@ -11,7 +11,9 @@ import { warn, type AttackContext } from "./combat-common";
 
 export type DvLookup = (distance: number) => number | null;
 
-export async function dvLookup(context: AttackContext): Promise<DvLookup | "no-table"> {
+export async function dvLookup(
+  context: Pick<AttackContext, "profile" | "weapon">,
+): Promise<DvLookup | "no-table"> {
   const { profile, weapon } = context;
   if (profile.dvSource === "fixed") return () => profile.fixedDv;
   if (profile.dvSource === "none") return () => null;

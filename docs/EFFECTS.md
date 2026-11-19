@@ -1,6 +1,7 @@
 # Efeitos audiovisuais e pacotes de conteúdo
 
-Status: proposta (R07, R08, R09, R12). Nada implementado.
+Status: motor de cues, efeitos próprios, sons e ajustes de cliente implementados na E4
+(R07); pacotes e importador (R08) ficam para a E5; Quickhacks (R09) para a E6.
 
 ## Eventos de combate
 
@@ -28,6 +29,45 @@ Lista fechada e versionada, emitida pelos workflows. Contexto sempre com `source
 - Toca em cada cliente que vê a cena; só o evento e o contexto trafegam (pelo chat/socket).
 - Respeita ajustes do cliente, `prefers-reduced-motion`, aba oculta e visibilidade do token.
 - Backend próprio é o padrão; com o módulo Sequencer ativo, passos `sprite` podem ir por ele.
+
+## Como ficou na E4
+
+- Código: `src/domain/cues.ts` (lista de eventos, cues padrão, resolução, validação),
+  `src/effects/engine.ts` (motor), `src/integrations/foundry/fx-canvas.ts` (efeitos PIXI e
+  sprites), `fx-audio.ts` (sons sintetizados e arquivos), `fx-sequencer.ts`, `settings.ts`;
+  emissão pelos workflows em `src/workflows/combat-cues.ts`.
+- Trânsito: quem roda o ataque toca localmente e manda `{name, sceneId, source, targets,
+  point, qualifiers}` pelo socket do módulo; cada cliente valida o evento e toca se estiver
+  na mesma cena. Tokens vão por id; nada de ator ou ficha trafega.
+- Eventos emitidos hoje: `attack.fire` (depois da rolagem de ataque), `attack.hit`,
+  `attack.miss`, `attack.dodged`, `attack.critical`, `damage.applied` e
+  `actor.mortallyWounded` (depois do card), `area.place`, `area.detonate`, `grapple.start`,
+  `grapple.end`. `actor.dead` não é emitido: o CPR não decide a morte sozinho (testes de
+  morte). Quickhacks ficam para a E6.
+- Qualificadores de ataque, do mais específico ao mais geral: tipo da arma do CPR
+  (`assaultRifle`, `shotgun`…), forma (`shell`, `explosion`, `autofire`, `suppressive`,
+  `thrown`, `single`, `aimed`) e `melee`/`ranged`. Procura chave por chave e, em cada uma,
+  registrado por código antes do padrão (D25).
+- Efeitos próprios (PIXI, `canvas.interface` com `zIndex` 950): `flash`, `tracer`, `impact`,
+  `explosion`, `miss`, `critical`, `flatline`. Animação pelo ticker do canvas; cada efeito sai
+  do ticker e é destruído ao terminar ou ao desmontar a cena.
+- Sons próprios sintetizados com WebAudio no contexto de interface do Foundry (`shot`,
+  `burst`, `launch`, `swing`, `whoosh`, `impact`, `ricochet`, `explosion`, `alarm`,
+  `flatline`, `grab`): nenhum arquivo de áudio.
+- Ajustes por cliente (Configurar ajustes → Combat Kit): efeitos visuais, sons, volume
+  (multiplica o volume de interface do Foundry), intensidade (tamanho) e movimento reduzido
+  (seguir o sistema, sempre reduzido, sempre animado). Movimento reduzido mostra o quadro
+  parado do efeito por um instante; vídeos ficam no primeiro quadro.
+- Visibilidade: efeito visual só nas âncoras que o cliente vê (`token.isVisible`; ponto por
+  `canvas.visibility.testVisibility` quando a cena usa visão). Som só se alguma âncora estiver
+  visível. Aba oculta não toca nada. Antes do primeiro clique o áudio está travado e o som é
+  descartado, não guardado para depois.
+- Sequencer: com o módulo ativo, passos `sprite` vão por ele (`.locally()`); sem ele, sprite
+  PIXI próprio. Com movimento reduzido usa sempre o backend próprio.
+- API (até a E5): `api.effects.register(chave, passos)`, `api.effects.unregister(chave)` e
+  `api.effects.play({name, source?, targets?, point?, qualifiers?})`. Passos aceitos:
+  `procedural`, `synth`, `sound` (`ogg`, `mp3`, `wav`) e `sprite` (`webm`, `webp`, `png`,
+  `svg`), com caminho relativo do Foundry, sem `..` nem URL.
 
 ## Formato de pacote
 

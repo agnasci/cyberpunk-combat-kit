@@ -6,6 +6,7 @@ import { removeArea, showArea, tokensInArea } from "../integrations/foundry/area
 import { restingCenter } from "../integrations/foundry/tokens";
 import { newState, postResolutionCard, type TargetResult } from "../ui/resolution-card";
 import { nativeAttack } from "./attack-steps";
+import { cueArea, cueFire } from "./combat-cues";
 import { speakerFor, targetEntry, warn, type AttackContext } from "./combat-common";
 import { requestDefense } from "./defense";
 
@@ -16,6 +17,7 @@ export async function suppressiveFire(context: AttackContext): Promise<void> {
   const tokens = tokensInArea(area, { exclude: context.token, sightFrom: origin });
   if (tokens.length === 0) return warn("CCK.Area.empty");
   const template = await showArea(area);
+  cueArea("area.place", origin, context.token);
   try {
     await suppress(context, tokens);
   } finally {
@@ -26,6 +28,7 @@ export async function suppressiveFire(context: AttackContext): Promise<void> {
 async function suppress(context: AttackContext, tokens: Token[]): Promise<void> {
   const attackRoll = await nativeAttack(context);
   if (!attackRoll) return;
+  cueFire(context, tokens);
 
   const targets = await Promise.all(
     tokens.map(async (token): Promise<TargetResult> => {

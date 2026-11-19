@@ -45,6 +45,7 @@ interface FoundryTokenDocument {
   readonly uuid: string;
   readonly name: string;
   readonly documentName: "Token";
+  readonly displayName: number;
   readonly x: number;
   readonly y: number;
   readonly width: number;
@@ -60,6 +61,15 @@ interface FoundryToken {
   readonly name: string;
   readonly isOwner: boolean;
   readonly visible: boolean;
+  readonly isVisible: boolean;
+  readonly controlled: boolean;
+  readonly isTargeted: boolean;
+  readonly bounds: { contains(x: number, y: number): boolean };
+  setTarget(
+    targeted: boolean,
+    options?: { releaseOthers?: boolean; groupSelection?: boolean },
+  ): void;
+  readonly center: { readonly x: number; readonly y: number };
   readonly actor: FoundryActor | null;
   readonly document: FoundryTokenDocument;
 }
@@ -108,6 +118,44 @@ interface FoundryPack {
   getDocuments(): Promise<unknown[]>;
 }
 
+interface FoundryPixiGraphics {
+  zIndex: number;
+  clear(): this;
+  lineStyle(width: number, color?: number, alpha?: number): this;
+  beginFill(color: number, alpha?: number): this;
+  endFill(): this;
+  drawCircle(x: number, y: number, radius: number): this;
+  drawRect(x: number, y: number, width: number, height: number): this;
+  moveTo(x: number, y: number): this;
+  lineTo(x: number, y: number): this;
+  destroy(): void;
+}
+
+interface FoundryPixiTexture {
+  readonly baseTexture: { readonly resource?: { readonly source?: unknown } | null };
+}
+
+interface FoundryPixiSprite {
+  zIndex: number;
+  readonly anchor: { set(x: number, y: number): void };
+  readonly position: { set(x: number, y: number): void };
+  rotation: number;
+  width: number;
+  height: number;
+  destroy(): void;
+}
+
+interface FoundrySettingConfig {
+  scope: "client" | "world";
+  config: boolean;
+  name: string;
+  hint?: string;
+  type: BooleanConstructor | NumberConstructor | StringConstructor;
+  default: unknown;
+  range?: { min: number; max: number; step: number };
+  choices?: Record<string, string>;
+}
+
 interface FoundryDialogButton {
   action: string;
   label: string;
@@ -124,10 +172,20 @@ declare global {
   type User = FoundryUser;
   type ChatMessage = FoundryChatMessage;
   type RollTable = FoundryRollTable;
+  type PixiGraphics = FoundryPixiGraphics;
+  type PixiTexture = FoundryPixiTexture;
+  type PixiSprite = FoundryPixiSprite;
+
+  const PIXI: {
+    Graphics: new () => PixiGraphics;
+    Sprite: new (texture: PixiTexture) => PixiSprite;
+  };
+
+  function loadTexture(src: string): Promise<PixiTexture | null>;
 
   const Hooks: {
     once(hook: "init" | "ready", fn: () => void): number;
-    on(hook: "canvasTearDown", fn: () => void): number;
+    on(hook: "canvasTearDown" | "canvasPan", fn: () => void): number;
     off(hook: string, id: number): void;
     on(
       hook: "renderChatMessage",
@@ -151,20 +209,28 @@ declare global {
       localize(key: string): string;
       format(key: string, data?: Record<string, string>): string;
     };
-    settings: { get(namespace: string, key: string): unknown };
+    settings: {
+      get(namespace: string, key: string): unknown;
+      register(namespace: string, key: string, config: FoundrySettingConfig): void;
+    };
+    audio: {
+      readonly locked: boolean;
+      readonly interface?: AudioContext & { readonly gainNode?: GainNode };
+    };
     combat: { readonly round: number; readonly started: boolean } | null;
     socket: {
       on(event: string, fn: (data: unknown, senderId: string) => void): void;
       emit(event: string, data: unknown): void;
     };
     packs: { get(id: string): FoundryPack | undefined };
-    modules: { get(id: string): { api?: unknown } | undefined };
+    modules: { get(id: string): { api?: unknown; active?: boolean } | undefined };
   };
 
   const canvas:
     | {
         readonly scene: {
-          readonly grid: { readonly distance: number };
+          readonly id: string;
+          readonly grid: { readonly distance: number; readonly units: string };
           readonly templates: {
             get(id: string): FoundryMeasuredTemplateDocument | undefined;
             filter(
@@ -178,13 +244,24 @@ declare global {
           ): Promise<FoundryMeasuredTemplateDocument[]>;
         } | null;
         readonly tokens: {
+          readonly active: boolean;
           readonly controlled: readonly FoundryToken[];
           readonly placeables: readonly FoundryToken[];
         } | null;
         readonly app: {
           readonly view: HTMLCanvasElement;
           readonly screen: { readonly width: number; readonly height: number };
+          readonly ticker: { add(fn: () => void): unknown; remove(fn: () => void): unknown };
         };
+        readonly interface: {
+          addChild(child: unknown): unknown;
+          removeChild(child: unknown): unknown;
+          sortChildren(): void;
+        } | null;
+        readonly visibility: {
+          readonly tokenVision: boolean;
+          testVisibility(point: { x: number; y: number }, options: { tolerance: number }): boolean;
+        } | null;
         readonly stage: {
           readonly worldTransform: {
             applyInverse(point: { x: number; y: number }): { x: number; y: number };
@@ -193,6 +270,8 @@ declare global {
         readonly templates: {
           readonly preview: { addChild(child: unknown): unknown } | null;
         } | null;
+        readonly controls: { readonly ruler: { readonly active: boolean } | null } | null;
+        canvasCoordinatesFromClient(point: { x: number; y: number }): { x: number; y: number };
         readonly hud: { readonly token: { clear(): void } | null } | null;
         readonly grid: {
           readonly size: number;
@@ -235,6 +314,14 @@ declare global {
 
   const foundry: {
     utils: { randomID(length?: number): string };
+    audio: {
+      AudioHelper: {
+        play(
+          data: { src: string; volume: number; loop: boolean; autoplay: boolean },
+          socket: false,
+        ): Promise<unknown>;
+      };
+    };
     applications: {
       api: {
         DialogV2: {

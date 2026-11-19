@@ -5,6 +5,11 @@ import { pixelsPerUnit, restingCenter } from "./tokens";
 const ACTIVE_COLOR = "#ff2a6d";
 const BLOCKED_COLOR = "#7a7a7a";
 const LINGER_MS = 4000;
+let placing = false;
+
+export function placementActive(): boolean {
+  return placing;
+}
 
 function templateData(area: AreaShape, color = ACTIVE_COLOR): Record<string, unknown> {
   return {
@@ -99,11 +104,13 @@ export async function placeArea(
   await preview.draw();
   redraw();
 
+  placing = true;
   return new Promise((resolve) => {
     let finished = false;
     const finish = (result: AreaShape | null) => {
       if (finished) return;
       finished = true;
+      placing = false;
       view.removeEventListener("pointermove", move, true);
       view.removeEventListener("pointerdown", press, true);
       view.removeEventListener("contextmenu", cancel, true);
