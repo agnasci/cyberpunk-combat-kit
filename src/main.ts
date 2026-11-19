@@ -5,10 +5,11 @@ import { initEffects } from "./effects/engine";
 import { applyOverrides, initPacks, reloadPacks } from "./effects/packs";
 import { removeLeftoverAreas } from "./integrations/foundry/area-placement";
 import { preloadDvTables } from "./integrations/cpr/weapon-adapter";
-import { initGmExecutor } from "./integrations/foundry/gm-executor";
+import { initGmExecutor, setQuickhackSource } from "./integrations/foundry/gm-executor";
 import {
   registerEffectSettings,
   registerMenuSettings,
+  registerQuickhackSettings,
   settingsMenuType,
 } from "./integrations/foundry/settings";
 import { registerPackSettings } from "./integrations/foundry/pack-store";
@@ -20,10 +21,12 @@ import { detonatePending } from "./workflows/area";
 import { undoTarget } from "./workflows/combat-common";
 import { initDefense } from "./workflows/defense";
 import { initQuickMenu } from "./workflows/quick-menu";
+import { availableQuickhacks, initQuickhacks } from "./workflows/quickhack";
 
 Hooks.once("init", () => {
   registerEffectSettings();
   registerMenuSettings();
+  registerQuickhackSettings();
   void loadTemplates([RESOLUTION_TEMPLATE]);
   bindResolutionCards({ undo: undoTarget, detonate: detonatePending });
   registerPackSettings({ packs: () => void reloadPacks(), overrides: applyOverrides });
@@ -61,10 +64,12 @@ Hooks.once("ready", () => {
   }
   initSocket();
   initGmExecutor();
+  setQuickhackSource(availableQuickhacks);
   initDefense();
   initEffects();
   void initPacks();
   initQuickMenu();
+  initQuickhacks();
   void preloadDvTables();
   void removeLeftoverAreas();
   const module = game.modules.get(MODULE_ID);

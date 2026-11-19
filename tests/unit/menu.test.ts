@@ -8,6 +8,7 @@ import {
   needsDv,
   type MenuEntry,
   type MenuInput,
+  type MenuNet,
   type MenuWeapon,
 } from "../../src/domain/menu";
 
@@ -224,5 +225,101 @@ describe("foco por teclado", () => {
   it("sem itens habilitados fica onde está; lista vazia dá -1", () => {
     expect(moveFocus(1, [false, false], 1)).toBe(1);
     expect(moveFocus(0, [], 1)).toBe(-1);
+  });
+});
+
+describe("netrunning no menu (R09)", () => {
+  const net = (extra: Partial<MenuNet> = {}): MenuNet => ({
+    rank: 2,
+    hasNeuroport: true,
+    inRange: true,
+    visible: true,
+    locked: false,
+    intrusion: null,
+    passwalls: 0,
+    turn: "c:1",
+    quickhacks: [
+      { id: "b", name: "Beta", tier: 2, dv: 8, requiresUnaware: false },
+      { id: "a", name: "Alfa", tier: 1, dv: 6, requiresUnaware: false },
+      { id: "c", name: "Gama", tier: 3, dv: 10, requiresUnaware: false },
+    ],
+    intruders: [],
+    targetUuid: "Token.alvo",
+    ...extra,
+  });
+  const linked = {
+    runnerUuid: "Token.eu",
+    runnerActorUuid: "Actor.eu",
+    runnerName: "Eu",
+    aware: false,
+    breached: 0,
+    lastHack: null,
+  };
+
+  it("desligado ou sem Interface: nenhum vestígio", () => {
+    expect(find(buildMenu(input()).entries, "net")).toBeUndefined();
+    expect(find(buildMenu(input({ net: null })).entries, "net")).toBeUndefined();
+    expect(find(buildMenu(input({ net: net({ rank: 0 }) })).entries, "net")).toBeUndefined();
+  });
+
+  it("sem ligação: Jack In com o motivo do bloqueio", () => {
+    const ok = find(buildMenu(input({ net: net() })).entries, "net:jackIn");
+    expect(ok?.action).toEqual({ kind: "net", action: "jackIn" });
+    const far = find(buildMenu(input({ net: net({ inRange: false }) })).entries, "net:jackIn");
+    expect(far?.disabled?.key).toBe("CCK.Menu.Why-out-of-range");
+    const noPort = buildMenu(input({ net: net({ hasNeuroport: false }) })).entries;
+    expect(find(noPort, "net:jackIn")?.disabled?.key).toBe("CCK.Menu.Why-no-neuroport");
+    const locked = buildMenu(input({ net: net({ locked: true }) })).entries;
+    expect(find(locked, "net:jackIn")?.disabled?.key).toBe("CCK.Menu.Why-locked");
+  });
+
+  it("ligado: Breach antes dos Quickhacks, níveis acima do rank bloqueados", () => {
+    const entries = buildMenu(input({ net: net({ intrusion: linked, passwalls: 1 }) })).entries;
+    expect(find(entries, "net:breach")?.hint).toEqual({ key: "CCK.Menu.Dv", data: { dv: "6" } });
+    expect(find(entries, "net:hack:a")?.disabled?.key).toBe("CCK.Menu.Why-breach-needed");
+    const open = buildMenu(
+      input({ net: net({ intrusion: { ...linked, breached: 1 }, passwalls: 1 }) }),
+    ).entries;
+    expect(find(open, "net:breach")).toBeUndefined();
+    expect(find(open, "net:quickhacks")?.children.map((child) => child.id)).toEqual([
+      "net:hack:a",
+      "net:hack:b",
+      "net:hack:c",
+    ]);
+    expect(find(open, "net:hack:a")?.action).toEqual({
+      kind: "net",
+      action: "quickhack",
+      quickhackId: "a",
+    });
+    expect(find(open, "net:hack:c")?.disabled?.key).toBe("CCK.Menu.Why-tier-locked");
+    expect(find(open, "net:jackOut")?.action).toEqual({ kind: "net", action: "jackOut" });
+  });
+
+  it("um Quickhack por alvo por turno", () => {
+    const done = { ...linked, lastHack: "c:1" };
+    const entries = buildMenu(input({ net: net({ intrusion: done }) })).entries;
+    expect(find(entries, "net:hack:a")?.disabled?.key).toBe("CCK.Menu.Why-once-per-turn");
+  });
+
+  it("sem pacote de Quickhacks: o menu explica", () => {
+    const entries = buildMenu(input({ net: net({ intrusion: linked, quickhacks: [] }) })).entries;
+    expect(find(entries, "net:none")?.disabled?.key).toBe("CCK.Menu.Why-no-quickhacks");
+  });
+
+  it("Force Out contra quem invadiu: no próprio token ou no token do Netrunner", () => {
+    const intruders = [{ runnerUuid: "Token.alvo", name: "Runner" }];
+    const own = buildMenu(input({ self: true, net: net({ rank: 0, intruders }) })).entries;
+    expect(find(own, "net:forceOut:Token.alvo")?.label).toEqual({
+      key: "CCK.Menu.Net-forceOutFrom",
+      data: { name: "Runner" },
+    });
+    const there = buildMenu(input({ net: net({ rank: 0, intruders }) })).entries;
+    expect(find(there, "net:forceOut:Token.alvo")?.action).toEqual({
+      kind: "net",
+      action: "forceOut",
+      runnerUuid: "Token.alvo",
+    });
+    const other = buildMenu(input({ net: net({ rank: 0, intruders, targetUuid: "Token.x" }) }));
+    expect(find(other.entries, "net")).toBeUndefined();
   });
 });

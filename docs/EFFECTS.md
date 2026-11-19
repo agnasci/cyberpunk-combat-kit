@@ -1,8 +1,9 @@
 # Efeitos audiovisuais e pacotes de conteúdo
 
 Status: motor de cues, efeitos próprios, sons e ajustes de cliente implementados na E4
-(R07); pacotes, importador e editor de efeitos por evento na E5 (R08); Quickhacks (R09)
-ficam para a E6.
+(R07); pacotes, importador e editor de efeitos por evento na E5 (R08); Quickhacks a partir
+de pacotes na E6 (R09). Eventos `quickhack.*` têm efeito padrão próprio; `quickhack.success`
+e `quickhack.fail` usam o id do Quickhack como qualificador.
 
 ## Eventos de combate
 
@@ -103,7 +104,12 @@ Lista fechada e versionada, emitida pelos workflows. Contexto sempre com `source
   (ausente = `cues`), pasta sem `..`, `.`, barra inicial, `\` nem esquema; assets só com
   extensão da lista e caminho relativo seguro; passo com `asset` precisa de asset declarado
   e do tipo certo para o passo; limites de 200 assets, 200 cues, 100 Quickhacks e 256 KB.
-  Quickhacks são só validados e guardados (uso na E6).
+  Quickhack: `id`, `name`, `tier` (1–10), `dv` (1–40), `icon` opcional, `alerts`
+  (padrão verdadeiro), `requiresUnaware` (padrão falso) e `effect`: `{type: "damage",
+  formula: "2d6", ongoing?}` (fórmula `NdX` ou número, com `+/-` opcional), `{type:
+  "status", status: "<id de condição do Foundry>", rounds?}`, `{type: "criticalInjury",
+  injury: "<nome no compêndio do sistema>", rounds?}` ou `{type: "guided"}`; `rounds` de 1
+  a 1200. Uso no motor: docs/ARCHITECTURE.md ("Quickhacks (R09)").
 
 ## Formato de pacote
 
@@ -123,7 +129,9 @@ Pasta com `cck-pack.json` na raiz, colocada em `Data/` do Foundry (ex.:
   },
   "quickhacks": [
     { "id": "exemplo", "name": "Exemplo", "tier": 1, "dv": 6, "icon": "icons/exemplo.webp",
-      "effect": { "type": "guided" } }
+      "effect": { "type": "damage", "formula": "2d6" } },
+    { "id": "outro", "name": "Outro", "tier": 3, "dv": 10, "alerts": false,
+      "requiresUnaware": true, "effect": { "type": "guided" } }
   ]
 }
 ```

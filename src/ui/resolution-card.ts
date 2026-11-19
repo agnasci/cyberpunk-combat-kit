@@ -9,7 +9,22 @@ const FLAG = "resolution";
 const STATE_VERSION = 2;
 
 export type Outcome =
-  "hit" | "miss" | "dodged" | "resisted" | "seek-cover" | "no-answer" | "won" | "lost" | "applied";
+  | "hit"
+  | "miss"
+  | "dodged"
+  | "resisted"
+  | "seek-cover"
+  | "no-answer"
+  | "won"
+  | "lost"
+  | "applied"
+  | "net-unaware"
+  | "net-aware"
+  | "net-held"
+  | "breached"
+  | "hacked"
+  | "hack-failed"
+  | "forced-out";
 
 export interface TargetResult {
   uuid: string;
@@ -41,6 +56,8 @@ export interface ResolutionState {
   damageTotal: number | null;
   multiplier: number | null;
   critical: boolean;
+  rollLabel?: string;
+  dvLabel?: string;
   notes: string[];
   targets: TargetResult[];
   pending: PendingDetonation | null;
@@ -54,7 +71,16 @@ const DEFENSE_LABELS: Record<Defense["kind"], string> = {
   contest: "CCK.Card.DefenseContest",
 };
 
-const BAD_FOR_TARGET: readonly Outcome[] = ["hit", "seek-cover", "lost", "applied"];
+const BAD_FOR_TARGET: readonly Outcome[] = [
+  "hit",
+  "seek-cover",
+  "lost",
+  "applied",
+  "net-unaware",
+  "net-aware",
+  "breached",
+  "hacked",
+];
 
 export function newState(
   base: Omit<ResolutionState, "version" | "notes" | "targets" | "pending"> &
@@ -85,10 +111,19 @@ function renderState(state: ResolutionState): Promise<string> {
   return renderTemplate(RESOLUTION_TEMPLATE, {
     ...state,
     modeLabel: `CCK.Mode.${state.mode}`,
+    rollLabel: state.rollLabel ?? "CCK.Card.Attack",
+    dvLabel: state.dvLabel ?? "CCK.Card.DefenseDv",
     distance: state.distance === null ? null : Math.round(state.distance * 10) / 10,
     targets: state.targets.map(targetView),
     canDetonate: state.pending !== null,
   });
+}
+
+function whisperFor(audience: CardAudience): string[] {
+  if (audience === "public") return [];
+  const gms = gmRecipients();
+  if (audience === "gm") return gms;
+  return [...new Set([...gms, ...audience.users])];
 }
 
 export async function postResolutionCard(
@@ -99,7 +134,7 @@ export async function postResolutionCard(
   await ChatMessage.create({
     content: await renderState(state),
     speaker,
-    whisper: audience === "gm" ? gmRecipients() : [],
+    whisper: whisperFor(audience),
     flags: { [MODULE_ID]: { [FLAG]: state } },
   });
 }

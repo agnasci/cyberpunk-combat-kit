@@ -6,7 +6,16 @@ export const PACK_KINDS = ["cues", "quickhacks"] as const;
 export type PackKind = (typeof PACK_KINDS)[number];
 export const ASSET_EXTENSIONS = ["ogg", "mp3", "wav", "webm", "webp", "png", "svg", "json"];
 export const QUICKHACK_EFFECTS = ["damage", "status", "criticalInjury", "guided"] as const;
-export type QuickhackEffect = (typeof QUICKHACK_EFFECTS)[number];
+export type QuickhackEffectType = (typeof QUICKHACK_EFFECTS)[number];
+export const MAX_EFFECT_ROUNDS = 1200;
+const FORMULA = /^(\d{1,2}d(4|6|8|10|12)|\d{1,3})([+-]\d{1,3})?$/;
+const STATUS_ID = /^[A-Za-z0-9_.-]{1,40}$/;
+
+export type QuickhackEffect =
+  | { type: "damage"; formula: string; ongoing: boolean }
+  | { type: "status"; status: string; rounds: number | null }
+  | { type: "criticalInjury"; injury: string; rounds: number | null }
+  | { type: "guided" };
 
 const LIMITS = { assets: 200, cues: 200, quickhacks: 100, title: 80, folder: 160 } as const;
 const PACK_ID = /^[a-z0-9][a-z0-9-]{0,47}$/;
@@ -21,6 +30,8 @@ export interface PackQuickhack {
   tier: number;
   dv: number;
   icon: string | null;
+  alerts: boolean;
+  requiresUnaware: boolean;
   effect: QuickhackEffect;
 }
 
@@ -160,6 +171,45 @@ function integer(value: unknown, min: number, max: number): number | null {
     : null;
 }
 
+function rounds(value: unknown): number | null | undefined {
+  if (value === undefined) return null;
+  return integer(value, 1, MAX_EFFECT_ROUNDS) ?? undefined;
+}
+
+function parseEffect(value: Record<string, unknown>): QuickhackEffect | null {
+  switch (value.type) {
+    case "damage": {
+      const formula = typeof value.formula === "string" ? value.formula.replace(/\s+/g, "") : "";
+      if (!FORMULA.test(formula)) return null;
+      if (value.ongoing !== undefined && typeof value.ongoing !== "boolean") return null;
+      return { type: "damage", formula, ongoing: value.ongoing === true };
+    }
+    case "status": {
+      const duration = rounds(value.rounds);
+      if (typeof value.status !== "string" || !STATUS_ID.test(value.status)) return null;
+      return duration === undefined
+        ? null
+        : { type: "status", status: value.status, rounds: duration };
+    }
+    case "criticalInjury": {
+      const duration = rounds(value.rounds);
+      const injury = text(value.injury, LIMITS.title);
+      return injury && duration !== undefined
+        ? { type: "criticalInjury", injury, rounds: duration }
+        : null;
+    }
+    case "guided":
+      return { type: "guided" };
+    default:
+      return null;
+  }
+}
+
+function optionalFlag(value: unknown, fallback: boolean): boolean | null {
+  if (value === undefined) return fallback;
+  return typeof value === "boolean" ? value : null;
+}
+
 function parseQuickhack(
   value: unknown,
   assets: Map<string, string>,
@@ -170,11 +220,11 @@ function parseQuickhack(
   const name = text(value.name, LIMITS.title);
   const tier = integer(value.tier, 1, 10);
   const dv = integer(value.dv, 1, 40);
-  const effect = value.effect.type;
-  if (!id || !name || tier === null || dv === null) return null;
-  if (typeof effect !== "string" || !(QUICKHACK_EFFECTS as readonly string[]).includes(effect)) {
-    return null;
-  }
+  const effect = parseEffect(value.effect);
+  const alerts = optionalFlag(value.alerts, true);
+  const requiresUnaware = optionalFlag(value.requiresUnaware, false);
+  if (!id || !name || tier === null || dv === null || !effect) return null;
+  if (alerts === null || requiresUnaware === null) return null;
   let icon: string | null = null;
   if (value.icon !== undefined) {
     const key = typeof value.icon === "string" ? assets.get(value.icon) : undefined;
@@ -187,7 +237,7 @@ function parseQuickhack(
       icon = direct;
     } else return null;
   }
-  return { id, name, tier, dv, icon, effect: effect as QuickhackEffect };
+  return { id, name, tier, dv, icon, alerts, requiresUnaware, effect };
 }
 
 function parseQuickhacks(

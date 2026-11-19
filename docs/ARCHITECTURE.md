@@ -66,8 +66,8 @@ resolução tem uma lista de alvos, cada um com resultado, dano e "Desfazer".
 - Dono/mestre: mantém o Token HUD nativo; o menu abre com modificador (Alt+clique direito,
   configurável) ou pela opção "menu em tokens não selecionados" (D26).
 - Itens: armas equipadas (com modos disponíveis e a DV até o alvo), mirar (cabeça, item,
-  perna), marcar/desmarcar alvo, ações de agarrão quando aplicável. Quickhacks entram com
-  R09 (E6).
+  perna), marcar/desmarcar alvo, ações de agarrão quando aplicável. Netrunning (R09, E6):
+  Jack In, Breach, Quickhacks, Jack Out e Force Out.
 - Teclado: setas, Home/End, Enter/Espaço/→ entram, ←/Backspace/Esc voltam, Esc na raiz
   fecha; foco volta para onde estava (o canvas) ao fechar.
 - Arquivos (E2): `src/domain/menu.ts` (monta o menu e decide quando abre, testado),
@@ -85,13 +85,39 @@ cada cliente, sem tráfego de quadro a quadro pelo servidor.
 
 ## Quickhacks (R09)
 
-- Ajuste de mundo `quickhacks.enabled = false` por padrão. Desligado: nenhum menu, nenhum
-  item criado, nenhum hook de Quickhack registrado.
-- Ligado: as definições vêm de pacotes (`kind: "quickhack"`) — nome, nível/DV, ícone, efeito
-  automatizável (`damage`, `status`, `criticalInjury`, `guided`). Sem pacote: menu vazio com
-  explicação.
-- Regras no domínio (docs/RULES.md §8): alcance 25 quadrados, Neuroport, Breach por Self-ICE,
-  um Quickhack por alvo por turno, bloqueio de 60 min após Force Out, alerta do alvo.
+Como ficou na E6 (decisão D28):
+
+- Ajuste de mundo `quickhacks` (falso por padrão, recarrega o mundo). Desligado: nenhuma
+  entrada no menu, nenhum hook (`combatTurnChange`, `updateToken`) e a API só avisa.
+- Definições só de pacotes ativos com `kinds` contendo `quickhacks` (docs/EFFECTS.md);
+  mesmo id em dois pacotes: vence o primeiro da lista. Sem pacote: o menu explica.
+- Domínio `src/domain/quickhack.ts`: alcance, firewall, DV do Breach, ações NET, nível por
+  rank, um por alvo por turno (chave `combate:rodada`, só com combate iniciado), alerta,
+  bloqueio de 60 min (3600 s de `game.time.worldTime`), duração em rodadas, estado salvo.
+- Estado na flag `net` do **token do alvo**: `{intrusions: [{runnerUuid, runnerActorUuid,
+  runnerName, aware, breached, lastHack}], locks: [{runnerActorUuid, until}]}`. Só o mestre
+  grava (operações `netJackIn`, `netBreach`, `netHack`, `netJackOut`, `netForceOut` do
+  executor); o mestre revalida ligação, Passwalls, nível, turno e bloqueio.
+- Peças no ator (`src/integrations/cpr/net-adapter.ts`): rank de Interface da função de rede
+  ativa (`system.roleInfo.activeNetRole`); Neuroport e Self-ICE são cyberware instalado
+  (`isInstalledInActor`) cujo nome contém os termos dos ajustes `neuroportNames` e
+  `selfIceNames`, ou com a flag `cyberpunk-combat-kit.net` = `neuroport`/`selfIce`.
+- Rolagens nativas: Interface pela rolagem de habilidade da função (`roleAbility`) com o
+  rank forçado e título do passo; VON pela rolagem de atributo do ator; Concentração pela
+  perícia. O alvo e o Netrunner respondem pelo pedido de defesa já usado no combate.
+- Efeitos (no mestre): `damage` rola a fórmula e tira direto dos PV, sem armadura nem
+  ablação (desfazer funciona); `ongoing` cria um efeito marcador no alvo e o dano vem no fim
+  de cada turno dele até alguém apagar o efeito; `status` usa `toggleStatusEffect`;
+  `criticalInjury` copia a lesão do compêndio do sistema pelo nome, sem dano bônus;
+  `guided` só registra. `rounds` grava a rodada de expiração e o mestre remove o efeito ou a
+  lesão quando o combate chega nela (fora de combate não expira).
+- A conexão cai, com bloqueio, quando o Netrunner ou o alvo se move para fora de 25
+  quadrados (hook `updateToken` no mestre, posição final da atualização).
+- Mensagens: alvo sem saber → card só para o mestre e os donos do Netrunner; alvo sabendo →
+  público; PdM contra PdM → só o mestre. As rolagens nativas seguem o modo de rolagem de quem
+  rola.
+- API: `api.quickhacks.run({action, quickhackId?, runnerUuid?, skipDialog?})` e
+  `api.quickhacks.list()`.
 
 ## Integração com o Character Panel (R10)
 

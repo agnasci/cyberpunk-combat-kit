@@ -110,3 +110,52 @@ export function settingsMenuType(open: () => void): new () => { render(force?: b
     }
   };
 }
+
+export interface QuickhackSettings {
+  enabled: boolean;
+  neuroport: string[];
+  selfIce: string[];
+}
+
+function terms(value: unknown): string[] {
+  return typeof value === "string"
+    ? value
+        .split(",")
+        .map((term) => term.trim())
+        .filter((term) => term.length > 0)
+    : [];
+}
+
+export function registerQuickhackSettings(): void {
+  const world = { scope: "world", config: true } as const;
+  game.settings.register(MODULE_ID, "quickhacks", {
+    ...world,
+    name: "CCK.Settings.Quickhacks",
+    hint: "CCK.Settings.QuickhacksHint",
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+  game.settings.register(MODULE_ID, "neuroportNames", {
+    ...world,
+    name: "CCK.Settings.NeuroportNames",
+    hint: "CCK.Settings.NeuroportNamesHint",
+    type: String,
+    default: "Neuroport",
+  });
+  game.settings.register(MODULE_ID, "selfIceNames", {
+    ...world,
+    name: "CCK.Settings.SelfIceNames",
+    hint: "CCK.Settings.SelfIceNamesHint",
+    type: String,
+    default: "Self-ICE",
+  });
+}
+
+export function quickhackSettings(): QuickhackSettings {
+  return {
+    enabled: game.settings.get(MODULE_ID, "quickhacks") === true,
+    neuroport: terms(game.settings.get(MODULE_ID, "neuroportNames")),
+    selfIce: terms(game.settings.get(MODULE_ID, "selfIceNames")),
+  };
+}

@@ -110,6 +110,10 @@ export const DEFAULT_CUES: CueMap = {
   "actor.mortallyWounded": [procedural("flatline", "target"), synth("flatline", 0.4)],
   "grapple.start": [procedural("impact", "target", 0.6), synth("grab")],
   "grapple.end": [synth("whoosh", 0.5)],
+  "quickhack.jackIn": [procedural("tracer", "path", 0.5), synth("alarm", 0.25)],
+  "quickhack.success": [procedural("critical", "target", 0.7), synth("alarm", 0.4)],
+  "quickhack.fail": [procedural("miss", "target", 0.7), synth("whoosh", 0.5)],
+  "quickhack.forceOut": [procedural("flash", "target"), synth("whoosh", 0.6)],
 };
 
 export function cueKeys(name: CombatEventName, qualifiers: readonly string[]): string[] {

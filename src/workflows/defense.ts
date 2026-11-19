@@ -1,4 +1,5 @@
-import { rollSkill } from "../integrations/cpr/attack-adapter";
+import { rollSkill, rollStat, type NativeRollResult } from "../integrations/cpr/attack-adapter";
+import { rollInterface } from "../integrations/cpr/net-adapter";
 import { findSkill, SKILLS, type SkillKey } from "../integrations/cpr/weapon-adapter";
 import { registerHandler, request } from "../integrations/foundry/socket";
 import { responderId, userCanOwn } from "../integrations/foundry/users";
@@ -6,11 +7,26 @@ import { askDefense, type DefensePurpose } from "../ui/defense-prompt";
 
 const KIND = "defense";
 const TIMEOUT_MS = 60000;
-const PURPOSES: readonly DefensePurpose[] = ["ranged", "melee", "area", "suppression", "grapple"];
+const PURPOSES: readonly DefensePurpose[] = [
+  "ranged",
+  "melee",
+  "area",
+  "suppression",
+  "grapple",
+  "jackIn",
+  "forceOut",
+];
+export type DefenseCheck = SkillKey | "will" | "interface";
+
+function isCheck(value: unknown): value is DefenseCheck {
+  return (
+    value === "will" || value === "interface" || (typeof value === "string" && value in SKILLS)
+  );
+}
 
 export interface DefenseRequest {
   purpose: DefensePurpose;
-  skill: SkillKey;
+  skill: DefenseCheck;
   optional: boolean;
   attackerName: string;
   defenderUuid: string;
@@ -32,8 +48,7 @@ function parseRequest(payload: unknown): DefenseRequest | null {
   if (
     !data ||
     !PURPOSES.includes(data.purpose as DefensePurpose) ||
-    typeof data.skill !== "string" ||
-    !(data.skill in SKILLS) ||
+    !isCheck(data.skill) ||
     typeof data.attackerName !== "string" ||
     typeof data.defenderUuid !== "string" ||
     typeof data.weaponName !== "string"
@@ -52,6 +67,17 @@ function parseRequest(payload: unknown): DefenseRequest | null {
   };
 }
 
+async function rollCheck(defender: Actor, data: DefenseRequest): Promise<NativeRollResult | null> {
+  const options = { actor: defender, tokenId: data.defenderTokenId, skipDialog: false };
+  if (data.skill === "will") return rollStat("will", options);
+  if (data.skill === "interface") {
+    return rollInterface(defender, game.i18n.localize("CCK.Net.Interface"), options);
+  }
+  const skill = findSkill(defender, data.skill);
+  if (!skill) throw new Error(`no-skill:${SKILLS[data.skill]}`);
+  return rollSkill(skill, options);
+}
+
 async function answerDefense(payload: unknown): Promise<DefenseAnswer> {
   const data = parseRequest(payload);
   if (!data) throw new Error("invalid");
@@ -66,13 +92,7 @@ async function answerDefense(payload: unknown): Promise<DefenseAnswer> {
     dv: data.dv,
   });
   if (!wantsToRoll) return { choice: "declined" };
-  const skill = findSkill(defender, data.skill);
-  if (!skill) throw new Error(`no-skill:${SKILLS[data.skill]}`);
-  const roll = await rollSkill(skill, {
-    actor: defender,
-    tokenId: data.defenderTokenId,
-    skipDialog: false,
-  });
+  const roll = await rollCheck(defender, data);
   return roll ? { choice: "rolled", total: roll.total } : { choice: "declined" };
 }
 

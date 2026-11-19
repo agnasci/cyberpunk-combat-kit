@@ -1,4 +1,5 @@
-export type DefensePurpose = "ranged" | "melee" | "area" | "suppression" | "grapple";
+export type DefensePurpose =
+  "ranged" | "melee" | "area" | "suppression" | "grapple" | "jackIn" | "forceOut";
 
 export interface DefensePromptData {
   purpose: DefensePurpose;
@@ -15,6 +16,13 @@ const HINTS: Record<DefensePurpose, string> = {
   area: "CCK.Defense.AreaHint",
   suppression: "CCK.Defense.SuppressionHint",
   grapple: "CCK.Defense.GrappleHint",
+  jackIn: "CCK.Defense.JackInHint",
+  forceOut: "CCK.Defense.ForceOutHint",
+};
+
+const INTROS: Partial<Record<DefensePurpose, string>> = {
+  jackIn: "CCK.Defense.JackInIntro",
+  forceOut: "CCK.Defense.ForceOutIntro",
 };
 
 function escape(text: string): string {
@@ -31,7 +39,7 @@ function format(key: string, data: Record<string, string>): string {
 }
 
 export async function askDefense(data: DefensePromptData): Promise<boolean> {
-  const intro = format("CCK.Defense.Intro", {
+  const intro = format(INTROS[data.purpose] ?? "CCK.Defense.Intro", {
     attacker: data.attackerName,
     defender: data.defenderName,
     weapon: data.weaponName,

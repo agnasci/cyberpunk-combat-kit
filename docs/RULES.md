@@ -70,19 +70,31 @@ de tabela vêm do sistema em execução (compêndios `internal_dv-tables` e
 - Estados de ferimento e Death Save: lidos do sistema (`currentWoundState`); Death Save fica
   no Character Panel.
 
-## 8. Quickhacks — CEMK p. 16–18, 26–28
+## 8. Quickhacks — CEMK p. 16–17 e 25–26; livro base p. 197
 
-- Só alvos com Neuroport (ou cyberware compatível) podem ser hackeados.
-- Net Actions por turno conforme o rank de Interface; Meat Action ou Net Actions.
-- **Jack In**: alvo visível a até 50 m/yds (25 quadrados); Interface + 1d10 contra
-  WILL + 1d10; falhar alerta o alvo.
-- **Force Out** (ação do alvo): WILL + Concentration + 1d10 contra Interface + 1d10;
-  expulso não pode reconectar ao mesmo alvo por 60 minutos.
-- **Breach**: um Passwall por Self-ICE instalado; DV cresce 2 por Self-ICE (p. 17).
-- **Quickhack**: Interface contra a DV do nível (quatro níveis); um Quickhack por alvo por
-  turno; sucesso alerta o alvo salvo exceção da própria definição.
-- Acesso por rank de Interface aos níveis (CEMK p. 26). Detalhes de cada Quickhack (nome,
-  efeito, duração) são conteúdo da RTG: ficam só no pacote pessoal (`private/`).
+- Só alvos com Neuroport podem ser hackeados (p. 16).
+- No turno, uma Ação "de carne" ou várias Ações NET, além do movimento. Interface é rank +
+  1d10, sem atributo (p. 16). Ações NET por turno pelo rank de Interface (livro base p. 197:
+  2 do rank 1 ao 3, 3 do 4 ao 6, 4 do 7 ao 9, 5 no 10). O módulo só mostra o número (D08).
+- **Jack In** (p. 16): alvo visível a até 50 m (25 quadrados); Interface contra VON + 1d10.
+  Conecta mesmo falhando; falhar só faz o alvo saber. Netrunner alvo sempre sabe (pula o
+  teste). Na regra completa (p. 26), Interface 1 e 2 precisam antes vencer DV6 do firewall
+  do Neuroport (falha não alerta); do rank 3 em diante passa direto.
+- A conexão termina com Force Out, saída do alcance, Jack Out voluntário ou morte do alvo.
+  Sair por qualquer motivo que não o Jack Out bloqueia nova conexão ao mesmo alvo por 60
+  minutos (p. 16 e 26).
+- **Force Out** (Ação do alvo que sabe da invasão): VON + Concentração + 1d10 contra
+  Interface + 1d10 do Netrunner.
+- **Breach** (p. 16): uma Ação NET por Self-ICE instalado, cada uma contra a mesma DV, que
+  é 6 com um Self-ICE e sobe 2 por Self-ICE a mais.
+- **Quickhack** (p. 16): depois de todos os Passwalls, Interface contra a DV do Quickhack.
+  Uma tentativa por alvo por turno (mesmo falhando). Sucesso alerta o alvo, salvo quando a
+  definição diz o contrário.
+- Níveis por rank de Interface (p. 25): nível 1 no rank 1, nível 2 no rank 2, nível 3 no
+  rank 3, nível 4 no rank 4. Nomes, efeitos e durações de cada Quickhack são conteúdo da RTG
+  e ficam só no pacote pessoal (`private/`).
+- Empates: quem age precisa superar; empate fica com quem resiste (§2). Contra DV, precisa
+  superar a DV.
 
 ## 9. Itens oficiais
 

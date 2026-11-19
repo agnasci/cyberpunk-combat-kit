@@ -6,6 +6,7 @@ import {
   type DvValue,
   type MenuAction,
   type MenuGrapple,
+  type MenuNet,
 } from "../domain/menu";
 import { attackProfile } from "../domain/modes";
 import { weaponsOf } from "../integrations/cpr/weapon-adapter";
@@ -23,6 +24,35 @@ import { openQuickMenu } from "../ui/quick-menu";
 import { attack } from "./attack";
 import { dvLookup } from "./attack-steps";
 import { grapple } from "./grapple";
+import {
+  availableQuickhacks,
+  awareIntruders,
+  netView,
+  quickhack,
+  quickhacksEnabled,
+} from "./quickhack";
+
+function netInput(acting: Token | null, target: Token): MenuNet | null {
+  if (!acting || !quickhacksEnabled()) return null;
+  const self = acting === target;
+  const view = self ? null : netView(acting, target);
+  return {
+    rank: view?.rank ?? 0,
+    hasNeuroport: view?.hasNeuroport ?? false,
+    inRange: view?.inRange ?? false,
+    visible: view?.visible ?? false,
+    locked: view?.locked ?? false,
+    intrusion: view?.intrusion ?? null,
+    passwalls: view?.passwalls ?? 0,
+    turn: view?.turn ?? null,
+    quickhacks: availableQuickhacks(),
+    intruders: awareIntruders(acting).map((entry) => ({
+      runnerUuid: entry.runnerUuid,
+      name: entry.runnerName,
+    })),
+    targetUuid: target.document.uuid,
+  };
+}
 
 async function dvTable(
   weapons: ReturnType<typeof weaponsOf>,
@@ -67,6 +97,7 @@ async function viewFor(target: Token) {
     grapple: grappleState,
     targetGrappled: grappleLink(target.document) !== null,
     targeted: target.isTargeted,
+    net: netInput(acting, target),
   });
   return {
     title: visibleName(target) ?? game.i18n.localize("CCK.Menu.UnknownTarget"),
@@ -89,6 +120,13 @@ async function run(action: MenuAction, target: Token): Promise<void> {
     case "grapple":
       if (action.action === "grab") targetOnly(target);
       return grapple({ action: action.action });
+    case "net":
+      if (action.action !== "forceOut") targetOnly(target);
+      return quickhack({
+        action: action.action,
+        ...(action.quickhackId ? { quickhackId: action.quickhackId } : {}),
+        ...(action.runnerUuid ? { runnerUuid: action.runnerUuid } : {}),
+      });
   }
 }
 

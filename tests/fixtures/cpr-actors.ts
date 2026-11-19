@@ -3,6 +3,7 @@ interface ItemFixture {
   name: string;
   type: string;
   system: unknown;
+  flags?: Record<string, unknown>;
 }
 
 export function item(fixture: ItemFixture): Item {
@@ -10,6 +11,7 @@ export function item(fixture: ItemFixture): Item {
     ...fixture,
     createRoll: () => ({}),
     confirmRoll: (roll: unknown) => roll,
+    getFlag: (_scope: string, key: string) => fixture.flags?.[key],
   };
 }
 
@@ -62,6 +64,7 @@ export function actor(options: {
   ref?: number;
   hp?: number;
   hasPlayerOwner?: boolean;
+  activeNetRole?: string;
 }): Actor {
   const byType: Record<string, Item[]> = {};
   for (const entry of options.items) (byType[entry.type] ??= []).push(entry);
@@ -75,6 +78,7 @@ export function actor(options: {
     system: {
       stats: { ref: { value: options.ref ?? 6 } },
       derivedStats: { hp: { value: options.hp ?? 40, max: 40 } },
+      roleInfo: { activeNetRole: options.activeNetRole ?? null },
     },
     items: { find: (fn) => options.items.find(fn) },
     itemTypes: byType,

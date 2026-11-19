@@ -15,6 +15,7 @@ interface FoundryItem {
   readonly system: unknown;
   createRoll(type: string, actor: FoundryActor, info?: Record<string, unknown>): unknown;
   confirmRoll(roll: unknown): Promise<unknown> | unknown;
+  getFlag(scope: string, key: string): unknown;
 }
 
 interface FoundryActor {
@@ -37,7 +38,31 @@ interface FoundryActor {
 
 interface FoundryActiveEffect {
   readonly id: string;
+  readonly name: string;
   getFlag(scope: string, key: string): unknown;
+  setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
+}
+
+interface FoundryCombatState {
+  readonly round: number | null;
+  readonly turn: number | null;
+  readonly combatantId: string | null;
+}
+
+interface FoundryCombatant {
+  readonly id: string;
+  readonly actor: FoundryActor | null;
+  readonly token: FoundryTokenDocument | null;
+}
+
+interface FoundryCombat {
+  readonly id: string;
+  readonly round: number;
+  readonly started: boolean;
+  readonly combatants: {
+    readonly contents: FoundryCombatant[];
+    get(id: string): FoundryCombatant | undefined;
+  };
 }
 
 interface FoundryTokenDocument {
@@ -51,6 +76,8 @@ interface FoundryTokenDocument {
   readonly width: number;
   readonly height: number;
   readonly actor: FoundryActor | null;
+  readonly hidden: boolean;
+  readonly parent: { readonly id: string } | null;
   getFlag(scope: string, key: string): unknown;
   setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
   unsetFlag(scope: string, key: string): Promise<unknown>;
@@ -153,6 +180,7 @@ interface FoundrySettingConfig {
   type: BooleanConstructor | NumberConstructor | StringConstructor | ObjectConstructor;
   default: unknown;
   onChange?: (value: unknown) => void;
+  requiresReload?: boolean;
   range?: { min: number; max: number; step: number };
   choices?: Record<string, string>;
 }
@@ -176,6 +204,9 @@ declare global {
   type PixiGraphics = FoundryPixiGraphics;
   type PixiTexture = FoundryPixiTexture;
   type PixiSprite = FoundryPixiSprite;
+  type ActiveEffect = FoundryActiveEffect;
+  type Combat = FoundryCombat;
+  type CombatState = FoundryCombatState;
 
   const PIXI: {
     Graphics: new () => PixiGraphics;
@@ -191,6 +222,14 @@ declare global {
     on(
       hook: "renderChatMessage",
       fn: (message: FoundryChatMessage, html: JQuery | HTMLElement) => void,
+    ): number;
+    on(
+      hook: "combatTurnChange",
+      fn: (combat: FoundryCombat, prior: FoundryCombatState, current: FoundryCombatState) => void,
+    ): number;
+    on(
+      hook: "updateToken",
+      fn: (token: FoundryTokenDocument, changes: Record<string, unknown>) => void,
     ): number;
     callAll(hook: string, ...args: unknown[]): boolean;
   };
@@ -231,7 +270,8 @@ declare global {
       readonly locked: boolean;
       readonly interface?: AudioContext & { readonly gainNode?: GainNode };
     };
-    combat: { readonly round: number; readonly started: boolean } | null;
+    combat: FoundryCombat | null;
+    time: { readonly worldTime: number };
     socket: {
       on(event: string, fn: (data: unknown, senderId: string) => void): void;
       emit(event: string, data: unknown): void;
@@ -299,7 +339,14 @@ declare global {
       }
     | undefined;
 
+  class Roll {
+    constructor(formula: string);
+    readonly total: number;
+    evaluate(): Promise<this>;
+  }
+
   const CONFIG: {
+    statusEffects: { id: string }[];
     Canvas: {
       polygonBackends: {
         sight: {

@@ -121,6 +121,49 @@ export async function rollSkill(
   return roll ? summary(roll) : null;
 }
 
+export async function rollRole(
+  role: Item,
+  options: NativeRollOptions,
+  prepare: Prepare,
+): Promise<NativeRollResult | null> {
+  const roll = await runNativeRoll(
+    role,
+    "roleAbility",
+    { rollSubType: "mainRoleAbility" },
+    options,
+    prepare,
+  );
+  return roll ? summary(roll) : null;
+}
+
+interface StatRollActor {
+  createRoll(type: "stat", name: string): CprRoll | undefined;
+}
+
+export async function rollStat(
+  stat: string,
+  options: NativeRollOptions,
+): Promise<NativeRollResult | null> {
+  const { chat, utils } = await loadSystem();
+  const roll = (options.actor as Actor & StatRollActor).createRoll("stat", stat);
+  if (!roll) return null;
+  const keepRolling = await roll.handleRollDialog(
+    syntheticEvent(options.skipDialog),
+    options.actor,
+    null,
+  );
+  if (!keepRolling) return null;
+  await roll.roll();
+  await spendLuck(options.actor, roll);
+  roll.entityData = {
+    actor: options.actor.id,
+    token: options.tokenId,
+    tokens: utils.getUserTargetedOrSelected("targeted"),
+  };
+  await chat.RenderRollCard(roll);
+  return summary(roll);
+}
+
 function text(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
 }

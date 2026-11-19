@@ -1,8 +1,25 @@
 import { chokeOutcome, nextChokeStreak } from "../../domain/grapple";
-import { parseGmRequest, type DamageResult, type GmRequest } from "../../domain/gm-request";
+import {
+  parseGmRequest,
+  type DamageResult,
+  type GmRequest,
+  type NetRequest,
+} from "../../domain/gm-request";
+import type { PackQuickhack } from "../../domain/pack";
+import {
+  awareAfterQuickhack,
+  intrusionBy,
+  isLocked,
+  lockFor,
+  quickhackBlocker,
+  turnKey,
+} from "../../domain/quickhack";
+import { countPart, interfaceRank } from "../cpr/net-adapter";
 import { applyNativeDamage, reverseNativeDamage, setHitPointsDirect } from "../cpr/damage-adapter";
 import { hitPoints } from "../cpr/weapon-adapter";
 import { endGrapple, grappleLink, setStatus, startGrapple, writeLink } from "./grapple-store";
+import { applyQuickhack, dropIntrusion, netState, saveIntrusion } from "./net-store";
+import { quickhackSettings } from "./settings";
 import { registerHandler, request, type RequestResult } from "./socket";
 import { executorId, userCanOwn } from "./users";
 
@@ -66,6 +83,76 @@ async function choke(
   return { ...result, knockedOut: outcome.knockedOut };
 }
 
+let quickhackSource: () => readonly PackQuickhack[] = () => [];
+
+export function setQuickhackSource(source: () => readonly PackQuickhack[]): void {
+  quickhackSource = source;
+}
+
+function passwalls(actor: Actor): number {
+  return countPart(actor, "selfIce", quickhackSettings());
+}
+
+async function executeNet(
+  request: NetRequest,
+  attacker: Resolved,
+  target: Resolved,
+): Promise<DamageResult | null> {
+  if (!quickhackSettings().enabled) throw new Error("invalid");
+  const actingToken = requireToken(attacker);
+  const otherToken = requireToken(target);
+  if (request.op === "netForceOut") {
+    const lock = lockFor(target.actor.uuid, game.time.worldTime);
+    if (!(await dropIntrusion(actingToken, otherToken.uuid, lock))) throw new Error("invalid");
+    return null;
+  }
+  const state = netState(otherToken);
+  const intrusion = intrusionBy(state, actingToken.uuid);
+  switch (request.op) {
+    case "netJackIn":
+      if (intrusion || isLocked(state, attacker.actor.uuid, game.time.worldTime)) {
+        throw new Error("invalid");
+      }
+      await saveIntrusion(otherToken, {
+        runnerUuid: actingToken.uuid,
+        runnerActorUuid: attacker.actor.uuid,
+        runnerName: attacker.actor.name,
+        aware: request.aware,
+        breached: 0,
+        lastHack: null,
+      });
+      return null;
+    case "netBreach":
+      if (!intrusion || intrusion.breached >= passwalls(target.actor)) throw new Error("invalid");
+      await saveIntrusion(otherToken, { ...intrusion, breached: intrusion.breached + 1 });
+      return null;
+    case "netJackOut":
+      if (!(await dropIntrusion(otherToken, actingToken.uuid, null))) throw new Error("invalid");
+      return null;
+    case "netHack": {
+      const quickhack = quickhackSource().find((entry) => entry.id === request.quickhackId);
+      if (!quickhack) throw new Error("not-found");
+      const turn = turnKey(game.combat?.started ? game.combat : null);
+      const blocker = quickhackBlocker({
+        rank: interfaceRank(attacker.actor),
+        tier: quickhack.tier,
+        intrusion,
+        passwalls: passwalls(target.actor),
+        inRange: true,
+        turn,
+        requiresUnaware: quickhack.requiresUnaware,
+      });
+      if (blocker || !intrusion) throw new Error("invalid");
+      await saveIntrusion(otherToken, {
+        ...intrusion,
+        lastHack: turn,
+        aware: awareAfterQuickhack(intrusion.aware, quickhack.alerts, request.success),
+      });
+      return request.success ? applyQuickhack(target.actor, quickhack) : null;
+    }
+  }
+}
+
 async function execute(payload: unknown, senderId: string): Promise<DamageResult | null> {
   if (!game.user.isGM) throw new Error("forbidden");
   const parsed = parseGmRequest(payload);
@@ -102,6 +189,12 @@ async function execute(payload: unknown, senderId: string): Promise<DamageResult
       await endGrapple(token, await partnerOf(token));
       return null;
     }
+    case "netJackIn":
+    case "netBreach":
+    case "netHack":
+    case "netJackOut":
+    case "netForceOut":
+      return executeNet(parsed, attacker, target);
   }
 }
 

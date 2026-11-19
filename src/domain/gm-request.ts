@@ -43,13 +43,37 @@ export interface GrappleEndRequest {
   targetUuid: string;
 }
 
+export interface NetJackInRequest {
+  op: "netJackIn";
+  attackerUuid: string;
+  targetUuid: string;
+  aware: boolean;
+}
+
+export interface NetHackRequest {
+  op: "netHack";
+  attackerUuid: string;
+  targetUuid: string;
+  quickhackId: string;
+  success: boolean;
+}
+
+export interface NetSimpleRequest {
+  op: "netBreach" | "netJackOut" | "netForceOut";
+  attackerUuid: string;
+  targetUuid: string;
+}
+
+export type NetRequest = NetJackInRequest | NetHackRequest | NetSimpleRequest;
+
 export type GmRequest =
   | ApplyDamageRequest
   | ReverseDamageRequest
   | ChokeRequest
   | ThrowDownRequest
   | GrappleStartRequest
-  | GrappleEndRequest;
+  | GrappleEndRequest
+  | NetRequest;
 
 export interface DamageResult {
   hpBefore: number;
@@ -58,6 +82,8 @@ export interface DamageResult {
   ablation: number;
   location: "body" | "head";
   knockedOut?: boolean;
+  rolled?: number;
+  note?: string;
 }
 
 export function isUndoable(result: DamageResult | null): boolean {
@@ -75,6 +101,8 @@ const LIMITS = {
   body: 30,
   round: 100000,
 } as const;
+
+const QUICKHACK_ID = /^[A-Za-z0-9_-]{1,48}$/;
 
 function record(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === "object" ? (value as Record<string, unknown>) : null;
@@ -165,6 +193,20 @@ export function parseGmRequest(value: unknown): GmRequest | null {
   }
   if (data.op === "grappleStart" || data.op === "grappleEnd") {
     return { op: data.op, attackerUuid, targetUuid };
+  }
+  if (data.op === "netBreach" || data.op === "netJackOut" || data.op === "netForceOut") {
+    return { op: data.op, attackerUuid, targetUuid };
+  }
+  if (data.op === "netJackIn") {
+    if (typeof data.aware !== "boolean") return null;
+    return { op: "netJackIn", attackerUuid, targetUuid, aware: data.aware };
+  }
+  if (data.op === "netHack") {
+    const id = data.quickhackId;
+    if (typeof id !== "string" || !QUICKHACK_ID.test(id) || typeof data.success !== "boolean") {
+      return null;
+    }
+    return { op: "netHack", attackerUuid, targetUuid, quickhackId: id, success: data.success };
   }
   return null;
 }

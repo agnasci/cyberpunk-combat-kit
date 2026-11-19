@@ -38,3 +38,9 @@ export function userCanOwn(userId: string, actor: Actor): boolean {
 export function gmRecipients(): string[] {
   return game.users.contents.filter((user) => user.isGM).map((user) => user.id);
 }
+
+export function ownerRecipients(actor: Actor): string[] {
+  return game.users.contents
+    .filter((user) => !user.isGM && actor.testUserPermission(user, OWNER))
+    .map((user) => user.id);
+}

@@ -76,6 +76,53 @@ describe("manifesto válido", () => {
     expect(result.pack.quickhacks[0]?.icon).toBe("cck-packs/exemplo/icons/q.webp");
   });
 
+  it("efeitos de Quickhack: dano, status, lesão, conduzido e opções", () => {
+    const quickhack = (extra: Record<string, unknown>) => ({
+      id: "q",
+      name: "Q",
+      tier: 2,
+      dv: 8,
+      ...extra,
+    });
+    const parse = (entry: Record<string, unknown>) =>
+      parseManifest(manifest({ kinds: ["quickhacks"], quickhacks: [entry] }), FOLDER);
+    const ok = parse(
+      quickhack({ effect: { type: "damage", formula: "3d6 + 1", ongoing: true }, alerts: false }),
+    );
+    expect(ok.ok && ok.pack.quickhacks[0]).toMatchObject({
+      effect: { type: "damage", formula: "3d6+1", ongoing: true },
+      alerts: false,
+      requiresUnaware: false,
+      icon: null,
+    });
+    const status = parse(quickhack({ effect: { type: "status", status: "prone", rounds: 20 } }));
+    expect(status.ok && status.pack.quickhacks[0]?.effect).toEqual({
+      type: "status",
+      status: "prone",
+      rounds: 20,
+    });
+    const injury = parse(quickhack({ effect: { type: "criticalInjury", injury: "Lesão X" } }));
+    expect(injury.ok && injury.pack.quickhacks[0]?.effect).toEqual({
+      type: "criticalInjury",
+      injury: "Lesão X",
+      rounds: null,
+    });
+    const guided = parse(quickhack({ effect: { type: "guided" }, requiresUnaware: true }));
+    expect(guided.ok && guided.pack.quickhacks[0]?.requiresUnaware).toBe(true);
+    for (const bad of [
+      { effect: { type: "damage", formula: "rm -rf" } },
+      { effect: { type: "damage", formula: "200d6" } },
+      { effect: { type: "damage", formula: "2d6", ongoing: "sim" } },
+      { effect: { type: "status", status: "<script>" } },
+      { effect: { type: "status", status: "prone", rounds: 0 } },
+      { effect: { type: "criticalInjury" } },
+      { effect: { type: "guided" }, alerts: "não" },
+      { effect: { type: "guided" }, icon: "https://exemplo.com/a.png" },
+    ]) {
+      expect(codes(parse(quickhack(bad)))).toEqual(["bad-quickhack"]);
+    }
+  });
+
   it("o caminho do manifesto fica na raiz da pasta; barra final é removida", () => {
     expect(normalizeFolder("cck-packs/exemplo/")).toBe(FOLDER);
     expect(manifestPath(FOLDER)).toBe("cck-packs/exemplo/cck-pack.json");
@@ -168,9 +215,9 @@ describe("chaves inválidas", () => {
         assets: { "com espaço": "a.ogg" },
         cues: {},
         quickhacks: [
-          { id: "q", name: "Q", tier: 1, dv: 6, effect: { type: "damage" } },
-          { id: "q", name: "Q", tier: 1, dv: 6, effect: { type: "damage" } },
-          { id: "r", name: "R", tier: 0, dv: 6, effect: { type: "damage" } },
+          { id: "q", name: "Q", tier: 1, dv: 6, effect: { type: "damage", formula: "2d6" } },
+          { id: "q", name: "Q", tier: 1, dv: 6, effect: { type: "damage", formula: "2d6" } },
+          { id: "r", name: "R", tier: 0, dv: 6, effect: { type: "damage", formula: "2d6" } },
           { id: "s", name: "S", tier: 1, dv: 6, effect: { type: "explodir" } },
         ],
       }),

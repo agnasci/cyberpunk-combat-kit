@@ -151,4 +151,24 @@ describe("pedidos do agarrão ao executor", () => {
     });
     expect(parseGmRequest({ op: "grappleEnd", attackerUuid: "a", targetUuid: "b" })).not.toBeNull();
   });
+
+  it("pedidos de rede: Jack In, Breach, Quickhack, Jack Out e Force Out", () => {
+    const base = { attackerUuid: "a", targetUuid: "b" };
+    expect(parseGmRequest({ ...base, op: "netJackIn", aware: false })).toEqual({
+      ...base,
+      op: "netJackIn",
+      aware: false,
+    });
+    expect(parseGmRequest({ ...base, op: "netJackIn" })).toBeNull();
+    for (const op of ["netBreach", "netJackOut", "netForceOut"]) {
+      expect(parseGmRequest({ ...base, op })).toEqual({ ...base, op });
+    }
+    expect(
+      parseGmRequest({ ...base, op: "netHack", quickhackId: "exemplo", success: true }),
+    ).toEqual({ ...base, op: "netHack", quickhackId: "exemplo", success: true });
+    expect(
+      parseGmRequest({ ...base, op: "netHack", quickhackId: "../x", success: true }),
+    ).toBeNull();
+    expect(parseGmRequest({ ...base, op: "netHack", quickhackId: "q", success: "sim" })).toBeNull();
+  });
 });

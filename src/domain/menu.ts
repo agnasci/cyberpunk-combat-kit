@@ -9,6 +9,14 @@ import {
   type ModeBlocker,
   type ModeWeapon,
 } from "./modes";
+import {
+  breachBlocker,
+  breachDv,
+  jackInBlocker,
+  netActions,
+  quickhackBlocker,
+  type NetIntrusion,
+} from "./quickhack";
 import { meleeInReach } from "./range";
 
 export const MENU_MODES: readonly AttackMode[] = [
@@ -25,7 +33,37 @@ export type MenuGrappleAction = "grab" | "choke" | "throw" | "release" | "escape
 export type MenuAction =
   | { kind: "attack"; weaponId: string; mode: AttackMode; location?: AimLocation }
   | { kind: "grapple"; action: MenuGrappleAction }
+  | { kind: "net"; action: MenuNetAction; quickhackId?: string; runnerUuid?: string }
   | { kind: "target" };
+
+export type MenuNetAction = "jackIn" | "breach" | "quickhack" | "jackOut" | "forceOut";
+
+export interface MenuQuickhack {
+  id: string;
+  name: string;
+  tier: number;
+  dv: number;
+  requiresUnaware: boolean;
+}
+
+export interface MenuIntruder {
+  runnerUuid: string;
+  name: string;
+}
+
+export interface MenuNet {
+  rank: number;
+  hasNeuroport: boolean;
+  inRange: boolean;
+  visible: boolean;
+  locked: boolean;
+  intrusion: NetIntrusion | null;
+  passwalls: number;
+  turn: string | null;
+  quickhacks: readonly MenuQuickhack[];
+  intruders: readonly MenuIntruder[];
+  targetUuid: string;
+}
 
 export interface MenuText {
   key: string;
@@ -64,6 +102,7 @@ export interface MenuInput {
   grapple: MenuGrapple | null;
   targetGrappled: boolean;
   targeted: boolean;
+  net?: MenuNet | null;
 }
 
 export interface MenuModel {
@@ -198,6 +237,118 @@ function grappleEntries(input: MenuInput): MenuEntry[] {
   return [pick("grab", reach ? null : { key: "CCK.Menu.Why-out-of-range" })];
 }
 
+function why(blocker: string | null): MenuText | null {
+  return blocker ? { key: `CCK.Menu.Why-${blocker}` } : null;
+}
+
+function netPick(
+  id: string,
+  label: MenuText,
+  action: MenuAction & { kind: "net" },
+  disabled: MenuText | null = null,
+  hint: MenuText | null = null,
+): MenuEntry {
+  return entry(id, label, { disabled, hint, action: disabled ? null : action });
+}
+
+function forceOutEntries(net: MenuNet, self: boolean): MenuEntry[] {
+  const intruders = self
+    ? net.intruders
+    : net.intruders.filter((intruder) => intruder.runnerUuid === net.targetUuid);
+  return intruders.map((intruder) =>
+    netPick(
+      `net:forceOut:${intruder.runnerUuid}`,
+      self
+        ? { key: "CCK.Menu.Net-forceOutFrom", data: { name: intruder.name } }
+        : { key: "CCK.Menu.Net-forceOut" },
+      { kind: "net", action: "forceOut", runnerUuid: intruder.runnerUuid },
+    ),
+  );
+}
+
+function quickhackEntries(net: MenuNet): MenuEntry[] {
+  if (net.quickhacks.length === 0) {
+    const none = { key: "CCK.Menu.Why-no-quickhacks" };
+    return [entry("net:none", none, { disabled: none })];
+  }
+  return [...net.quickhacks]
+    .sort((a, b) => a.tier - b.tier || a.name.localeCompare(b.name))
+    .map((hack) =>
+      netPick(
+        `net:hack:${hack.id}`,
+        { key: "CCK.Menu.Net-quickhack", data: { name: hack.name } },
+        { kind: "net", action: "quickhack", quickhackId: hack.id },
+        why(
+          quickhackBlocker({
+            rank: net.rank,
+            tier: hack.tier,
+            intrusion: net.intrusion,
+            passwalls: net.passwalls,
+            inRange: net.inRange,
+            turn: net.turn,
+            requiresUnaware: hack.requiresUnaware,
+          }),
+        ),
+        { key: "CCK.Menu.Dv", data: { dv: String(hack.dv) } },
+      ),
+    );
+}
+
+function runnerEntries(net: MenuNet): MenuEntry[] {
+  if (net.rank <= 0) return [];
+  if (!net.intrusion) {
+    const blocker = jackInBlocker({ ...net, linked: false });
+    return [
+      netPick(
+        "net:jackIn",
+        { key: "CCK.Menu.Net-jackIn" },
+        { kind: "net", action: "jackIn" },
+        why(blocker),
+      ),
+    ];
+  }
+  const entries: MenuEntry[] = [];
+  const dv = breachDv(net.passwalls);
+  if (dv !== null && net.intrusion.breached < net.passwalls) {
+    entries.push(
+      netPick(
+        "net:breach",
+        {
+          key: "CCK.Menu.Net-breach",
+          data: { left: String(net.passwalls - net.intrusion.breached) },
+        },
+        { kind: "net", action: "breach" },
+        why(breachBlocker(net.intrusion, net.passwalls, net.inRange)),
+        { key: "CCK.Menu.Dv", data: { dv: String(dv) } },
+      ),
+    );
+  }
+  entries.push(
+    entry(
+      "net:quickhacks",
+      { key: "CCK.Menu.Net-quickhacks" },
+      { children: quickhackEntries(net) },
+    ),
+    netPick("net:jackOut", { key: "CCK.Menu.Net-jackOut" }, { kind: "net", action: "jackOut" }),
+  );
+  return entries;
+}
+
+function netEntries(input: MenuInput): MenuEntry[] {
+  const net = input.net;
+  if (!net) return [];
+  const children = [...forceOutEntries(net, input.self), ...(input.self ? [] : runnerEntries(net))];
+  if (children.length === 0) return [];
+  const hint =
+    net.rank > 0
+      ? { key: "CCK.Menu.NetActions", data: { count: String(netActions(net.rank)) } }
+      : null;
+  const status = net.intrusion
+    ? { key: net.intrusion.aware ? "CCK.Menu.Net-aware" : "CCK.Menu.Net-unaware" }
+    : null;
+  return [entry("net", { key: "CCK.Menu.Net" }, { hint: status ?? hint, children })];
+}
+
 export function buildMenu(input: MenuInput): MenuModel {
   const entries: MenuEntry[] = [];
   if (input.attackerProblem) {
@@ -230,6 +381,7 @@ export function buildMenu(input: MenuInput): MenuModel {
     if (grapple.length > 0) {
       entries.push(entry("grapple", { key: "CCK.Menu.Grapple" }, { children: grapple }));
     }
+    entries.push(...netEntries(input));
   }
   if (!input.self) {
     entries.push(
