@@ -4,15 +4,16 @@ Atualizado em: 2026-11-19.
 
 ## Situação
 
-- E0 a E8-01 concluídas (E8-01 em 2026-11-19). E8-02 preparada (versão 0.1.0, pacote e
-  workflow de release), **sem publicar**: não há repositório remoto; criar o repositório no
-  GitHub, fazer push e publicar a release só com pedido do usuário.
+- E0 a E8 concluídas (2026-11-19). Beta 0.1.0 publicada a pedido do usuário:
+  https://github.com/agnasci/cyberpunk-combat-kit (público), release `v0.1.0` com
+  `module.json` e `module.zip`. Manifesto:
+  `https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
 - Entrada pelo menu do clique direito, pela aba "Combate" do Character Panel e pela API v1
   (docs/INTEGRATION.md).
-- Commits locais na `main` até `f3d7b78` (E7). E8 no commit seguinte, quando pedido.
+- `main` em `origin` (GitHub) a partir de `b98fd85` (E8); release feita da tag `v0.1.0`.
 - Character Panel: API v1 commitada lá em `f6e17c4`, sem push nem release.
 
-## Última entrega: E8-01 API v1 e E8-02 preparação da beta (2026-11-19)
+## Última entrega: E8-01 API v1 e E8-02 beta 0.1.0 publicada (2026-11-19)
 
 Novos: `src/domain/api-input.ts`, `src/workflows/announce.ts`, `src/workflows/direct-damage.ts`,
 `tests/unit/api-input.test.ts`, `docs/INTEGRATION.md`, `scripts/package.mjs`,
@@ -49,8 +50,15 @@ Validação:
   então `THIRD_PARTY_NOTICES.md` não é necessário; aviso da Homebrew Content Policy no README
   e no `module.json` (página do pacote no Foundry ainda não existe); todos os commits com o
   noreply do GitHub.
-- Não testado: instalação pelo manifesto (não há release publicada); workflow do GitHub
-  (só roda no GitHub); hooks em outro cliente; jogador chamando a API.
+- Publicação (E8-02): antes do push, histórico conferido sem nenhum caminho de `private/`,
+  `dist-personal/`, `dist/` ou `release/` e com autor/committer só no noreply. Repositório
+  criado com `gh repo create --public --push`; release `v0.1.0` (não marcada como pré-release,
+  para o `latest` do manifesto funcionar). O `module.json` baixado pela URL do manifesto tem
+  versão 0.1.0 e o `download` certo; o zip baixado era idêntico ao local. O workflow
+  `release.yml` rodou no GitHub com sucesso (verificação da tag, `npm run package`, reenvio dos
+  arquivos); o zip refeito pelo GitHub, extraído, é idêntico ao `dist/` local.
+- Não testado: instalar pelo manifesto num Foundry (a instalação local é a junção para
+  `dist/`, não foi trocada); hooks em outro cliente; jogador chamando a API.
 
 ## Entregas anteriores
 
@@ -62,11 +70,10 @@ cards de teste. Uma aba do navegador embutido aberta como Gamemaster.
 
 ## Próximas tarefas
 
-Estados: `TODO`, `AGUARDA`. Uma tarefa por vez; detalhe em docs/PLAN.md.
+Estados: `TODO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 
 | ID | Estado | Entrega | Condição |
 |---|---|---|---|
-| E8-02 | AGUARDA | Publicar a beta 0.1.0 | Pedido do usuário: criar `agnasci/cyberpunk-combat-kit` no GitHub, push, tag `v0.1.0` e release (docs/DEVELOPMENT.md, "Git e entrega"); depois, página do pacote no Foundry com o aviso |
 | P-02 | TODO | Pacote pessoal com o conteúdo do PneumaQuickHack (só `private/`) | E5-01 e E6-03 prontas |
 
 ## Dependências externas
@@ -74,6 +81,11 @@ Estados: `TODO`, `AGUARDA`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 - Character Panel: `docs/INTEGRATION.md` (E6-02 de lá) ainda não escrito; a E7 daqui usa o contrato descrito no docs/ARCHITECTURE.md de lá.
 
 ## Pendências abertas
+
+- Página do pacote em foundryvtt.com (conta do usuário, manual) com o aviso da Homebrew
+  Content Policy: item que falta do checklist do docs/LEGAL.md.
+- Workflow: GitHub avisou que `actions/checkout@v4` e `actions/setup-node@v4` usam Node 20
+  (depreciado; rodaram forçados em Node 24). Subir as versões das actions na próxima release.
 
 - Decisões D15–D31 aguardam confirmação do usuário em docs/DECISIONS.md.
 - Não testados no Foundry: crítico (dois 6) real; arremesso com dano que mostrasse a

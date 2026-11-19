@@ -27,9 +27,9 @@ A ficha e o pipeline de rolagem do sistema são a fonte de verdade.
 
 ## Regras de trabalho
 
-- E0 a E8-01 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito,
+- E0 a E8 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito,
   pacotes, editor de efeitos, Quickhacks (desligados por padrão), encaixe no Character Panel
-  e API v1. E8-02 (beta 0.1.0) pronta, publicação só com pedido. Próximo: P-02.
+  e API v1. Beta 0.1.0 publicada no GitHub (`origin`). Próximo: P-02.
 - Separe requisito do usuário, proposta técnica e fato verificado. Não invente
   APIs, campos de ficha, fórmulas, compatibilidade, testes ou resultados.
 - Execute uma tarefa pequena por vez; não implemente etapas futuras por antecipação.
