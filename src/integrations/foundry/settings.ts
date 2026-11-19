@@ -101,3 +101,12 @@ export function menuSettings(): { modifier: MenuModifier; always: boolean } {
     always: game.settings.get(MODULE_ID, "menuAlways") === true,
   };
 }
+
+export function settingsMenuType(open: () => void): new () => { render(force?: boolean): unknown } {
+  return class extends foundry.applications.api.ApplicationV2 {
+    override render(): this {
+      open();
+      return this;
+    }
+  };
+}

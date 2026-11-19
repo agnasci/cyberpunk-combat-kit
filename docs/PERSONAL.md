@@ -32,9 +32,10 @@ dados fictícios, para recriar `private/` numa máquina nova.
 - O manifesto pessoal mantém o id `cyberpunk-combat-kit`, mas **sem** `manifest` e
   `download` e com versão `X.Y.Z-personal`, para o Foundry não sobrescrever a edição pessoal
   com uma atualização pública.
-- Na edição pessoal, `src/main.ts` registra o pacote com `api.packs.register(...)` a partir
-  de `modules/cyberpunk-combat-kit/personal/cck-pack.json` se o arquivo existir; a edição
-  pública só tenta carregar e segue em silêncio quando não acha.
+- Quando `private/pack/` existe, `build:personal` grava
+  `flags["cyberpunk-combat-kit"].personalPack = "personal"` no manifesto; no `ready` o
+  módulo lê `modules/cyberpunk-combat-kit/personal/cck-pack.json` e registra como pacote de
+  código. Sem a flag (edição pública) nada é requisitado.
 - Junção local de teste aponta para `dist-personal/` (docs/DEVELOPMENT.md).
 
 ## Guardas contra vazamento (parte do `npm run check`)

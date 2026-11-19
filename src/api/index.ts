@@ -1,4 +1,6 @@
+import type { ContentPack, ManifestResult } from "../domain/pack";
 import { emitCue, registerCue, unregisterCue, type CueInput } from "../effects/engine";
+import { activePacks, registerPack, unregisterPack } from "../effects/packs";
 import { attack } from "../workflows/attack";
 import type { AttackOptions } from "../workflows/combat-common";
 import { grapple, type GrappleOptions } from "../workflows/grapple";
@@ -12,6 +14,11 @@ export interface CombatKitApi {
     unregister(key: string): void;
     play(input: CueInput): void;
   };
+  packs: {
+    register(manifest: unknown, folder: string): ManifestResult;
+    unregister(id: string): void;
+    active(): ContentPack[];
+  };
 }
 
 export function createApi(): CombatKitApi {
@@ -20,5 +27,6 @@ export function createApi(): CombatKitApi {
     attack,
     grapple,
     effects: { register: registerCue, unregister: unregisterCue, play: emitCue },
+    packs: { register: registerPack, unregister: unregisterPack, active: activePacks },
   };
 }

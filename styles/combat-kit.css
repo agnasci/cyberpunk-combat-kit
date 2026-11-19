@@ -208,3 +208,146 @@
   font-size: 0.85em;
   color: var(--cck-menu-muted);
 }
+
+.cck-packs,
+.cck-cues {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cck-packs__hint,
+.cck-cues__hint {
+  margin: 0;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+
+.cck-packs__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cck-packs__row {
+  --cck-pack-accent: #2e8b57;
+  border-left: 3px solid var(--cck-pack-accent);
+  padding: 4px 6px;
+}
+
+.cck-packs__row:has(.cck-packs__status--bad) {
+  --cck-pack-accent: #a33a3a;
+}
+
+.cck-packs__head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cck-packs__toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cck-packs__folder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9em;
+}
+
+.cck-packs__icon {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+}
+
+.cck-packs__lines {
+  margin: 2px 0 0;
+  padding-left: 18px;
+  font-size: 0.85em;
+}
+
+.cck-packs__status--bad {
+  color: #a33a3a;
+}
+
+.cck-packs__empty {
+  opacity: 0.7;
+}
+
+.cck-packs__subtitle {
+  margin: 6px 0 0;
+}
+
+.cck-cues {
+  max-height: min(60vh, 560px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.cck-cues__table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.cck-cues__table th:first-child {
+  width: 30%;
+}
+
+.cck-cues__table th:nth-child(2) {
+  width: 34%;
+}
+
+.cck-cues__table select {
+  width: 100%;
+}
+
+.cck-cues__table td,
+.cck-cues__table th {
+  padding: 3px 4px;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.cck-cues__key small {
+  opacity: 0.7;
+  font-family: var(--font-mono, monospace);
+}
+
+.cck-cues__sound {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cck-cues__path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85em;
+}
+
+.cck-cues__sound button {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  line-height: 1;
+}
+
+.cck-cues__volume {
+  flex: 0 0 56px;
+  width: 56px;
+}

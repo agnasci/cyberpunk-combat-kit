@@ -6,8 +6,9 @@ combate no clique direito, efeitos audiovisuais configuráveis e pacotes de cont
 importáveis. Integra-se ao Character Panel quando os dois estão ativos.
 
 **Estado:** alfa (0.0.1). Ataques à distância e corpo a corpo, modos de fogo, áreas,
-agarrão, dano aplicado pelo mestre com desfazer, efeitos audiovisuais e menu de combate no
-clique direito (também há entrada pela API). Veja
+agarrão, dano aplicado pelo mestre com desfazer, efeitos audiovisuais, menu de combate no
+clique direito e pacotes de conteúdo importáveis com editor de efeitos por evento (também há
+entrada pela API). Veja
 [STATUS.md](STATUS.md) e [SPEC.md](SPEC.md).
 
 ## Unofficial content

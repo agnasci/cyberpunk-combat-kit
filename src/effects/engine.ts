@@ -7,8 +7,10 @@ import {
   reducedMotion,
   resolveCue,
   type CombatEventName,
+  type CueMap,
   type CueStep,
 } from "../domain/cues";
+import { overrideLayer, type CueOverride, type CueSource } from "../domain/overrides";
 import { playFile, playSynth } from "../integrations/foundry/fx-audio";
 import {
   pageHidden,
@@ -26,6 +28,32 @@ import { broadcast, listen } from "../integrations/foundry/socket";
 
 const KIND = "fx";
 const registered = new Map<string, CueStep[]>();
+let packSources: CueSource[] = [];
+let overrides: Record<string, CueOverride> = {};
+let layers: CueMap[] = [DEFAULT_CUES];
+
+export function cueSources(): CueSource[] {
+  return [
+    ...packSources,
+    { id: "code", cues: Object.fromEntries(registered) },
+    { id: "default", cues: DEFAULT_CUES },
+  ];
+}
+
+function rebuildLayers(): void {
+  const sources = cueSources();
+  layers = [overrideLayer(overrides, sources), ...sources.map((source) => source.cues)];
+}
+
+export function setPackCues(sources: CueSource[]): void {
+  packSources = sources;
+  rebuildLayers();
+}
+
+export function setCueOverrides(next: Record<string, CueOverride>): void {
+  overrides = next;
+  rebuildLayers();
+}
 
 export interface CueInput {
   name: CombatEventName;
@@ -70,10 +98,7 @@ function play(input: unknown): void {
   if (!settings.visuals && !settings.sounds) return;
   const anchors = sceneAnchors(event);
   if (!anchors) return;
-  const steps = resolveCue(event.name, event.qualifiers, [
-    Object.fromEntries(registered),
-    DEFAULT_CUES,
-  ]);
+  const steps = resolveCue(event.name, event.qualifiers, layers);
   const reduced = reducedMotion(settings.motion, prefersReducedMotion());
   const audible = settings.sounds && anyVisible(anchors);
   for (const step of steps) {
@@ -125,9 +150,11 @@ export function registerCue(key: string, steps: unknown): boolean {
   const parsed = parseCueSteps(steps);
   if (!isCueKey(key) || !parsed) return false;
   registered.set(key, parsed);
+  rebuildLayers();
   return true;
 }
 
 export function unregisterCue(key: string): void {
   registered.delete(key);
+  rebuildLayers();
 }

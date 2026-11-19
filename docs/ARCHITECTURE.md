@@ -67,7 +67,7 @@ resolução tem uma lista de alvos, cada um com resultado, dano e "Desfazer".
   configurável) ou pela opção "menu em tokens não selecionados" (D26).
 - Itens: armas equipadas (com modos disponíveis e a DV até o alvo), mirar (cabeça, item,
   perna), marcar/desmarcar alvo, ações de agarrão quando aplicável. Quickhacks entram com
-  R09 (E5+).
+  R09 (E6).
 - Teclado: setas, Home/End, Enter/Espaço/→ entram, ←/Backspace/Esc voltam, Esc na raiz
   fecha; foco volta para onde estava (o canvas) ao fechar.
 - Arquivos (E2): `src/domain/menu.ts` (monta o menu e decide quando abre, testado),
@@ -124,7 +124,7 @@ existir mesmo recolhido; `onAction` receber o evento para modificadores (Shift/C
 | `attack({attacker, target, weaponId, mode})` | Inicia o fluxo de ataque |
 | `applyDamage({targetUuid, damage, bonus, location, ...})` | Pelo executor do mestre |
 | `effects.register(id, definition)` / `effects.play(event, context)` | Efeitos por código |
-| `packs.register(manifest)` / `packs.list()` | Pacotes de conteúdo (também usado pelo pacote pessoal) |
+| `packs.register(manifest, folder)` / `packs.unregister(id)` / `packs.active()` | Pacotes de conteúdo (também usado pelo pacote pessoal) |
 | Hooks `cckAttackResolved`, `cckDamageApplied`, `cckQuickhackResolved` | Para outros módulos |
 
 ## Persistência

@@ -2,11 +2,19 @@ import { createApi } from "./api";
 import { MODULE_ID, SYSTEM_ID, TESTED_SYSTEM_VERSION } from "./constants";
 import { checkSystemCompatibility } from "./domain/compatibility";
 import { initEffects } from "./effects/engine";
+import { applyOverrides, initPacks, reloadPacks } from "./effects/packs";
 import { removeLeftoverAreas } from "./integrations/foundry/area-placement";
 import { preloadDvTables } from "./integrations/cpr/weapon-adapter";
 import { initGmExecutor } from "./integrations/foundry/gm-executor";
-import { registerEffectSettings, registerMenuSettings } from "./integrations/foundry/settings";
+import {
+  registerEffectSettings,
+  registerMenuSettings,
+  settingsMenuType,
+} from "./integrations/foundry/settings";
+import { registerPackSettings } from "./integrations/foundry/pack-store";
 import { initSocket } from "./integrations/foundry/socket";
+import { openCueEditor } from "./ui/cue-editor";
+import { openPackManager } from "./ui/pack-manager";
 import { bindResolutionCards, RESOLUTION_TEMPLATE } from "./ui/resolution-card";
 import { detonatePending } from "./workflows/area";
 import { undoTarget } from "./workflows/combat-common";
@@ -18,6 +26,23 @@ Hooks.once("init", () => {
   registerMenuSettings();
   void loadTemplates([RESOLUTION_TEMPLATE]);
   bindResolutionCards({ undo: undoTarget, detonate: detonatePending });
+  registerPackSettings({ packs: () => void reloadPacks(), overrides: applyOverrides });
+  game.settings.registerMenu(MODULE_ID, "packManager", {
+    name: "CCK.Packs.Title",
+    label: "CCK.Packs.Open",
+    hint: "CCK.Packs.MenuHint",
+    icon: "fas fa-box-open",
+    type: settingsMenuType(() => void openPackManager()),
+    restricted: true,
+  });
+  game.settings.registerMenu(MODULE_ID, "cueEditor", {
+    name: "CCK.Cues.Title",
+    label: "CCK.Cues.Open",
+    hint: "CCK.Cues.MenuHint",
+    icon: "fas fa-sliders",
+    type: settingsMenuType(() => void openCueEditor()),
+    restricted: true,
+  });
 });
 
 Hooks.once("ready", () => {
@@ -38,6 +63,7 @@ Hooks.once("ready", () => {
   initGmExecutor();
   initDefense();
   initEffects();
+  void initPacks();
   initQuickMenu();
   void preloadDvTables();
   void removeLeftoverAreas();

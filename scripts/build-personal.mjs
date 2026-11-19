@@ -43,6 +43,10 @@ const manifestPath = join(PERSONAL_OUT, "module.json");
 const manifest = mergeManifest(JSON.parse(readFileSync(manifestPath, "utf8")), overlay);
 delete manifest.manifest;
 delete manifest.download;
+if (existsSync(packDir)) {
+  const flags = manifest.flags ?? {};
+  manifest.flags = { ...flags, [manifest.id]: { ...flags[manifest.id], personalPack: "personal" } };
+}
 writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
 const compendiumSrc = join(PRIVATE, "compendium", "src");

@@ -150,8 +150,9 @@ interface FoundrySettingConfig {
   config: boolean;
   name: string;
   hint?: string;
-  type: BooleanConstructor | NumberConstructor | StringConstructor;
+  type: BooleanConstructor | NumberConstructor | StringConstructor | ObjectConstructor;
   default: unknown;
+  onChange?: (value: unknown) => void;
   range?: { min: number; max: number; step: number };
   choices?: Record<string, string>;
 }
@@ -184,7 +185,7 @@ declare global {
   function loadTexture(src: string): Promise<PixiTexture | null>;
 
   const Hooks: {
-    once(hook: "init" | "ready", fn: () => void): number;
+    once(hook: "init" | "ready" | "closeFilePicker", fn: () => void): number;
     on(hook: "canvasTearDown" | "canvasPan", fn: () => void): number;
     off(hook: string, id: number): void;
     on(
@@ -212,6 +213,19 @@ declare global {
     settings: {
       get(namespace: string, key: string): unknown;
       register(namespace: string, key: string, config: FoundrySettingConfig): void;
+      set(namespace: string, key: string, value: unknown): Promise<unknown>;
+      registerMenu(
+        namespace: string,
+        key: string,
+        config: {
+          name: string;
+          label: string;
+          hint: string;
+          icon: string;
+          type: new () => { render(force?: boolean): unknown };
+          restricted: boolean;
+        },
+      ): void;
     };
     audio: {
       readonly locked: boolean;
@@ -223,7 +237,11 @@ declare global {
       emit(event: string, data: unknown): void;
     };
     packs: { get(id: string): FoundryPack | undefined };
-    modules: { get(id: string): { api?: unknown; active?: boolean } | undefined };
+    modules: {
+      get(
+        id: string,
+      ): { api?: unknown; active?: boolean; flags?: Record<string, unknown> } | undefined;
+    };
   };
 
   const canvas:
@@ -302,6 +320,15 @@ declare global {
     };
   };
 
+  class FilePicker {
+    constructor(options: {
+      type: "folder" | "audio";
+      current: string;
+      callback: (path: string, app: { activeSource?: string }) => void;
+    });
+    render(force?: boolean): unknown;
+  }
+
   function fromUuid(uuid: string): Promise<unknown>;
   function renderTemplate(path: string, data: Record<string, unknown>): Promise<string>;
   function loadTemplates(paths: string[]): Promise<unknown>;
@@ -313,7 +340,7 @@ declare global {
   };
 
   const foundry: {
-    utils: { randomID(length?: number): string };
+    utils: { randomID(length?: number): string; getRoute(path: string): string };
     audio: {
       AudioHelper: {
         play(
@@ -324,6 +351,7 @@ declare global {
     };
     applications: {
       api: {
+        ApplicationV2: abstract new () => { render(force?: boolean): unknown };
         DialogV2: {
           wait(options: {
             window: { title: string };
@@ -331,6 +359,8 @@ declare global {
             buttons: FoundryDialogButton[];
             rejectClose?: boolean;
             close?: () => unknown;
+            render?: (event: Event, element: HTMLElement) => void;
+            position?: { width?: number; height?: number };
           }): Promise<string | null>;
         };
       };

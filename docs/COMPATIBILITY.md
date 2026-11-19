@@ -98,3 +98,7 @@ SP 7, 40 PV).
 | Fato | Estado |
 |---|---|
 | API v1 planejada (`ccpReady`, `getSubject`, `registerSlot`, `getPalette`, hooks) | Proposta no painel (D12); **não implementada** — tarefa E6-01 do painel |
+| `game.settings.registerMenu` exige `type` subclasse de `FormApplication` ou `ApplicationV2` (uma classe simples lança erro e interrompe o resto do `init`); subclasse de `foundry.applications.api.ApplicationV2` com `render()` próprio abre a janela do módulo | Testado (E5) |
+| `DialogV2.wait({render})`: o callback recebe `(event, element)` a cada render; o conteúdo pode ser montado e atualizado por DOM dentro dele. `position.height` fixo esconde os botões quando o conteúdo é longo: limitar a altura do conteúdo por CSS | Testado (E5) |
+| `new FilePicker({type: "folder" \| "audio", current, callback(path, app)})`: em modo pasta o botão vira "Select Directory" e devolve a pasta navegada; `app.activeSource` é `"data"` (dados do usuário) ou `"public"` (núcleo, ex.: `sounds/lock.wav`); fechar sem escolher dispara o hook `closeFilePicker` sem chamar o callback. O FilePicker abre por cima do DialogV2 | Testado (E5) |
+| Ajuste de mundo `type: Object` com `onChange`: `game.settings.set` pelo mestre dispara o `onChange` no próprio cliente e o valor persiste após F5; `fetch(foundry.utils.getRoute(caminho))` lê arquivos da área de dados | Testado (E5, um cliente) |

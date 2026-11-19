@@ -1,7 +1,8 @@
 # Efeitos audiovisuais e pacotes de conteúdo
 
 Status: motor de cues, efeitos próprios, sons e ajustes de cliente implementados na E4
-(R07); pacotes e importador (R08) ficam para a E5; Quickhacks (R09) para a E6.
+(R07); pacotes, importador e editor de efeitos por evento na E5 (R08); Quickhacks (R09)
+ficam para a E6.
 
 ## Eventos de combate
 
@@ -64,15 +65,50 @@ Lista fechada e versionada, emitida pelos workflows. Contexto sempre com `source
   descartado, não guardado para depois.
 - Sequencer: com o módulo ativo, passos `sprite` vão por ele (`.locally()`); sem ele, sprite
   PIXI próprio. Com movimento reduzido usa sempre o backend próprio.
-- API (até a E5): `api.effects.register(chave, passos)`, `api.effects.unregister(chave)` e
+- API: `api.effects.register(chave, passos)`, `api.effects.unregister(chave)` e
   `api.effects.play({name, source?, targets?, point?, qualifiers?})`. Passos aceitos:
   `procedural`, `synth`, `sound` (`ogg`, `mp3`, `wav`) e `sprite` (`webm`, `webp`, `png`,
   `svg`), com caminho relativo do Foundry, sem `..` nem URL.
 
+## Como ficou na E5
+
+- Código: `src/domain/pack.ts` (manifesto, validação, lista salva), `src/domain/overrides.ts`
+  (associações do mestre), `src/effects/packs.ts` (carrega e ativa), `src/integrations/
+  foundry/pack-store.ts` (ajustes de mundo, leitura do manifesto, FilePicker),
+  `src/ui/pack-manager.ts` e `src/ui/cue-editor.ts` (janelas do mestre).
+- Ordem de procura de cada chave (D27): associação do mestre → pacotes ativos (na ordem da
+  lista; depois os registrados por código) → cues de `api.effects.register` → padrão próprio.
+  Continua valendo "chave mais específica primeiro" (D25).
+- Ajustes de mundo (só o mestre grava; todos recarregam pelo `onChange`):
+  `packs` = `[{folder, enabled}]` e `cueOverrides` = `{chave: {choice, sound, volume}}`.
+  O manifesto é lido de novo a cada carga (`fetch` sem cache) e validado de novo; o mundo
+  guarda só a pasta.
+- Importador (Configurar ajustes → Combat Kit → "Gerenciar pacotes"): "Adicionar pasta…" abre
+  o FilePicker em modo pasta (dados do usuário ou do núcleo), valida, mostra título, id,
+  versão e contagens ou cada erro; pacote inválido fica na lista desligado e não pode ser
+  ligado. Subir na lista muda a prioridade; validar de novo relê o arquivo.
+- Editor ("Editar efeitos"): uma linha por evento e por chave que algum efeito ativo
+  define. Efeito: Automático, Silenciar ou qualquer cue do mesmo evento de qualquer fonte
+  (pacote, código, módulo). Som: arquivo de áudio escolhido no FilePicker substitui os
+  passos de som do efeito e mantém os visuais; volume 0–1,5. "Restaurar tudo" apaga as
+  associações. Associação que aponta para pacote desligado é ignorada.
+- Edição pessoal: `build:personal` grava `flags["cyberpunk-combat-kit"].personalPack =
+  "personal"` no `module.json` quando `private/pack/` existe; no `ready` o módulo lê
+  `modules/cyberpunk-combat-kit/personal/cck-pack.json` e registra como pacote de código.
+  A edição pública não tem a flag e não faz requisição nenhuma.
+- API: `api.packs.register(manifesto, pasta)` devolve `{ok, pack}` ou `{ok: false, errors}`;
+  `api.packs.unregister(id)`; `api.packs.active()`.
+- Validação (testes em `tests/unit/pack.test.ts`): id `[a-z0-9-]` (sem `default`/`code`,
+  reservados), versão `1.0.0[-tag]`, título até 80, `kinds` em `cues`/`quickhacks`
+  (ausente = `cues`), pasta sem `..`, `.`, barra inicial, `\` nem esquema; assets só com
+  extensão da lista e caminho relativo seguro; passo com `asset` precisa de asset declarado
+  e do tipo certo para o passo; limites de 200 assets, 200 cues, 100 Quickhacks e 256 KB.
+  Quickhacks são só validados e guardados (uso na E6).
+
 ## Formato de pacote
 
 Pasta com `cck-pack.json` na raiz, colocada em `Data/` do Foundry (ex.:
-`Data/cck-packs/<id>/`) ou dentro de outro módulo. Proposta de manifesto:
+`Data/cck-packs/<id>/`) ou dentro de outro módulo. Manifesto:
 
 ```json
 {
@@ -95,10 +131,8 @@ Pasta com `cck-pack.json` na raiz, colocada em `Data/` do Foundry (ex.:
 - Chave de cue: `evento[:qualificador]` (tipo de arma, modo, id de Quickhack).
 - Caminhos relativos ao manifesto; validação no domínio rejeita `..`, URLs externas e tipos
   fora da lista (`ogg`, `mp3`, `wav`, `webm`, `webp`, `png`, `svg`, `json`).
-- Importador (GM): escolhe a pasta pelo `FilePicker`, valida, mostra o que o pacote traz,
-  ativa/desativa e permite reatribuir cada evento.
-- Pacotes registrados por código: `api.packs.register(manifest)` (é assim que a edição
-  pessoal entra, docs/PERSONAL.md).
+- Passos dos cues como na E4 (`procedural`, `synth`, `sound`, `sprite`); em `sound` e
+  `sprite`, `asset` (chave de `assets`) no lugar de `src`.
 
 ## Conteúdo padrão da edição pública
 
