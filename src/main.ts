@@ -75,6 +75,8 @@ Hooks.once("ready", () => {
   void preloadDvTables();
   void removeLeftoverAreas();
   const module = game.modules.get(MODULE_ID);
-  if (module) module.api = createApi();
+  const api = createApi();
+  if (module) module.api = api;
+  Hooks.callAll("cckReady", api);
   console.info(`${MODULE_ID} | ${game.i18n.localize("CCK.Ready")}`);
 });

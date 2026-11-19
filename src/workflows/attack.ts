@@ -1,3 +1,4 @@
+import { postResolution } from "./announce";
 import {
   attackBlocker,
   canDodge,
@@ -18,12 +19,13 @@ import { rollDamage } from "../integrations/cpr/attack-adapter";
 import { combatantSnapshot, findItem, pickWeapon } from "../integrations/cpr/weapon-adapter";
 import {
   attackerToken,
+  chosenTarget,
   distanceBetween,
-  singleTarget,
+  ownedToken,
   squareSize,
 } from "../integrations/foundry/tokens";
 import { executorId } from "../integrations/foundry/users";
-import { newState, postResolutionCard, type TargetResult } from "../ui/resolution-card";
+import { newState, type TargetResult } from "../ui/resolution-card";
 import { explosiveAttack, shellAttack } from "./area";
 import { dvFor, nativeAttack } from "./attack-steps";
 import { cueFire, cueOutcomes, qualifiersFor } from "./combat-cues";
@@ -40,7 +42,7 @@ import { requestDefense } from "./defense";
 import { suppressiveFire } from "./suppressive";
 
 function buildContext(options: AttackOptions): AttackContext | null {
-  const token = attackerToken();
+  const token = options.attacker === undefined ? attackerToken() : ownedToken(options.attacker);
   if (typeof token === "string") {
     warn(`CCK.Attack.${token}`);
     return null;
@@ -75,7 +77,7 @@ function buildContext(options: AttackOptions): AttackContext | null {
 }
 
 async function singleAttack(context: AttackContext, options: AttackOptions): Promise<void> {
-  const targetToken = singleTarget();
+  const targetToken = chosenTarget(options.target);
   if (typeof targetToken === "string") return warn(`CCK.Attack.${targetToken}`);
   const targetActor = targetToken.actor;
   if (!targetActor) return warn("CCK.Attack.no-target");
@@ -149,7 +151,7 @@ async function singleAttack(context: AttackContext, options: AttackOptions): Pro
     }
   }
 
-  await postResolutionCard(
+  await postResolution(
     newState({
       attackerUuid: context.attacker.uuid,
       attackerName: context.attacker.name,

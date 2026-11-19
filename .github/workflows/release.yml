@@ -1,0 +1,26 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Check tag matches version
+        run: test "${{ github.event.release.tag_name }}" = "v$(node -p "require('./package.json').version")"
+      - run: npm run package
+      - name: Upload module.json and module.zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" release/module.json release/module.zip --clobber

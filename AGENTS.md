@@ -27,9 +27,9 @@ A ficha e o pipeline de rolagem do sistema são a fonte de verdade.
 
 ## Regras de trabalho
 
-- E0 a E7 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito, pacotes,
-  editor de efeitos, Quickhacks (desligados por padrão) e encaixe no Character Panel.
-  Próximo: E8-01 ou P-02.
+- E0 a E8-01 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito,
+  pacotes, editor de efeitos, Quickhacks (desligados por padrão), encaixe no Character Panel
+  e API v1. E8-02 (beta 0.1.0) pronta, publicação só com pedido. Próximo: P-02.
 - Separe requisito do usuário, proposta técnica e fato verificado. Não invente
   APIs, campos de ficha, fórmulas, compatibilidade, testes ou resultados.
 - Execute uma tarefa pequena por vez; não implemente etapas futuras por antecipação.
@@ -61,6 +61,7 @@ A ficha e o pipeline de rolagem do sistema são a fonte de verdade.
 | Tarefas abertas e pendências | [STATUS.md](STATUS.md) |
 | Etapas, arquivos e critérios de aceite | [docs/PLAN.md](docs/PLAN.md) |
 | Camadas, contratos, API, integração com o painel | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| API v1 para macros e outros módulos | [docs/INTEGRATION.md](docs/INTEGRATION.md) |
 | Regras de combate (resumo próprio + páginas) | [docs/RULES.md](docs/RULES.md) |
 | APIs reais do sistema CPR e do Foundry | [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) |
 | Estudo dos módulos de referência | [docs/RESEARCH.md](docs/RESEARCH.md) |

@@ -1,6 +1,6 @@
 {
   "name": "cyberpunk-combat-kit",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "description": "Automação de combate e efeitos audiovisuais para Cyberpunk RED – CORE no Foundry VTT.",
   "type": "module",
@@ -15,7 +15,8 @@
     "build": "vite build",
     "build:personal": "node scripts/build-personal.mjs",
     "check:private": "node scripts/check-private.mjs",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run check:private"
+    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run check:private",
+    "package": "npm run check && node scripts/package.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

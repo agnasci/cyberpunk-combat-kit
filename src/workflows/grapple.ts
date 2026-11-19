@@ -5,6 +5,7 @@ import { rollSkill } from "../integrations/cpr/attack-adapter";
 import { combatantSnapshot, findSkill, SKILLS } from "../integrations/cpr/weapon-adapter";
 import { requestGm } from "../integrations/foundry/gm-executor";
 import { grappleLink } from "../integrations/foundry/grapple-store";
+import { postResolution } from "./announce";
 import {
   attackerToken,
   distanceBetween,
@@ -12,12 +13,7 @@ import {
   squareSize,
 } from "../integrations/foundry/tokens";
 import { executorId } from "../integrations/foundry/users";
-import {
-  newState,
-  postResolutionCard,
-  type Outcome,
-  type TargetResult,
-} from "../ui/resolution-card";
+import { newState, type Outcome, type TargetResult } from "../ui/resolution-card";
 import { speakerFor, targetEntry, warn } from "./combat-common";
 import { cueGrapple, cueOutcomes } from "./combat-cues";
 import { requestDefense } from "./defense";
@@ -85,7 +81,7 @@ async function postGrappleCard(
   partnerIsNpc: boolean,
 ): Promise<void> {
   const attacker = combatantSnapshot(self.actor);
-  await postResolutionCard(
+  await postResolution(
     newState({
       attackerUuid: self.token.document.uuid,
       attackerName: attacker.name,

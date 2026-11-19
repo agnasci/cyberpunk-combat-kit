@@ -1,4 +1,5 @@
 import { attackBlocker, canDodge, resolveAttack, type Defense } from "../domain/attack-rules";
+import { postResolution } from "./announce";
 import {
   explosionSquare,
   shellArea,
@@ -28,7 +29,6 @@ import {
 import { showPlacementHint } from "../ui/placement-hint";
 import {
   newState,
-  postResolutionCard,
   updateCard,
   type ResolutionState,
   type TargetResult,
@@ -198,7 +198,7 @@ export async function shellAttack(context: AttackContext): Promise<void> {
       });
     }
     const summary = await damageAll(context.attacker.uuid, context.item, context.roll, targets);
-    await postResolutionCard(
+    await postResolution(
       newState({
         attackerUuid: context.attacker.uuid,
         attackerName: context.attacker.name,
@@ -289,7 +289,7 @@ export async function explosiveAttack(context: AttackContext): Promise<void> {
       multiplier: null,
     };
     if (attackRoll.total <= dv) {
-      await postResolutionCard(
+      await postResolution(
         newState({
           ...base,
           damageTotal: null,
@@ -315,7 +315,7 @@ export async function explosiveAttack(context: AttackContext): Promise<void> {
       attackTotal: attackRoll.total,
       roll: context.roll,
     });
-    await postResolutionCard(
+    await postResolution(
       newState({
         ...base,
         damageTotal: result.damageTotal,

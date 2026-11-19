@@ -4,7 +4,11 @@ import type { AimLocation, AttackMode, AttackProfile } from "../domain/modes";
 import type { NativeDamage, NativeRollOptions } from "../integrations/cpr/attack-adapter";
 import type { CombatantSnapshot, WeaponSnapshot } from "../integrations/cpr/weapon-adapter";
 
+export type TokenRef = Token | TokenDocument | string;
+
 export interface AttackOptions {
+  attacker?: TokenRef;
+  target?: TokenRef;
   weaponId?: string;
   mode?: AttackMode;
   location?: AimLocation;
@@ -25,6 +29,7 @@ export function speakerFor(context: { actor: Actor; token: Token }): unknown {
   return ChatMessage.getSpeaker({ actor: context.actor, token: context.token.document });
 }
 import { requestGm } from "../integrations/foundry/gm-executor";
+import { announceDamage, type DamageSource } from "./announce";
 import { updateCard, type ResolutionState, type TargetResult } from "../ui/resolution-card";
 
 export function warn(key: string, data?: Record<string, string>): void {
@@ -40,6 +45,7 @@ export async function applyTo(
   attackerUuid: string,
   target: TargetResult,
   application: DamageApplication,
+  source: DamageSource = "attack",
 ): Promise<TargetResult> {
   const result = await requestGm({
     op: "applyDamage",
@@ -48,6 +54,9 @@ export async function applyTo(
     damage: application,
   });
   if (!result.ok) warn(`CCK.Gm.${result.error}`);
+  else if (result.result) {
+    announceDamage({ attackerUuid, targetUuid: target.uuid, source, result: result.result });
+  }
   return {
     ...target,
     applied: result.ok ? result.result : null,

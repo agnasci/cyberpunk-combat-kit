@@ -56,3 +56,29 @@ export function tokenForUuid(uuid: string): Token | null {
     null
   );
 }
+
+export function tokenFromRef(ref: Token | TokenDocument | string): Token | null {
+  const placeables = canvas?.tokens?.placeables ?? [];
+  if (typeof ref === "string") {
+    return (
+      placeables.find((token) => token.document.uuid === ref || token.id === ref) ??
+      placeables.find((token) => token.actor?.uuid === ref) ??
+      null
+    );
+  }
+  const id = "documentName" in ref ? ref.id : ref.document.id;
+  return placeables.find((token) => token.id === id && token.actor) ?? null;
+}
+
+export function ownedToken(ref: Token | TokenDocument | string): Token | TokenProblem {
+  if (!canvas?.tokens) return "no-canvas";
+  const token = tokenFromRef(ref);
+  return token?.isOwner && token.actor ? token : "no-attacker";
+}
+
+export function chosenTarget(
+  ref: Token | TokenDocument | string | undefined,
+): Token | TokenProblem {
+  if (ref === undefined) return singleTarget();
+  return tokenFromRef(ref) ?? "no-target";
+}

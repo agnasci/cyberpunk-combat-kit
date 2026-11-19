@@ -5,12 +5,17 @@ automática, defesa, dano aplicado com armadura e ablação, modos de fogo e ár
 combate no clique direito, efeitos audiovisuais configuráveis e pacotes de conteúdo
 importáveis. Integra-se ao Character Panel quando os dois estão ativos.
 
-**Estado:** alfa (0.0.1). Ataques à distância e corpo a corpo, modos de fogo, áreas,
+**Estado:** beta (0.1.0). Ataques à distância e corpo a corpo, modos de fogo, áreas,
 agarrão, dano aplicado pelo mestre com desfazer, efeitos audiovisuais, menu de combate no
 clique direito, pacotes de conteúdo importáveis com editor de efeitos por evento e motor de
 Quickhacks desligado por padrão, com definições só vindas de pacotes, e aba "Combate" no
-Character Panel quando ele está ativo (também há entrada pela API). Veja
-[STATUS.md](STATUS.md) e [SPEC.md](SPEC.md).
+Character Panel quando ele está ativo. Macros e outros módulos usam a API v1
+([docs/INTEGRATION.md](docs/INTEGRATION.md)). Veja [STATUS.md](STATUS.md) e [SPEC.md](SPEC.md).
+
+## Instalação
+
+Foundry VTT V12 com o sistema Cyberpunk RED – CORE. Em "Instalar módulo", cole o manifesto:
+`https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
 
 ## Unofficial content
 

@@ -286,5 +286,8 @@
   "CCK.Panel.AttackWith": "Attack the marked target with {weapon}",
   "CCK.Panel.Menu": "Combat menu for the marked target",
   "CCK.Panel.NoTarget": "Mark a target (T key or right-click the token) to see combat actions.",
-  "CCK.Panel.NoToken": "Combat Kit: the panel character has no token in this scene."
+  "CCK.Panel.NoToken": "Combat Kit: the panel character has no token in this scene.",
+  "CCK.Mode.direct": "damage",
+  "CCK.Api.DirectDamage": "Macro",
+  "CCK.Api.BadDamage": "Combat Kit: invalid damage request (see the console)."
 }

@@ -1,10 +1,11 @@
+import { postResolution } from "./announce";
 import { circleArea } from "../domain/area";
 import { SUPPRESSION_RANGE, suppressionFails } from "../domain/modes";
 import { resolutionAudience } from "../domain/routing";
 import { combatantSnapshot } from "../integrations/cpr/weapon-adapter";
 import { removeArea, showArea, tokensInArea } from "../integrations/foundry/area-placement";
 import { restingCenter } from "../integrations/foundry/tokens";
-import { newState, postResolutionCard, type TargetResult } from "../ui/resolution-card";
+import { newState, type TargetResult } from "../ui/resolution-card";
 import { nativeAttack } from "./attack-steps";
 import { cueArea, cueFire } from "./combat-cues";
 import { speakerFor, targetEntry, warn, type AttackContext } from "./combat-common";
@@ -55,7 +56,7 @@ async function suppress(context: AttackContext, tokens: Token[]): Promise<void> 
   );
 
   const allNpc = tokens.every((token) => !token.actor?.hasPlayerOwner);
-  await postResolutionCard(
+  await postResolution(
     newState({
       attackerUuid: context.attacker.uuid,
       attackerName: context.attacker.name,

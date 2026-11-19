@@ -3,6 +3,7 @@ import type { Defense } from "../domain/attack-rules";
 import { mortallyWounded } from "../domain/cues";
 import type { DamageResult } from "../domain/gm-request";
 import type { PackQuickhack } from "../domain/pack";
+import { announceDamage, postResolution } from "./announce";
 import {
   awareAfterQuickhack,
   breachBlocker,
@@ -45,12 +46,7 @@ import {
   squareSize,
 } from "../integrations/foundry/tokens";
 import { executorId, ownerRecipients } from "../integrations/foundry/users";
-import {
-  newState,
-  postResolutionCard,
-  type Outcome,
-  type TargetResult,
-} from "../ui/resolution-card";
+import { newState, type Outcome, type TargetResult } from "../ui/resolution-card";
 import { speakerFor, targetEntry, warn } from "./combat-common";
 import { requestDefense } from "./defense";
 
@@ -185,7 +181,7 @@ async function postNetCard(
     effect: card.effect ?? null,
     error: card.error ?? null,
   };
-  await postResolutionCard(
+  await postResolution(
     newState({
       attackerUuid: self.token.document.uuid,
       attackerName: self.actor.name,
@@ -386,7 +382,15 @@ async function runQuickhack(
   const applied = result.ok ? result.result : null;
   if (result.ok) {
     cue(success ? "quickhack.success" : "quickhack.fail", self.token, other.token, [quickhack.id]);
-    if (applied) cueDamage(self.token.id, other.token.id, applied);
+    if (applied) {
+      cueDamage(self.token.id, other.token.id, applied);
+      announceDamage({
+        attackerUuid: self.token.document.uuid,
+        targetUuid: other.token.document.uuid,
+        source: "quickhack",
+        result: applied,
+      });
+    }
   }
   const aware = awareAfterQuickhack(view.intrusion.aware, quickhack.alerts, success);
   await postNetCard(
@@ -534,7 +538,13 @@ async function burnEndedTurn(combat: Combat, prior: CombatState): Promise<void> 
     const entry: TargetResult = { ...targetEntry(token.uuid, actor.name), outcome: "applied" };
     const target = { ...entry, applied: applied.hpReduction > 0 ? applied : null };
     cueDamage(null, token.id, applied);
-    await postResolutionCard(
+    announceDamage({
+      attackerUuid: token.uuid,
+      targetUuid: token.uuid,
+      source: "ongoing",
+      result: applied,
+    });
+    await postResolution(
       newState({
         attackerUuid: token.uuid,
         attackerName: actor.name,

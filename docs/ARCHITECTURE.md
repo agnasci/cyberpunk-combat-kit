@@ -160,16 +160,23 @@ Como ficou na E7:
 
 ## API pública (R11)
 
-`game.modules.get("cyberpunk-combat-kit").api` + hook `cckReady`:
+`game.modules.get("cyberpunk-combat-kit").api` (congelado) + hook `cckReady`. Contrato completo
+para quem consome em docs/INTEGRATION.md (E8-01, D30). Código:
 
-| Membro | Função |
-|---|---|
-| `version` | `1` |
-| `attack({attacker, target, weaponId, mode})` | Inicia o fluxo de ataque |
-| `applyDamage({targetUuid, damage, bonus, location, ...})` | Pelo executor do mestre |
-| `effects.register(id, definition)` / `effects.play(event, context)` | Efeitos por código |
-| `packs.register(manifest, folder)` / `packs.unregister(id)` / `packs.active()` | Pacotes de conteúdo (também usado pelo pacote pessoal) |
-| Hooks `cckAttackResolved`, `cckDamageApplied`, `cckQuickhackResolved` | Para outros módulos |
+- `src/api/index.ts`: monta o objeto; `version` vem de `API_VERSION` em
+  `src/domain/api-input.ts`.
+- `src/domain/api-input.ts`: valida o pedido de `applyDamage` (`parseDamageInput`) e escolhe o
+  hook de cada card pelo `mode` (`resolutionHook`).
+- `src/workflows/announce.ts`: `postResolution` posta o card e dispara `cckAttackResolved` ou
+  `cckQuickhackResolved`; `announceDamage` dispara `cckDamageApplied`. Todos os fluxos postam
+  por ele; `applyTo` (combat-common) e o Netrunning anunciam o dano.
+- `src/workflows/direct-damage.ts`: `applyDamage` pelo executor do mestre (mesmo pedido
+  `applyDamage` do socket, com a checagem de dono do atacante), card com `mode: "direct"` e
+  desfazer, cue `damage.applied` com o qualificador `direct`.
+- `attack` aceita `attacker` e `target` (`tokenFromRef`, `ownedToken`, `chosenTarget` em
+  `src/integrations/foundry/tokens.ts`); sem eles, segue o token controlado e o alvo marcado.
+
+Hooks só no cliente que executou a ação; os dados são cópias (`structuredClone`).
 
 ## Persistência
 

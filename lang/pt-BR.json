@@ -286,5 +286,8 @@
   "CCK.Panel.AttackWith": "Atacar o alvo marcado com {weapon}",
   "CCK.Panel.Menu": "Menu de combate do alvo marcado",
   "CCK.Panel.NoTarget": "Marque um alvo (tecla T ou clique direito no token) para ver as ações de combate.",
-  "CCK.Panel.NoToken": "Combat Kit: o personagem do painel não tem token nesta cena."
+  "CCK.Panel.NoToken": "Combat Kit: o personagem do painel não tem token nesta cena.",
+  "CCK.Mode.direct": "dano",
+  "CCK.Api.DirectDamage": "Macro",
+  "CCK.Api.BadDamage": "Combat Kit: pedido de dano inválido (veja o console)."
 }

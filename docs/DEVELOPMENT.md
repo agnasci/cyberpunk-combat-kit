@@ -17,6 +17,7 @@ Runner Teste (confirmar com o usuário antes de usar outro mundo).
 | `npm run build:personal` | Edição pessoal em `dist-personal/` (`scripts/build-personal.mjs`, docs/PERSONAL.md) |
 | `npm run check:private` | Guardas de vazamento (`scripts/check-private.mjs`) |
 | `npm run check` | typecheck, lint, test, build e `check:private` |
+| `npm run package` | `check` + `release/module.zip` e `release/module.json` a partir de `dist/` (`scripts/package.mjs`) |
 
 Versões das dependências iguais às do Character Panel (D02). `npm audit` acusa um aviso
 moderado em `minimatch` via `typescript-eslint` 8.72.2 (só ferramenta de desenvolvimento);
@@ -61,5 +62,12 @@ exige voltar ao setup e relançar o mundo.
 
 Commits pequenos (`docs:`, `feat:`, `fix:`, `test:`) só quando o usuário pedir; push e
 release só com pedido explícito. Autor e committer no noreply do GitHub (já configurado
-neste repositório). Release: igual ao Character Panel (`docs/DEVELOPMENT.md` de lá), sempre
-a partir de `dist/`.
+neste repositório). Release (D31), sempre a partir de `dist/`:
+
+1. Subir `version` em `package.json` e `module.json` e a versão em `download`
+   (`.../releases/download/vX.Y.Z/module.zip`).
+2. `npm run package` e conferir a lista impressa (o script falha se versão e URL não baterem).
+3. Commit, tag `vX.Y.Z`, push e release no GitHub: o workflow `release.yml` refaz o pacote e
+   anexa `module.json` e `module.zip` (a tag tem de ser `v` + a versão do `package.json`).
+4. Sem o workflow: `gh release create vX.Y.Z release/module.json release/module.zip`.
+5. Checklist de docs/LEGAL.md antes de cada release pública.
