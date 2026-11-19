@@ -17,6 +17,9 @@ Character Panel quando ele está ativo. Macros e outros módulos usam a API v1
 Foundry VTT V12 com o sistema Cyberpunk RED – CORE. Em "Instalar módulo", cole o manifesto:
 `https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
 
+A aba "Combate" e os atalhos no painel precisam do Character Panel 0.2.0 ou mais novo (API v1).
+Com versão anterior ou sem o painel, o Combat Kit funciona sozinho pelo clique direito.
+
 ## Unofficial content
 
 Combat Kit is unofficial content provided under the Homebrew Content Policy of R. Talsorian

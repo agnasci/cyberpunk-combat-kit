@@ -11,7 +11,8 @@ Atualizado em: 2026-11-19.
 - Entrada pelo menu do clique direito, pela aba "Combate" do Character Panel e pela API v1
   (docs/INTEGRATION.md).
 - `main` em `origin` (GitHub) a partir de `b98fd85` (E8); release feita da tag `v0.1.0`.
-- Character Panel: API v1 commitada lá em `f6e17c4`, sem push nem release.
+- Character Panel: v0.2.0 publicada em 2026-11-19 com a API v1 (release `v0.2.0` de lá); a
+  integração precisa dela (README).
 
 ## Última entrega: E8-01 API v1 e E8-02 beta 0.1.0 publicada (2026-11-19)
 
