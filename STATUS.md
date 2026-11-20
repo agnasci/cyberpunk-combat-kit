@@ -11,10 +11,10 @@ Atualizado em: 2026-11-20.
 - Entrada pelo menu do clique direito, pela aba "Combate" do Character Panel e pela API v1
   (docs/INTEGRATION.md).
 - `main` enviado ao GitHub em 2026-11-20 (E10, F-01, ícone dos Quickhacks, chaves combinadas
-  de cue, revisão de regras, mira do alvo, correção do Tiro rápido e turnos D41), sem release: a última
+  de cue, revisão de regras, mira do alvo, correção do Tiro rápido, turnos D41 e D42–D44), sem release: a última
   continua `v0.1.1`; a 0.1.2 sai quando o usuário pedir.
-- Character Panel: v0.2.0 publicada em 2026-11-19 com a API v1 (release `v0.2.0` de lá); a
-  integração precisa dela (README).
+- Character Panel: v0.2.0 (2026-11-19) trouxe a API v1, exigida pela integração; v0.2.1
+  (2026-11-20) trouxe `setAttention`, exigido pelo destaque de turno (README).
 
 ## Última entrega: usabilidade — desfazer estados, Death Save dos PdMs, destaque de turno (2026-11-20)
 
@@ -42,7 +42,7 @@ Atualizado em: 2026-11-20.
   agarrão. **O token "CCK Teste — PdM" ficou ao lado do Atirador** (posição antiga não guardada).
 - Não testado: como jogador (destaque no cliente do dono); desfazer de Inconsciente
   (estrangulamento) e de estado de Quickhack; PdM com Death Save falho; tracker destacado.
-- Character Panel: `setAttention` está só no `main` local de lá (sem release 0.2.1).
+- Character Panel: `setAttention` publicado na release v0.2.1 de lá (2026-11-20).
 
 ## Entrega anterior: turnos e orçamento de ações (2026-11-20)
 
