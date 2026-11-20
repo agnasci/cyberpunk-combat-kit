@@ -4,15 +4,14 @@ Atualizado em: 2026-11-20.
 
 ## Situação
 
-- E0 a E10, F-01, P-02, P-04, a revisão de regras R-01 e os turnos (D41) concluídos (2026-11-20). Última release pública: `v0.1.1` (E9)
+- E0 a E10, F-01, P-02, P-04, a revisão de regras R-01 e os turnos (D41) concluídos (2026-11-20). Última release pública: `v0.1.2` (2026-11-20)
   em https://github.com/agnasci/cyberpunk-combat-kit, com
   `module.json` e `module.zip`. Manifesto:
   `https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
 - Entrada pelo menu do clique direito, pela aba "Combate" do Character Panel e pela API v1
   (docs/INTEGRATION.md).
 - `main` enviado ao GitHub em 2026-11-20 (E10, F-01, ícone dos Quickhacks, chaves combinadas
-  de cue, revisão de regras, mira do alvo, correção do Tiro rápido, turnos D41 e D42–D44), sem release: a última
-  continua `v0.1.1`; a 0.1.2 sai quando o usuário pedir.
+  de cue, revisão de regras, mira do alvo, correção do Tiro rápido, turnos D41 e D42–D44), publicado na release `v0.1.2`.
 - Character Panel: v0.2.0 (2026-11-19) trouxe a API v1, exigida pela integração; v0.2.1
   (2026-11-20) trouxe `setAttention`, exigido pelo destaque de turno (README).
 
