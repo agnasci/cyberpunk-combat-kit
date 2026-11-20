@@ -5,6 +5,7 @@ interface FoundryUser {
   readonly active: boolean;
   readonly character: FoundryActor | null;
   readonly targets: Set<FoundryToken>;
+  readonly color: number | { valueOf(): number };
   can(permission: string): boolean;
 }
 
@@ -108,6 +109,12 @@ interface FoundryToken {
   readonly isVisible: boolean;
   readonly controlled: boolean;
   readonly isTargeted: boolean;
+  readonly targeted: Set<FoundryUser>;
+  readonly target?: FoundryPixiGraphics;
+  readonly w: number;
+  readonly h: number;
+  readonly renderFlags: { set(flags: Record<string, boolean>): void };
+  addChild(child: FoundryPixiGraphics): void;
   readonly bounds: { contains(x: number, y: number): boolean };
   setTarget(
     targeted: boolean,
@@ -165,6 +172,9 @@ interface FoundryPack {
 
 interface FoundryPixiGraphics {
   zIndex: number;
+  renderable: boolean;
+  readonly destroyed: boolean;
+  readonly parent: unknown;
   clear(): this;
   lineStyle(width: number, color?: number, alpha?: number): this;
   beginFill(color: number, alpha?: number): this;
@@ -254,7 +264,13 @@ declare global {
     on(hook: "getSceneControlButtons", fn: (controls: FoundrySceneControl[]) => void): number;
     on(
       hook:
-        "ccpReady" | "ccpRendered" | "targetToken" | "controlToken" | "updateActor" | "updateItem",
+        | "ccpReady"
+        | "ccpRendered"
+        | "targetToken"
+        | "controlToken"
+        | "updateActor"
+        | "updateItem"
+        | "refreshToken",
       fn: (...args: unknown[]) => void,
     ): number;
     callAll(hook: string, ...args: unknown[]): boolean;

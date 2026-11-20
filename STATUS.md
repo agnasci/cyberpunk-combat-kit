@@ -11,15 +11,26 @@ Atualizado em: 2026-11-20.
 - Entrada pelo menu do clique direito, pela aba "Combate" do Character Panel e pela API v1
   (docs/INTEGRATION.md).
 - `origin/main` em `f4e58fd` (tag `v0.1.1`). Commits locais ainda não enviados: E10, F-01, o
-  ícone dos Quickhacks, as chaves combinadas de cue e a revisão de regras; entram na próxima release (0.1.2)
+  ícone dos Quickhacks, as chaves combinadas de cue, a revisão de regras e o marcador de alvo; entram na próxima release (0.1.2)
   quando o usuário pedir.
 - Character Panel: v0.2.0 publicada em 2026-11-19 com a API v1 (release `v0.2.0` de lá); a
   integração precisa dela (README).
 
-## Última entrega: revisão de regras e Shift + clique (2026-11-20)
+## Última entrega: marcador de alvo no estilo do HUD (2026-11-20)
 
-- Pedido do usuário: revisar código e regras contra o livro; marcar alvo com Shift + clique.
-- Tecla padrão de "marcar alvo" agora é Shift (D35); vários alvos só pelos templates de área.
+- Tecla de marcar alvo voltou para Alt a pedido do usuário (D35).
+- Marcador próprio (D40): `domain/target-marker.ts` (geometria e cor, testes em
+  `tests/unit/target-marker.test.ts`) e `integrations/foundry/target-marker.ts` (camada
+  no token, gancho `refreshToken`); ajuste de cliente `targetMarker`.
+- Validação: `npm run check` exit 0 (215 testes); no Foundry, Alt + clique marcou o PdM e
+  mostrou os cantos ciano; losango rosa para alvo simulado de outro usuário (inclusive
+  sozinho); ajuste desligado volta às setas nativas; sem erros no console. Não testado:
+  com o Character Panel mudando a paleta; como jogador.
+
+## Entrega anterior: revisão de regras (2026-11-20)
+
+- Pedido do usuário: revisar código e regras contra o livro. Vários alvos só pelos
+  templates de área.
 - Revisão das p. 169–189 (docs/RULES.md, "Revisão"; D39): alcance corpo a corpo e do
   agarrão entre as bordas dos tokens (`reachDistance` em `domain/range.ts`); Artes
   Marciais sem ponto na perícia bloqueadas (`no-martial-arts`); aviso de Lesão Crítica
@@ -29,8 +40,8 @@ Atualizado em: 2026-11-20.
 
 Validação:
 - Automatizada: `npm run check` exit 0 (212 testes; `check:private` sem vazamento).
-- Teste manual real (Foundry, edição pública pela junção): Shift + clique marca, troca e
-  desmarca o alvo sem selecionar; menu mostra a faca "no alcance" contra token 2×2 encostado
+- Teste manual real (Foundry, edição pública pela junção): o clique com tecla marca, troca
+  e desmarca o alvo sem selecionar; menu mostra a faca "no alcance" contra token 2×2 encostado
   (3 m entre centros); ataque de Artes Marciais sem a perícia recusado com aviso; tiro real
   num PdM com 0 PV mostrou o aviso de Lesão Crítica. Tudo restaurado (PV 40, ablação 0,
   munição 6, token 1×1).
@@ -65,7 +76,7 @@ Estados: `TODO`, `EM ANDAMENTO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 - Página do pacote em foundryvtt.com (conta do usuário, manual) com o aviso da Homebrew
   Content Policy: item que falta do checklist do docs/LEGAL.md.
 
-- Decisões D15–D39 aguardam confirmação do usuário em docs/DECISIONS.md.
+- Decisões D15–D40 aguardam confirmação do usuário em docs/DECISIONS.md.
 - Não testados no Foundry: crítico (dois 6) real; arremesso com dano que mostrasse a
   armadura inteira; espingarda com alvo de jogador; explosivo com cobertura; 60 s sem resposta; token não vinculado; dois donos ativos; defesa
   automática dos PdMs em supressão e agarrão; tiro rápido como jogador de outro cliente.

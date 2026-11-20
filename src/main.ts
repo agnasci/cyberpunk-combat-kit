@@ -10,10 +10,12 @@ import {
   registerEffectSettings,
   registerMenuSettings,
   registerQuickhackSettings,
+  setTargetMarkerListener,
   settingsMenuType,
 } from "./integrations/foundry/settings";
 import { registerPackSettings } from "./integrations/foundry/pack-store";
 import { initSocket } from "./integrations/foundry/socket";
+import { initTargetMarker, refreshTargetMarkers } from "./integrations/foundry/target-marker";
 import { openCueEditor } from "./ui/cue-editor";
 import { openPackManager } from "./ui/pack-manager";
 import { bindResolutionCards, RESOLUTION_TEMPLATE } from "./ui/resolution-card";
@@ -27,6 +29,7 @@ import { availableQuickhacks, initQuickhacks } from "./workflows/quickhack";
 Hooks.once("init", () => {
   registerEffectSettings();
   registerMenuSettings();
+  setTargetMarkerListener(refreshTargetMarkers);
   registerQuickFireTool();
   registerQuickhackSettings();
   void loadTemplates([RESOLUTION_TEMPLATE]);
@@ -73,6 +76,7 @@ Hooks.once("ready", () => {
   initQuickMenu();
   initQuickhacks();
   initPanelSlots();
+  initTargetMarker();
   void preloadDvTables();
   void removeLeftoverAreas();
   const module = game.modules.get(MODULE_ID);

@@ -161,6 +161,8 @@
   "CCK.Settings.Modifier-alt": "Alt",
   "CCK.Settings.Modifier-ctrl": "Ctrl",
   "CCK.Settings.Modifier-off": "Desligado",
+  "CCK.Settings.TargetMarker": "Marcador de alvo do Combat Kit",
+  "CCK.Settings.TargetMarkerHint": "Troca as setas de alvo do Foundry por cantos no estilo do HUD, na cor do painel. Alvos de outros jogadores aparecem como losangos na cor de cada um.",
   "CCK.Settings.TargetModifier": "Tecla para marcar alvo",
   "CCK.Settings.TargetModifierHint": "Segure esta tecla e clique com o botão esquerdo num token para torná-lo seu único alvo, ou desmarcá-lo, sem selecioná-lo.",
   "CCK.Settings.Modifier-shift": "Shift",

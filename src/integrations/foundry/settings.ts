@@ -96,7 +96,15 @@ export function registerMenuSettings(): void {
     choices: Object.fromEntries(
       TARGET_CHOICES.map((choice) => [choice, `CCK.Settings.Modifier-${choice}`]),
     ),
-    default: "shift",
+    default: "alt",
+  });
+  game.settings.register(MODULE_ID, "targetMarker", {
+    ...client,
+    name: "CCK.Settings.TargetMarker",
+    hint: "CCK.Settings.TargetMarkerHint",
+    type: Boolean,
+    default: true,
+    onChange: () => onTargetMarkerChange(),
   });
   game.settings.register(MODULE_ID, "skipRollDialogs", {
     ...client,
@@ -137,9 +145,15 @@ export async function setQuickFire(active: boolean): Promise<void> {
   await game.settings.set(MODULE_ID, "quickFire", active);
 }
 
+let onTargetMarkerChange: () => void = () => undefined;
+
+export function setTargetMarkerListener(listener: () => void): void {
+  onTargetMarkerChange = listener;
+}
+
 export function targetModifier(): TargetModifier {
   const value = game.settings.get(MODULE_ID, "targetModifier");
-  return TARGET_CHOICES.find((choice) => choice === value) ?? "shift";
+  return TARGET_CHOICES.find((choice) => choice === value) ?? "alt";
 }
 
 export function menuSettings(): { modifier: MenuModifier; always: boolean } {
