@@ -121,6 +121,7 @@ export interface MenuInput {
   weapons: readonly MenuWeapon[];
   dvs: Readonly<Record<string, DvValue>>;
   distance: number;
+  reach?: number;
   squareSize: number;
   grapple: MenuGrapple | null;
   targetGrappled: boolean;
@@ -180,7 +181,7 @@ function rangeCheck(input: MenuInput, weapon: MenuWeapon, mode: AttackMode): Ran
       return { inRange: true, noTable: false, hint: null };
     }
     return {
-      inRange: meleeInReach(input.distance, input.squareSize),
+      inRange: meleeInReach(input.reach ?? input.distance, input.squareSize),
       noTable: false,
       hint: { key: "CCK.Menu.Reach" },
     };
@@ -278,7 +279,7 @@ function grappleEntries(input: MenuInput): MenuEntry[] {
     return [pick("escape", null, choking)];
   }
   if (input.self || own || input.targetGrappled) return [];
-  const reach = meleeInReach(input.distance, input.squareSize);
+  const reach = meleeInReach(input.reach ?? input.distance, input.squareSize);
   return [pick("grab", reach ? null : { key: "CCK.Menu.Why-out-of-range" })];
 }
 

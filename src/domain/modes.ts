@@ -16,7 +16,8 @@ export const AUTOFIRE_DEFAULTS: Readonly<Record<string, number>> = {
   assaultRifle: 4,
 };
 const EXPLOSIVE_AMMO = new Set(["grenade", "rocket"]);
-const BODY_WEAPONS = new Set(["unarmed", "martialArts"]);
+const MARTIAL_ARTS = "martialArts";
+const BODY_WEAPONS = new Set(["unarmed", MARTIAL_ARTS]);
 export const THROWN_WEAPON_TYPE = "thrownWeapon";
 
 export interface ModeWeapon {
@@ -26,6 +27,7 @@ export interface ModeWeapon {
   autofireMax: number;
   suppressive: boolean;
   magazine: number | null;
+  skillLevel?: number | null;
 }
 
 export interface AttackProfile {
@@ -45,7 +47,8 @@ export type ModeBlocker =
   | "mode-aimed"
   | "mode-thrown"
   | "thrown-only"
-  | "no-ammo-mode";
+  | "no-ammo-mode"
+  | "no-martial-arts";
 
 export function autofireMax(weaponType: string, autoFire: number): number {
   return autoFire > 0 ? autoFire : (AUTOFIRE_DEFAULTS[weaponType] ?? 0);
@@ -134,6 +137,7 @@ export function modeBlocker(weapon: ModeWeapon, profile: AttackProfile): ModeBlo
     return "mode-thrown";
   }
   if (profile.bullets > 1 && (weapon.magazine ?? 0) < profile.bullets) return "no-ammo-mode";
+  if (weapon.weaponType === MARTIAL_ARTS && (weapon.skillLevel ?? 1) < 1) return "no-martial-arts";
   return null;
 }
 

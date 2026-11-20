@@ -1,4 +1,8 @@
-import { damageApplicationFrom, type DamageApplication } from "../domain/attack-rules";
+import {
+  damageApplicationFrom,
+  mortalCriticalInjury,
+  type DamageApplication,
+} from "../domain/attack-rules";
 import { isUndoable } from "../domain/gm-request";
 import type { AimLocation, AttackMode, AttackProfile } from "../domain/modes";
 import type { NativeDamage, NativeRollOptions } from "../integrations/cpr/attack-adapter";
@@ -57,10 +61,16 @@ export async function applyTo(
   else if (result.result) {
     announceDamage({ attackerUuid, targetUuid: target.uuid, source, result: result.result });
   }
+  const applied = result.ok ? result.result : null;
+  const mortal =
+    source === "attack" &&
+    applied !== null &&
+    mortalCriticalInjury(applied.hpBefore, applied.damaged ?? applied.hpReduction > 0);
   return {
     ...target,
-    applied: result.ok ? result.result : null,
+    applied,
     error: result.ok ? null : `CCK.Gm.${result.error}`,
+    wound: mortal ? "CCK.Wound.MortalCritical" : null,
   };
 }
 

@@ -150,3 +150,18 @@ Páginas do PDF em português; implementação em `src/domain/modes.ts`, `area.t
   defensor não usa movimento. Estrangular: BODY direto nos PV, sem armadura; de mais de 1 PV
   para menos de 0 fica com 1 e desmaia; 3 rodadas seguidas desmaiam. Derrubar: BODY direto,
   fim do agarrão, alvo caído. Escapar: teste resistido de Briga; quem agarra solta sem ação.
+
+## Revisão (2026-11-20)
+
+Releitura das p. 169–189 contra o código (D39):
+
+- Conferem: esquiva à distância com REF 8+ e empate a favor do defensor; tiro mirado −8 e
+  efeitos por local; fogo automático (10 balas, tabela e perícia próprias, multiplicador até
+  o máximo da arma); supressivo (10 balas, 25 m, VON + Concentração); cartucho (DV 13, 6 m,
+  um dano para todos, sem tiro mirado); explosivo (10 m, um dano, desvio decidido pelo
+  mestre, esquiva individual); arremesso (DES + Atletismo, 25 m, tabela do lança-granadas,
+  armadura inteira); Briga com armadura inteira e metade nas armas brancas e Artes Marciais;
+  agarrão, estrangular e derrubar; lesão crítica com dois 6 e +5 direto.
+- Corrigido: alcance de 2 m medido entre as bordas dos tokens (p. 176); Artes Marciais
+  exigem ao menos 1 ponto na perícia (p. 178); quem já está Mortalmente Ferido sofre uma
+  Lesão Crítica sempre que leva dano de ataque (p. 186), mostrado como aviso no card.

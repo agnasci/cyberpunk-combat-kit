@@ -30,3 +30,16 @@ export function dvForDistance(bands: readonly DvBand[], distance: number): numbe
 export function meleeInReach(distance: number, squareSize: number): boolean {
   return Number.isFinite(distance) && distance <= squareSize;
 }
+
+export interface GridBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export function reachDistance(a: GridBox, b: GridBox, squareSize: number): number {
+  const gapX = Math.max(0, b.x - (a.x + a.width), a.x - (b.x + b.width));
+  const gapY = Math.max(0, b.y - (a.y + a.height), a.y - (b.y + b.height));
+  return (Math.round(Math.max(gapX, gapY)) + 1) * squareSize;
+}

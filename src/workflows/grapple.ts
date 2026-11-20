@@ -8,7 +8,7 @@ import { grappleLink } from "../integrations/foundry/grapple-store";
 import { postResolution } from "./announce";
 import {
   attackerToken,
-  distanceBetween,
+  reachBetween,
   singleTarget,
   squareSize,
 } from "../integrations/foundry/tokens";
@@ -109,7 +109,7 @@ async function grab(self: Actorish, skipDialog: boolean): Promise<void> {
   const targetToken = singleTarget();
   if (typeof targetToken === "string") return warn(`CCK.Attack.${targetToken}`);
   if (!targetToken.actor) return warn("CCK.Attack.no-target");
-  if (!meleeInReach(distanceBetween(self.token, targetToken), squareSize())) {
+  if (!meleeInReach(reachBetween(self.token, targetToken), squareSize())) {
     return warn("CCK.Attack.out-of-range");
   }
   if (grappleLink(self.token.document) || grappleLink(targetToken.document)) {

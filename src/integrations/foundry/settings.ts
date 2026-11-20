@@ -96,7 +96,7 @@ export function registerMenuSettings(): void {
     choices: Object.fromEntries(
       TARGET_CHOICES.map((choice) => [choice, `CCK.Settings.Modifier-${choice}`]),
     ),
-    default: "alt",
+    default: "shift",
   });
   game.settings.register(MODULE_ID, "skipRollDialogs", {
     ...client,
@@ -139,7 +139,7 @@ export async function setQuickFire(active: boolean): Promise<void> {
 
 export function targetModifier(): TargetModifier {
   const value = game.settings.get(MODULE_ID, "targetModifier");
-  return TARGET_CHOICES.find((choice) => choice === value) ?? "alt";
+  return TARGET_CHOICES.find((choice) => choice === value) ?? "shift";
 }
 
 export function menuSettings(): { modifier: MenuModifier; always: boolean } {

@@ -1,4 +1,5 @@
 import type { Point } from "../../domain/area";
+import { reachDistance, type GridBox } from "../../domain/range";
 import { chooseAttacker } from "../../domain/routing";
 
 export type TokenProblem =
@@ -37,6 +38,16 @@ export function restingCenter(token: Token): Point {
 export function distanceBetween(a: Token, b: Token): number {
   if (!canvas) return Number.NaN;
   return canvas.grid.measurePath([restingCenter(a), restingCenter(b)]).distance;
+}
+
+function gridBox(token: Token): GridBox {
+  const { x, y, width, height } = token.document;
+  const size = gridSize();
+  return { x: x / size, y: y / size, width, height };
+}
+
+export function reachBetween(a: Token, b: Token): number {
+  return reachDistance(gridBox(a), gridBox(b), squareSize());
 }
 
 export function squareSize(): number {

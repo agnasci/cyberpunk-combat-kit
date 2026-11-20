@@ -22,6 +22,7 @@ import {
   chosenTarget,
   distanceBetween,
   ownedToken,
+  reachBetween,
   squareSize,
 } from "../integrations/foundry/tokens";
 import { executorId } from "../integrations/foundry/users";
@@ -91,7 +92,10 @@ async function singleAttack(context: AttackContext, options: AttackOptions): Pro
     equipped: weapon.equipped,
     kind: profile.bullets > 0 ? "ranged" : "melee",
     magazine: weapon.magazine,
-    inRange: kind === "melee" ? meleeInReach(distance, squareSize()) : dv !== null,
+    inRange:
+      kind === "melee"
+        ? meleeInReach(reachBetween(context.token, targetToken), squareSize())
+        : dv !== null,
   });
   if (blocker) return warn(`CCK.Attack.${blocker}`);
 

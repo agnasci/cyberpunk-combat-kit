@@ -35,6 +35,7 @@ export interface TargetResult {
   applied: DamageResult | null;
   error: string | null;
   effect: string | null;
+  wound?: string | null;
   undone: boolean;
 }
 

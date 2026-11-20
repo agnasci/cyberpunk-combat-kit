@@ -1,6 +1,6 @@
-import type { DamageApplication } from "../../domain/attack-rules";
+import { damageTaken, type DamageApplication } from "../../domain/attack-rules";
 import type { DamageResult } from "../../domain/gm-request";
-import { armorAblation, hitPoints } from "./weapon-adapter";
+import { armorAblation, armorSp, hitPoints } from "./weapon-adapter";
 
 interface DamageableActor {
   _applyDamage(
@@ -39,6 +39,7 @@ export async function applyNativeDamage(
 ): Promise<DamageResult> {
   const hpBefore = hitPoints(actor);
   const ablationBefore = armorAblation(actor, damage.location);
+  const sp = armorSp(actor, damage.location);
   await damageable(actor)._applyDamage(
     damage.damage,
     damage.bonusDamage,
@@ -51,12 +52,14 @@ export async function applyNativeDamage(
     { ...NATIVE_REDUCTION_DEFAULTS },
   );
   const hpAfter = hitPoints(actor);
+  const hpReduction = Math.max(hpBefore - hpAfter, 0);
   return {
     hpBefore,
     hpAfter,
-    hpReduction: Math.max(hpBefore - hpAfter, 0),
+    hpReduction,
     ablation: Math.max(armorAblation(actor, damage.location) - ablationBefore, 0),
     location: damage.location,
+    damaged: damageTaken({ ...damage, sp, hpReduction }),
   };
 }
 

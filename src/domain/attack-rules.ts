@@ -43,6 +43,26 @@ export function isCriticalInjury(damageFaces: readonly number[]): boolean {
   return damageFaces.filter((face) => face === 6).length >= CRITICAL_SIXES;
 }
 
+export function mortalCriticalInjury(hpBefore: number, damaged: boolean): boolean {
+  return hpBefore < 1 && damaged;
+}
+
+export function damageTaken(input: {
+  damage: number;
+  bonusDamage: number;
+  sp: number;
+  ignoreArmorPercent: number;
+  ignoreBelowSP: number;
+  hpReduction: number;
+}): boolean {
+  if (input.hpReduction > 0 || input.bonusDamage > 0) return true;
+  const sp =
+    input.sp < input.ignoreBelowSP
+      ? 0
+      : remainingArmorAfterIgnore(input.sp, input.ignoreArmorPercent);
+  return input.damage > sp;
+}
+
 export function remainingArmorAfterIgnore(sp: number, ignorePercent: number): number {
   if (ignorePercent <= 0) return sp;
   return Math.round(sp - sp * (ignorePercent / 100));

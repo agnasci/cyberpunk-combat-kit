@@ -76,10 +76,19 @@ export function weaponSnapshot(item: Item): WeaponSnapshot | null {
   };
 }
 
+function skillLevel(actor: Actor, item: Item): number | null {
+  const name = field(item.system, "weaponSkill");
+  if (typeof name !== "string" || !name) return null;
+  const skill = (actor.itemTypes.skill ?? []).find((entry) => entry.name === name);
+  const level = Number(field(skill?.system, "level"));
+  return Number.isFinite(level) ? level : 0;
+}
+
 export function weaponsOf(actor: Actor): WeaponSnapshot[] {
-  return (actor.itemTypes.weapon ?? [])
-    .map(weaponSnapshot)
-    .filter((weapon): weapon is WeaponSnapshot => weapon !== null);
+  return (actor.itemTypes.weapon ?? []).flatMap((item) => {
+    const weapon = weaponSnapshot(item);
+    return weapon ? [{ ...weapon, skillLevel: skillLevel(actor, item) }] : [];
+  });
 }
 
 export function pickWeapon(actor: Actor, weaponId?: string): WeaponSnapshot | null {
@@ -130,6 +139,17 @@ export function armorAblation(actor: Actor, location: "body" | "head"): number {
   return (actor.itemTypes.armor ?? [])
     .filter((armor) => field(armor.system, "equipped") === "equipped")
     .reduce((max, armor) => Math.max(max, numberAt(armor.system, key, "ablation") ?? 0), 0);
+}
+
+export function armorSp(actor: Actor, location: "body" | "head"): number {
+  const key = location === "head" ? "headLocation" : "bodyLocation";
+  return (actor.itemTypes.armor ?? [])
+    .filter((armor) => field(armor.system, "equipped") === "equipped")
+    .reduce((max, armor) => {
+      const sp =
+        (numberAt(armor.system, key, "sp") ?? 0) - (numberAt(armor.system, key, "ablation") ?? 0);
+      return Math.max(max, sp);
+    }, 0);
 }
 
 let dvTables: Promise<Map<string, DvBand[]>> | null = null;

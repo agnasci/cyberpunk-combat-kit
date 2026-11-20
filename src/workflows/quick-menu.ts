@@ -22,7 +22,12 @@ import {
   visibleName,
   type TokenClick,
 } from "../integrations/foundry/token-click";
-import { attackerToken, distanceBetween, squareSize } from "../integrations/foundry/tokens";
+import {
+  attackerToken,
+  distanceBetween,
+  reachBetween,
+  squareSize,
+} from "../integrations/foundry/tokens";
 import { quickFireOn, setQuickFire, skipRollDialogs } from "../integrations/foundry/settings";
 import { openQuickMenu } from "../ui/quick-menu";
 import { attack } from "./attack";
@@ -113,6 +118,7 @@ export async function menuViewFor(target: Token) {
     weapons,
     dvs: acting && !self ? await dvTable(weapons, distance) : {},
     distance,
+    reach: acting && !self ? reachBetween(acting, target) : Number.NaN,
     squareSize: squareSize(),
     grapple: grappleState,
     targetGrappled: grappleLink(target.document) !== null,

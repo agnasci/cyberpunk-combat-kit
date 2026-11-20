@@ -181,3 +181,14 @@ describe("arremesso (RULES §5; p. 178)", () => {
     expect(modeBlocker(pistol, attackProfile(pistol, "thrown"))).toBe("mode-thrown");
   });
 });
+
+describe("Artes Marciais exigem ao menos 1 ponto na perícia (RULES §5, p. 178)", () => {
+  const martial: ModeWeapon = { ...fists, weaponType: "martialArts" };
+  it("bloqueia sem a perícia e libera com ela", () => {
+    expect(modeBlocker({ ...martial, skillLevel: 0 }, attackProfile(martial, "single"))).toBe(
+      "no-martial-arts",
+    );
+    expect(modeBlocker({ ...martial, skillLevel: 2 }, attackProfile(martial, "single"))).toBeNull();
+    expect(modeBlocker({ ...fists, skillLevel: 0 }, attackProfile(fists, "single"))).toBeNull();
+  });
+});

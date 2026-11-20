@@ -5,6 +5,8 @@ import {
   damageApplicationFrom,
   dodgeOffered,
   isCriticalInjury,
+  damageTaken,
+  mortalCriticalInjury,
   remainingArmorAfterIgnore,
   resolveAttack,
   type NativeDamageRoll,
@@ -127,5 +129,20 @@ describe("parâmetros do _applyDamage iguais ao card nativo", () => {
   it("local só vira cabeça em tiro mirado", () => {
     expect(damageApplicationFrom({ ...roll, location: "head" }).location).toBe("body");
     expect(damageApplicationFrom({ ...roll, aimed: true, location: "head" }).location).toBe("head");
+  });
+});
+
+describe("Mortalmente Ferido sofre Lesão Crítica ao levar dano de ataque (RULES §7, p. 186)", () => {
+  it("só quando já estava abaixo de 1 PV e levou dano", () => {
+    expect(mortalCriticalInjury(0, true)).toBe(true);
+    expect(mortalCriticalInjury(0, false)).toBe(false);
+    expect(mortalCriticalInjury(5, true)).toBe(false);
+  });
+  it("dano conta mesmo com os PV travados em 0 pelo sistema", () => {
+    const base = { bonusDamage: 0, ignoreArmorPercent: 0, ignoreBelowSP: 0, hpReduction: 0 };
+    expect(damageTaken({ ...base, damage: 15, sp: 7 })).toBe(true);
+    expect(damageTaken({ ...base, damage: 7, sp: 7 })).toBe(false);
+    expect(damageTaken({ ...base, damage: 5, sp: 7, ignoreArmorPercent: 50 })).toBe(true);
+    expect(damageTaken({ ...base, damage: 3, sp: 7, bonusDamage: 5 })).toBe(true);
   });
 });
