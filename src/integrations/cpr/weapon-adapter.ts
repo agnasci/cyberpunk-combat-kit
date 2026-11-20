@@ -136,6 +136,11 @@ export function hitPoints(actor: Actor): number {
   return numberAt(actor.system, "derivedStats", "hp", "value") ?? 0;
 }
 
+export function isMortallyWounded(actor: Actor): boolean {
+  const derived = (actor.system as { derivedStats?: { currentWoundState?: unknown } }).derivedStats;
+  return derived?.currentWoundState === "mortallyWounded";
+}
+
 export function armorAblation(actor: Actor, location: "body" | "head"): number {
   const key = location === "head" ? "headLocation" : "bodyLocation";
   return (actor.itemTypes.armor ?? [])

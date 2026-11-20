@@ -14,6 +14,7 @@ export interface ReverseDamageRequest {
   hpReduction: number;
   location: "body" | "head";
   ablation: number;
+  statuses: string[];
 }
 
 export interface ChokeRequest {
@@ -86,10 +87,14 @@ export interface DamageResult {
   chokeStreak?: number;
   rolled?: number;
   note?: string;
+  statuses?: string[];
 }
 
 export function isUndoable(result: DamageResult | null): boolean {
-  return !!result && (result.hpReduction > 0 || result.ablation > 0);
+  return (
+    !!result &&
+    (result.hpReduction > 0 || result.ablation > 0 || (result.statuses?.length ?? 0) > 0)
+  );
 }
 
 const LIMITS = {
@@ -105,6 +110,8 @@ const LIMITS = {
 } as const;
 
 const QUICKHACK_ID = /^[A-Za-z0-9_-]{1,48}$/;
+const STATUS_ID = /^[A-Za-z0-9_.-]{1,48}$/;
+const MAX_STATUSES = 4;
 
 function record(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === "object" ? (value as Record<string, unknown>) : null;
@@ -118,6 +125,13 @@ function intIn(value: unknown, max: number): number | null {
 
 function uuid(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 && value.length <= 200 ? value : null;
+}
+
+function statusList(value: unknown): string[] | null {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > MAX_STATUSES) return null;
+  const valid = value.every((entry) => typeof entry === "string" && STATUS_ID.test(entry));
+  return valid ? [...new Set(value as string[])] : null;
 }
 
 function location(value: unknown): "body" | "head" | null {
@@ -175,7 +189,10 @@ export function parseGmRequest(value: unknown): GmRequest | null {
     const hpReduction = intIn(data.hpReduction, LIMITS.hp);
     const where = location(data.location);
     const ablation = intIn(data.ablation, LIMITS.ablation);
-    if (hpReduction === null || where === null || ablation === null) return null;
+    const statuses = statusList(data.statuses);
+    if (hpReduction === null || where === null || ablation === null || statuses === null) {
+      return null;
+    }
     return {
       op: "reverseDamage",
       attackerUuid,
@@ -183,6 +200,7 @@ export function parseGmRequest(value: unknown): GmRequest | null {
       hpReduction,
       location: where,
       ablation,
+      statuses,
     };
   }
   if (data.op === "choke" || data.op === "throwDown") {

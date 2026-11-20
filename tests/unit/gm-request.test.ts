@@ -58,7 +58,26 @@ describe("pedido ao executor do mestre (D04)", () => {
       hpReduction: 13,
       location: "body",
       ablation: 1,
+      statuses: [],
     });
+  });
+
+  it("desfazer leva os estados que o ataque ligou, validados", () => {
+    const undo = {
+      op: "reverseDamage",
+      attackerUuid: "Actor.a",
+      targetUuid: "Actor.b",
+      hpReduction: 0,
+      location: "body",
+      ablation: 0,
+    };
+    expect(parseGmRequest({ ...undo, statuses: ["prone", "prone", "unconscious"] })).toEqual({
+      ...undo,
+      statuses: ["prone", "unconscious"],
+    });
+    expect(parseGmRequest({ ...undo, statuses: "prone" })).toBeNull();
+    expect(parseGmRequest({ ...undo, statuses: ["<b>"] })).toBeNull();
+    expect(parseGmRequest({ ...undo, statuses: ["a", "b", "c", "d", "e"] })).toBeNull();
   });
 });
 
@@ -109,6 +128,8 @@ describe("desfazer dano", () => {
     expect(isUndoable(base)).toBe(false);
     expect(isUndoable({ ...base, hpReduction: 6 })).toBe(true);
     expect(isUndoable({ ...base, ablation: 1 })).toBe(true);
+    expect(isUndoable({ ...base, statuses: ["prone"] })).toBe(true);
+    expect(isUndoable({ ...base, statuses: [] })).toBe(false);
   });
 });
 

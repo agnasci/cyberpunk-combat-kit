@@ -27,6 +27,8 @@ import { initDefense } from "./workflows/defense";
 import { initPanelSlots } from "./workflows/panel-slots";
 import { initQuickMenu, registerQuickFireTool } from "./workflows/quick-menu";
 import { availableQuickhacks, initQuickhacks } from "./workflows/quickhack";
+import { initNpcDeathSaves } from "./workflows/npc-death-saves";
+import { initTurnAttention, refreshTurnAttention } from "./workflows/turn-attention";
 import { initTurnEconomy, setBudgetListener } from "./workflows/turn-economy";
 
 Hooks.once("init", () => {
@@ -35,6 +37,7 @@ Hooks.once("init", () => {
   setTargetMarkerListener(refreshTargetMarkers);
   setTurnListener(() => {
     refreshTurnIndicator();
+    refreshTurnAttention();
     ui.combat?.render();
   });
   setBudgetListener(() => {
@@ -89,6 +92,8 @@ Hooks.once("ready", () => {
   initPanelSlots();
   initTargetMarker();
   initTurnEconomy();
+  initNpcDeathSaves();
+  initTurnAttention();
   initTurnIndicator();
   Hooks.on("canvasReady", () => refreshTurnIndicator());
   Hooks.on("updateActor", () => refreshTurnIndicator());

@@ -935,3 +935,29 @@
 .cck-turn-badge__action--half {
   background: linear-gradient(135deg, var(--cck-accent) 50%, transparent 50%);
 }
+
+:is(#combat, #combat-popout) .combat-tracker-header button.cck-death-saves {
+  display: flex;
+  flex: 0 0 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 2px 8px;
+  border: 1px solid var(--cck-accent-line);
+  border-radius: 0;
+  background: rgb(5 7 11 / 0.72);
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  color: var(--cck-accent-strong);
+  font-family: Tektur, Jost, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  line-height: 20px;
+  text-transform: uppercase;
+}
+
+:is(#combat, #combat-popout) .combat-tracker-header button.cck-death-saves:hover,
+:is(#combat, #combat-popout) .combat-tracker-header button.cck-death-saves:focus-visible {
+  background: var(--cck-accent-soft);
+  box-shadow: none;
+}

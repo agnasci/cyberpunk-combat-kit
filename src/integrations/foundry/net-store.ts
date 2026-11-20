@@ -110,9 +110,10 @@ export async function applyQuickhack(
       if (!CONFIG.statusEffects.some((status) => status.id === effect.status)) {
         return noChange(actor, "CCK.Net.StatusMissing");
       }
+      const had = actor.statuses?.has(effect.status) === true;
       const created = await actor.toggleStatusEffect(effect.status, { active: true });
       await markExpiry(created, effect.rounds);
-      return noChange(actor, "CCK.Net.Applied-status");
+      return { ...noChange(actor, "CCK.Net.Applied-status"), statuses: had ? [] : [effect.status] };
     }
     case "criticalInjury": {
       const data = await criticalInjuryData(effect.injury);

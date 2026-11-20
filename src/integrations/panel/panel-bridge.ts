@@ -42,6 +42,7 @@ export interface PanelApi {
   unregisterSlot(id: string): void;
   requestRender(regions?: string[]): void;
   getPalette(): PanelPalette | null;
+  setAttention?(source: string, active: boolean): boolean;
 }
 
 function isApi(value: unknown): value is PanelApi {
@@ -83,6 +84,23 @@ export function panelPalette(): PanelPalette | null {
     return connectedApi.getPalette();
   } catch {
     return null;
+  }
+}
+
+export function panelSubject(): PanelSubject | null {
+  try {
+    return connectedApi?.getSubject() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function setPanelAttention(source: string, active: boolean): void {
+  if (typeof connectedApi?.setAttention !== "function") return;
+  try {
+    connectedApi.setAttention(source, active);
+  } catch (error) {
+    console.error(`${MODULE_ID} | setAttention`, error);
   }
 }
 

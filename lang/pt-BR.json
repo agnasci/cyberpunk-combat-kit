@@ -317,6 +317,8 @@
   "CCK.Api.DirectDamage": "Macro",
   "CCK.Api.BadDamage": "Combat Kit: pedido de dano inválido (veja o console).",
   "CCK.Settings.TurnIndicator": "Indicador de turno",
+  "CCK.Settings.TurnPanelHighlight": "Destacar o painel no turno",
+  "CCK.Settings.TurnPanelHighlightHint": "A borda do Character Panel pulsa enquanto o personagem exibido nele estiver no turno. Precisa do Character Panel 0.2.1 ou mais novo.",
   "CCK.Settings.TurnIndicatorHint": "Mostra uma placa sob o token de quem está no turno, com o movimento que resta e a Ação (losango cheio, meio ou vazio).",
   "CCK.Settings.ActionEconomy": "Contador de ações e movimento",
   "CCK.Settings.ActionEconomyHint": "Em combate, cada personagem tem uma Ação de Movimento (MOV em quadrados) e uma Ação por rodada. Ataques, agarrão, recarga e levantar-se gastam a Ação; Correr gasta a Ação para andar mais MOV.",
@@ -334,5 +336,8 @@
   "CCK.Turn.RunTitle": "Correr?",
   "CCK.Turn.RunPrompt": "{name} passa do movimento. Correr gasta a Ação desta rodada e dá mais {move} quadrados.",
   "CCK.Turn.Run": "Correr",
-  "CCK.Turn.Stay": "Ficar"
+  "CCK.Turn.Stay": "Ficar",
+  "CCK.DeathSave.Button": "Death Save dos PdMs",
+  "CCK.DeathSave.Hint": "Rola o Death Save de cada PdM mortalmente ferido neste combate",
+  "CCK.DeathSave.None": "Nenhum PdM mortalmente ferido neste combate"
 }

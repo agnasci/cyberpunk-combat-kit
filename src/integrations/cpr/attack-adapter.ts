@@ -164,6 +164,27 @@ export async function rollStat(
   return summary(roll);
 }
 
+interface DeathSaveActor {
+  createRoll(type: "deathsave", name: string): CprRoll | undefined;
+  processDeathSave?(roll: CprRoll): string;
+}
+
+export async function rollDeathSave(actor: Actor, tokenId: string | null): Promise<boolean> {
+  const { chat } = await loadSystem();
+  const native = actor as Actor & DeathSaveActor;
+  if (typeof native.processDeathSave !== "function") return false;
+  const title = game.i18n.localize("CPR.characterSheet.leftPane.deathSave.title");
+  const roll = native.createRoll("deathsave", title);
+  if (!roll) return false;
+  const keepRolling = await roll.handleRollDialog(syntheticEvent(true), actor, null);
+  if (!keepRolling) return false;
+  await roll.roll();
+  (roll as CprRoll & { saveResult?: string }).saveResult = native.processDeathSave(roll);
+  roll.entityData = { actor: actor.id, token: tokenId, tokens: [] };
+  await chat.RenderRollCard(roll);
+  return true;
+}
+
 function text(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
 }

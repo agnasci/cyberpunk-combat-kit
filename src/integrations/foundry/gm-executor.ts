@@ -17,7 +17,14 @@ import {
 import { countPart, interfaceRank } from "../cpr/net-adapter";
 import { applyNativeDamage, reverseNativeDamage, setHitPointsDirect } from "../cpr/damage-adapter";
 import { hitPoints } from "../cpr/weapon-adapter";
-import { endGrapple, grappleLink, setStatus, startGrapple, writeLink } from "./grapple-store";
+import {
+  clearStatuses,
+  endGrapple,
+  grappleLink,
+  setStatus,
+  startGrapple,
+  writeLink,
+} from "./grapple-store";
 import { applyQuickhack, dropIntrusion, netState, saveIntrusion } from "./net-store";
 import { quickhackSettings } from "./settings";
 import { registerHandler, request, type RequestResult } from "./socket";
@@ -79,8 +86,8 @@ async function choke(
   const outcome = chokeOutcome(hitPoints(target.actor), body, streak);
   const result = await setHitPointsDirect(target.actor, outcome.hpAfter);
   await writeLink(defender, { ...link, chokeStreak: streak, lastChokeRound: round });
-  if (outcome.knockedOut) await setStatus(target.actor, "unconscious");
-  return { ...result, knockedOut: outcome.knockedOut, chokeStreak: streak };
+  const statuses = outcome.knockedOut ? await setStatus(target.actor, "unconscious") : [];
+  return { ...result, knockedOut: outcome.knockedOut, chokeStreak: streak, statuses };
 }
 
 let quickhackSource: () => readonly PackQuickhack[] = () => [];
@@ -163,13 +170,16 @@ async function execute(payload: unknown, senderId: string): Promise<DamageResult
   switch (parsed.op) {
     case "applyDamage":
       return applyNativeDamage(target.actor, parsed.damage);
-    case "reverseDamage":
-      return reverseNativeDamage(
+    case "reverseDamage": {
+      const result = await reverseNativeDamage(
         target.actor,
         parsed.hpReduction,
         parsed.location,
         parsed.ablation,
       );
+      await clearStatuses(target.actor, parsed.statuses);
+      return { ...result, statuses: parsed.statuses };
+    }
     case "choke":
       return choke(requireToken(attacker), target, parsed.body, parsed.round);
     case "throwDown": {
@@ -178,8 +188,8 @@ async function execute(payload: unknown, senderId: string): Promise<DamageResult
       if (grappleLink(attackerToken)?.partnerUuid !== defender.uuid) throw new Error("invalid");
       const result = await setHitPointsDirect(target.actor, hitPoints(target.actor) - parsed.body);
       await endGrapple(attackerToken, defender);
-      await setStatus(target.actor, "prone");
-      return result;
+      const statuses = await setStatus(target.actor, "prone");
+      return { ...result, statuses };
     }
     case "grappleStart":
       await startGrapple(requireToken(attacker), requireToken(target));

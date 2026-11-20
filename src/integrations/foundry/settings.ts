@@ -123,6 +123,14 @@ export function registerMenuSettings(): void {
     default: true,
     onChange: () => onTurnChange(),
   });
+  game.settings.register(MODULE_ID, "turnPanelHighlight", {
+    ...client,
+    name: "CCK.Settings.TurnPanelHighlight",
+    hint: "CCK.Settings.TurnPanelHighlightHint",
+    type: Boolean,
+    default: true,
+    onChange: () => onTurnChange(),
+  });
   game.settings.register(MODULE_ID, "actionEconomy", {
     scope: "world",
     config: true,
@@ -176,6 +184,10 @@ export async function setQuickFire(active: boolean): Promise<void> {
 
 let onTargetMarkerChange: () => void = () => undefined;
 let onTurnChange: () => void = () => undefined;
+
+export function turnPanelHighlight(): boolean {
+  return game.settings.get(MODULE_ID, "turnPanelHighlight") !== false;
+}
 
 export function setTurnListener(listener: () => void): void {
   onTurnChange = listener;

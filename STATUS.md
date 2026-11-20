@@ -16,7 +16,35 @@ Atualizado em: 2026-11-20.
 - Character Panel: v0.2.0 publicada em 2026-11-19 com a API v1 (release `v0.2.0` de lá); a
   integração precisa dela (README).
 
-## Última entrega: turnos e orçamento de ações (2026-11-20)
+## Última entrega: usabilidade — desfazer estados, Death Save dos PdMs, destaque de turno (2026-11-20)
+
+- Pedido do usuário (lista de ideias de usabilidade, itens 9, 11 e 14): D42 (desfazer também
+  os estados que a ação ligou), D43 (botão "Death Save dos PdMs" no tracker, mestre) e D44
+  (borda do Character Panel pulsa no turno do personagem exibido; ajuste de cliente
+  `turnPanelHighlight`).
+- Arquivos: `domain/gm-request.ts` (`statuses`, validação, `isUndoable`),
+  `integrations/foundry/grapple-store.ts` (`setStatus` devolve o que ligou, `clearStatuses`),
+  `gm-executor.ts`, `net-store.ts`, `cpr/damage-adapter.ts`, `workflows/combat-common.ts`,
+  `quickhack.ts`; novos `domain/death-save.ts`, `ui/death-save-button.ts`,
+  `workflows/npc-death-saves.ts`, `workflows/turn-attention.ts`; `cpr/attack-adapter.ts`
+  (`rollDeathSave`), `cpr/weapon-adapter.ts` (`isMortallyWounded`), `panel/panel-bridge.ts`
+  (`panelSubject`, `setPanelAttention`), `settings.ts`, `main.ts`, tipos, `lang/*.json`, CSS,
+  testes (`gm-request`, `death-save`), README, DECISIONS.
+- Validação: `npm run check` exit 0 (227 testes; `check:private` sem vazamento). Manual real
+  (Foundry 12.343, `cyberdeck-hud`, Gamemaster, com o Character Panel local que já tem
+  `setAttention`): destaque ligou no turno do Atirador exibido, desligou no do PdM e seguiu a
+  troca de token; botão do tracker rolou um único Death Save (NPC Teste, mortalmente ferido;
+  o PdM grave e o PJ ficaram de fora), card nativo "Success" e penalidade 0 → 1; agarrar e
+  arremessar o PdM tirou 6 PV e ligou Caído, com `statuses: ["prone"]` no card; Desfazer
+  devolveu 9 PV e tirou Caído. Botão ganhou escopo `#combat` porque o CSS do sistema
+  (`#ui-right button`) pintava de claro. Console sem erros dos módulos.
+- Restaurado: ajustes (`enforce`, `ask`), penalidade do NPC 0, combate apagado, sem alvos nem
+  agarrão. **O token "CCK Teste — PdM" ficou ao lado do Atirador** (posição antiga não guardada).
+- Não testado: como jogador (destaque no cliente do dono); desfazer de Inconsciente
+  (estrangulamento) e de estado de Quickhack; PdM com Death Save falho; tracker destacado.
+- Character Panel: `setAttention` está só no `main` local de lá (sem release 0.2.1).
+
+## Entrega anterior: turnos e orçamento de ações (2026-11-20)
 
 - Pedido do usuário: indicador visual de quem está no turno e contador de ações e movimento
   que impede andar e agir além do permitido, desligável; borda preta também nas pontas da
@@ -72,7 +100,7 @@ Estados: `TODO`, `EM ANDAMENTO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 - Não testados no Foundry: crítico (dois 6) real; arremesso com dano que mostrasse a
   armadura inteira; espingarda com alvo de jogador; explosivo com cobertura; 60 s sem resposta; token não vinculado; dois donos ativos; defesa
   automática dos PdMs em supressão e agarrão; tiro rápido como jogador de outro cliente.
-- Limites conhecidos: desfazer não desfaz estados nem fim de agarrão (D20); lesão de perna
+- Limites conhecidos: desfazer não desfaz o fim do agarrão (D20, D42); lesão de perna
   e soltar item são avisos (D21); movimentos especiais de Artes Marciais não feitos; ROF 2
   do corpo a corpo é um ataque por chamada.
 - `npm audit`: aviso moderado em `minimatch` via `typescript-eslint` 8.72.2 (ferramenta de

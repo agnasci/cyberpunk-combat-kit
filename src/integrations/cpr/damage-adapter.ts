@@ -82,7 +82,9 @@ export async function reverseNativeDamage(
   ablation: number,
 ): Promise<DamageResult> {
   const hpBefore = hitPoints(actor);
-  await damageable(actor)._reverseDamage(hpReduction, location, ablation, 0);
+  if (hpReduction > 0 || ablation > 0) {
+    await damageable(actor)._reverseDamage(hpReduction, location, ablation, 0);
+  }
   const hpAfter = hitPoints(actor);
   return { hpBefore, hpAfter, hpReduction, ablation, location };
 }

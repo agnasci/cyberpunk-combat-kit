@@ -58,6 +58,16 @@ export async function endGrapple(
   }
 }
 
-export async function setStatus(actor: Actor, status: StatusId): Promise<void> {
+export async function setStatus(actor: Actor, status: StatusId): Promise<string[]> {
+  if (actor.statuses?.has(status)) return [];
   await actor.toggleStatusEffect(status, { active: true });
+  return [status];
+}
+
+export async function clearStatuses(actor: Actor, statuses: readonly string[]): Promise<void> {
+  for (const status of statuses) {
+    if (!actor.statuses?.has(status)) continue;
+    if (!CONFIG.statusEffects.some((effect) => effect.id === status)) continue;
+    await actor.toggleStatusEffect(status, { active: false });
+  }
 }

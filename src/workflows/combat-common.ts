@@ -89,6 +89,7 @@ export async function undoTarget(
     hpReduction: applied.hpReduction,
     location: applied.location,
     ablation: applied.ablation,
+    statuses: applied.statuses ?? [],
   });
   if (!result.ok) return warn(`CCK.Gm.${result.error}`);
   const targets = state.targets.map((entry, position) =>

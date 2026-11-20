@@ -1,7 +1,7 @@
 import type { Point } from "../domain/area";
 import type { Defense } from "../domain/attack-rules";
 import { mortallyWounded } from "../domain/cues";
-import type { DamageResult } from "../domain/gm-request";
+import { isUndoable, type DamageResult } from "../domain/gm-request";
 import type { PackQuickhack } from "../domain/pack";
 import { announceDamage, postResolution } from "./announce";
 import {
@@ -177,7 +177,7 @@ async function postNetCard(
     ...targetEntry(other.token.document.uuid, other.actor.name),
     outcome: card.outcome,
     defense: card.defense ?? null,
-    applied: applied && applied.hpReduction > 0 ? applied : null,
+    applied: isUndoable(applied) ? applied : null,
     effect: card.effect ?? null,
     error: card.error ?? null,
   };

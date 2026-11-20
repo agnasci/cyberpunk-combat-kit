@@ -40,6 +40,12 @@ Com versão anterior ou sem o painel, o Combat Kit funciona sozinho pelo clique 
   Ação. Ataques, agarrão, recarga e levantar-se gastam a Ação (armas de cadência 2 fazem dois
   ataques simples); caído não anda. Ajuste de mundo "Contador de ações e movimento":
   desligado, só contar ou contar e bloquear (padrão); ajuste de cliente "Indicador de turno".
+- Com o Character Panel 0.2.1 ou mais novo, a borda do painel pulsa enquanto o personagem
+  exibido nele está no turno (ajuste de cliente "Destacar o painel no turno").
+- O mestre tem o botão "Death Save dos PdMs" no topo do tracker: rola o Death Save de cada
+  PdM mortalmente ferido do combate pelo sistema.
+- "Desfazer" no card de resolução devolve PV e armadura e tira os estados que aquele golpe
+  ligou (Caído, Inconsciente, estado de Quickhack).
 - Sem token selecionado, o menu e o painel usam o token do seu personagem na cena.
 - Ajustes: "Pular diálogos de rolagem" (cliente) e "Defesa dos PdMs" (mundo, mestre).
 - As duas teclas mudam nos ajustes do módulo (ajustes de cliente).

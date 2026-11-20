@@ -79,6 +79,7 @@ interface FoundryCombatant {
   readonly sceneId: string | null;
   readonly actorId: string | null;
   readonly isOwner: boolean;
+  readonly defeated?: boolean;
   getFlag(scope: string, key: string): unknown;
   setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
 }
@@ -323,6 +324,7 @@ declare global {
       hook:
         | "ccpReady"
         | "ccpRendered"
+        | "ccpSubjectChanged"
         | "targetToken"
         | "controlToken"
         | "updateActor"

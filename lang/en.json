@@ -317,6 +317,8 @@
   "CCK.Api.DirectDamage": "Macro",
   "CCK.Api.BadDamage": "Combat Kit: invalid damage request (see the console).",
   "CCK.Settings.TurnIndicator": "Turn indicator",
+  "CCK.Settings.TurnPanelHighlight": "Highlight the panel on your turn",
+  "CCK.Settings.TurnPanelHighlightHint": "The Character Panel border pulses while the character it shows is taking its turn. Needs Character Panel 0.2.1 or newer.",
   "CCK.Settings.TurnIndicatorHint": "Shows a plate under the token whose turn it is, with the movement left and the Action (full, half or empty diamond).",
   "CCK.Settings.ActionEconomy": "Action and movement counter",
   "CCK.Settings.ActionEconomyHint": "In combat, each character has one Move Action (MOVE in squares) and one Action per round. Attacks, grapples, reloads and standing up spend the Action; Run spends the Action to move MOVE again.",
@@ -334,5 +336,8 @@
   "CCK.Turn.RunTitle": "Run?",
   "CCK.Turn.RunPrompt": "{name} is past their movement. Running spends this round’s Action and gives {move} more squares.",
   "CCK.Turn.Run": "Run",
-  "CCK.Turn.Stay": "Stay"
+  "CCK.Turn.Stay": "Stay",
+  "CCK.DeathSave.Button": "NPC Death Saves",
+  "CCK.DeathSave.Hint": "Rolls a Death Save for each mortally wounded NPC in this combat",
+  "CCK.DeathSave.None": "No mortally wounded NPC in this combat"
 }
