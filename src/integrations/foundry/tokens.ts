@@ -1,4 +1,5 @@
 import type { Point } from "../../domain/area";
+import { chooseAttacker } from "../../domain/routing";
 
 export type TokenProblem =
   "no-canvas" | "no-attacker" | "many-attackers" | "no-target" | "many-targets";
@@ -6,8 +7,11 @@ export type TokenProblem =
 export function attackerToken(): Token | TokenProblem {
   if (!canvas?.tokens) return "no-canvas";
   const owned = canvas.tokens.controlled.filter((token) => token.isOwner && token.actor);
-  if (owned.length > 1) return "many-attackers";
-  return owned[0] ?? "no-attacker";
+  const character = game.user.character;
+  const characterTokens = character
+    ? canvas.tokens.placeables.filter((token) => token.isOwner && token.actor?.id === character.id)
+    : [];
+  return chooseAttacker(owned, characterTokens);
 }
 
 export function targetedTokens(): Token[] {

@@ -1,4 +1,5 @@
 import { MODULE_ID } from "../../constants";
+import type { NpcDefenseMode } from "../../domain/routing";
 import { clamp, type MotionSetting } from "../../domain/cues";
 
 export interface EffectSettings {
@@ -120,6 +121,10 @@ export function registerMenuSettings(): void {
   });
 }
 
+export function npcDefenseMode(): NpcDefenseMode {
+  return game.settings.get(MODULE_ID, "npcDefense") === "auto" ? "auto" : "ask";
+}
+
 export function skipRollDialogs(): boolean {
   return game.settings.get(MODULE_ID, "skipRollDialogs") === true;
 }
@@ -171,6 +176,14 @@ function terms(value: unknown): string[] {
 
 export function registerQuickhackSettings(): void {
   const world = { scope: "world", config: true } as const;
+  game.settings.register(MODULE_ID, "npcDefense", {
+    ...world,
+    name: "CCK.Settings.NpcDefense",
+    hint: "CCK.Settings.NpcDefenseHint",
+    type: String,
+    choices: { ask: "CCK.Settings.NpcDefense-ask", auto: "CCK.Settings.NpcDefense-auto" },
+    default: "ask",
+  });
   game.settings.register(MODULE_ID, "quickhacks", {
     ...world,
     name: "CCK.Settings.Quickhacks",

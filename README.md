@@ -25,6 +25,10 @@ Com versão anterior ou sem o painel, o Combat Kit funciona sozinho pelo clique 
 - Clique direito num token alheio (Alt + clique direito num token seu, ou sendo mestre):
   menu de combate com armas, modos, recarga e agarrão.
 - Alt + clique esquerdo num token: torna-o o único alvo, ou o desmarca, sem selecioná-lo.
+- Ferramenta "Tiro rápido" (ícone de pistola nos controles de token): selecione seu token e
+  clique com o botão esquerdo num alvo para atacá-lo na hora com a arma equipada.
+- Sem token selecionado, o menu e o painel usam o token do seu personagem na cena.
+- Ajustes: "Pular diálogos de rolagem" (cliente) e "Defesa dos PdMs" (mundo, mestre).
 - As duas teclas mudam nos ajustes do módulo (ajustes de cliente).
 
 ## Unofficial content

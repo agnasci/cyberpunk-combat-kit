@@ -3,6 +3,8 @@ import { rollInterface } from "../integrations/cpr/net-adapter";
 import { findSkill, SKILLS, type SkillKey } from "../integrations/cpr/weapon-adapter";
 import { registerHandler, request } from "../integrations/foundry/socket";
 import { responderId, userCanOwn } from "../integrations/foundry/users";
+import { npcDefenseMode, skipRollDialogs } from "../integrations/foundry/settings";
+import { defendsAutomatically } from "../domain/routing";
 import { askDefense, type DefensePurpose } from "../ui/defense-prompt";
 
 const KIND = "defense";
@@ -67,8 +69,12 @@ function parseRequest(payload: unknown): DefenseRequest | null {
   };
 }
 
-async function rollCheck(defender: Actor, data: DefenseRequest): Promise<NativeRollResult | null> {
-  const options = { actor: defender, tokenId: data.defenderTokenId, skipDialog: false };
+async function rollCheck(
+  defender: Actor,
+  data: DefenseRequest,
+  skipDialog: boolean,
+): Promise<NativeRollResult | null> {
+  const options = { actor: defender, tokenId: data.defenderTokenId, skipDialog };
   if (data.skill === "will") return rollStat("will", options);
   if (data.skill === "interface") {
     return rollInterface(defender, game.i18n.localize("CCK.Net.Interface"), options);
@@ -83,6 +89,10 @@ async function answerDefense(payload: unknown): Promise<DefenseAnswer> {
   if (!data) throw new Error("invalid");
   const defender = await fromUuid(data.defenderUuid);
   if (!isActor(defender) || !userCanOwn(game.user.id, defender)) throw new Error("forbidden");
+  if (defendsAutomatically(npcDefenseMode(), defender.hasPlayerOwner)) {
+    const roll = await rollCheck(defender, data, true);
+    return roll ? { choice: "rolled", total: roll.total } : { choice: "declined" };
+  }
   const wantsToRoll = await askDefense({
     purpose: data.purpose,
     optional: data.optional,
@@ -92,7 +102,7 @@ async function answerDefense(payload: unknown): Promise<DefenseAnswer> {
     dv: data.dv,
   });
   if (!wantsToRoll) return { choice: "declined" };
-  const roll = await rollCheck(defender, data);
+  const roll = await rollCheck(defender, data, skipRollDialogs());
   return roll ? { choice: "rolled", total: roll.total } : { choice: "declined" };
 }
 
