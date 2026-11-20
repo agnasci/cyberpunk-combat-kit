@@ -4,13 +4,14 @@ Atualizado em: 2026-11-20.
 
 ## Situação
 
-- E0 a E8 concluídas (2026-11-19). Beta 0.1.0 publicada a pedido do usuário:
-  https://github.com/agnasci/cyberpunk-combat-kit (público), release `v0.1.0` com
+- E0 a E10, F-01 e P-02 concluídas (2026-11-20). Última release pública: `v0.1.1` (E9) em
+  https://github.com/agnasci/cyberpunk-combat-kit, com
   `module.json` e `module.zip`. Manifesto:
   `https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
 - Entrada pelo menu do clique direito, pela aba "Combate" do Character Panel e pela API v1
   (docs/INTEGRATION.md).
-- `main` em `origin` (GitHub) a partir de `b98fd85` (E8); release feita da tag `v0.1.0`.
+- `origin/main` em `f4e58fd` (tag `v0.1.1`). Commits locais ainda não enviados: E10, F-01 e
+  o ícone dos Quickhacks; entram na próxima release (0.1.2) quando o usuário pedir.
 - Character Panel: v0.2.0 publicada em 2026-11-19 com a API v1 (release `v0.2.0` de lá); a
   integração precisa dela (README).
 
