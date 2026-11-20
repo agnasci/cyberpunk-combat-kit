@@ -47,6 +47,7 @@ export interface MenuQuickhack {
   tier: number;
   dv: number;
   requiresUnaware: boolean;
+  icon?: string | null;
 }
 
 export interface MenuIntruder {
@@ -317,8 +318,8 @@ function quickhackEntries(net: MenuNet): MenuEntry[] {
   }
   return [...net.quickhacks]
     .sort((a, b) => a.tier - b.tier || a.name.localeCompare(b.name))
-    .map((hack) =>
-      netPick(
+    .map((hack) => ({
+      ...netPick(
         `net:hack:${hack.id}`,
         { key: "CCK.Menu.Net-quickhack", data: { name: hack.name } },
         { kind: "net", action: "quickhack", quickhackId: hack.id },
@@ -335,7 +336,8 @@ function quickhackEntries(net: MenuNet): MenuEntry[] {
         ),
         { key: "CCK.Menu.Dv", data: { dv: String(hack.dv) } },
       ),
-    );
+      icon: hack.icon ?? null,
+    }));
 }
 
 function runnerEntries(net: MenuNet): MenuEntry[] {
