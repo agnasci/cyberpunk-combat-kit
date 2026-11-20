@@ -151,6 +151,7 @@ export async function openCueEditor(): Promise<void> {
   if (!game.user.isGM) return;
   const overrides = { ...cueOverrides() };
   const choice = await foundry.applications.api.DialogV2.wait({
+    classes: ["cck-app"],
     window: { title: t("CCK.Cues.Title") },
     position: { width: 720 },
     content: `<div class="cck-cues"></div>`,

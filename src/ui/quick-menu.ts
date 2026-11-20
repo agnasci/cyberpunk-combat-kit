@@ -24,7 +24,16 @@ function itemButton(entry: MenuEntry): HTMLButtonElement {
   button.type = "button";
   button.className = "cck-menu__item";
   button.setAttribute("role", "menuitem");
-  button.append(span("cck-menu__label", text(entry.label)));
+  const main = span("cck-menu__main", "");
+  if (entry.icon) {
+    const icon = document.createElement("img");
+    icon.className = "cck-menu__icon";
+    icon.src = entry.icon;
+    icon.alt = "";
+    main.append(icon);
+  }
+  main.append(span("cck-menu__label", text(entry.label)));
+  button.append(main);
   const note =
     entry.disabled && entry.disabled.key !== entry.label.key ? entry.disabled : entry.hint;
   if (note) button.append(span("cck-menu__hint", text(note)));

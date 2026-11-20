@@ -64,10 +64,6 @@ function activeWeapon(subject: PanelSubject | null): WeaponSnapshot | null {
   return subject ? pickWeapon(subject.actor) : null;
 }
 
-function weaponLabel(weapon: WeaponSnapshot): string {
-  return weapon.magazine === null ? weapon.name : `${weapon.name} · ${weapon.magazine}`;
-}
-
 function renderBarEnd(context: PanelSlotContext): Node | null {
   const weapon = activeWeapon(context.subject);
   if (!weapon) return null;
@@ -75,8 +71,21 @@ function renderBarEnd(context: PanelSlotContext): Node | null {
   button.type = "button";
   button.dataset.slotAction = "attack";
   button.dataset.tooltip = game.i18n.format("CCK.Panel.AttackWith", { weapon: weapon.name });
-  button.innerHTML = `<i class="fa-solid fa-crosshairs" aria-hidden="true"></i>`;
-  button.append(element("span", "cck-pslot__weapon-name", weaponLabel(weapon)));
+  if (weapon.img) {
+    const icon = element("img", "");
+    icon.src = weapon.img;
+    icon.alt = "";
+    button.append(icon);
+  } else {
+    button.innerHTML = `<i class="fa-solid fa-crosshairs" aria-hidden="true"></i>`;
+  }
+  button.append(element("span", "cck-pslot__weapon-name", weapon.name));
+  if (weapon.magazine !== null) {
+    const empty = weapon.magazine < 1 ? " cck-pslot__ammo--empty" : "";
+    button.append(
+      element("span", `cck-pslot__ammo${empty}`, `${weapon.magazine}/${weapon.magazineMax}`),
+    );
+  }
   return button;
 }
 
@@ -127,7 +136,17 @@ async function fillDrawer(box: HTMLElement, generation: number): Promise<void> {
   const nodes: Node[] = [head];
   for (const section of drawerSections(view.entries)) {
     const group = element("section", "cck-pslot__section");
-    if (section.title) group.append(element("h3", "", text(section.title)));
+    if (section.title) {
+      const title = element("h3", "");
+      if (section.icon) {
+        const icon = element("img", "");
+        icon.src = section.icon;
+        icon.alt = "";
+        title.append(icon);
+      }
+      title.append(text(section.title));
+      group.append(title);
+    }
     const grid = element("div", "cck-pslot__grid");
     for (const item of section.items) {
       const path = `item:${item.id}`;

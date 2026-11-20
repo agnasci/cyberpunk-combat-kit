@@ -55,15 +55,24 @@ function isApi(value: unknown): value is PanelApi {
   );
 }
 
+const PALETTE_VARIABLES: Record<string, keyof Omit<PanelPalette, "variables">> = {
+  "--cck-panel-accent": "accent",
+  "--cck-panel-strong": "accentStrong",
+  "--cck-panel-soft": "accentSoft",
+  "--cck-panel-line": "accentLine",
+  "--cck-panel-ink": "accentInk",
+};
+
 function applyPalette(palette: PanelPalette | null): void {
   const root = document.documentElement.style;
   if (!palette) {
-    root.removeProperty("--cck-panel-accent");
-    root.removeProperty("--cck-panel-soft");
+    for (const name of Object.keys(PALETTE_VARIABLES)) root.removeProperty(name);
     return;
   }
-  root.setProperty("--cck-panel-accent", palette.accent);
-  root.setProperty("--cck-panel-soft", palette.accentSoft);
+  for (const [name, key] of Object.entries(PALETTE_VARIABLES)) {
+    const value = palette[key];
+    if (typeof value === "string" && value) root.setProperty(name, value);
+  }
 }
 
 export function connectPanel(onConnect: (api: PanelApi) => void): void {

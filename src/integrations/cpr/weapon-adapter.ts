@@ -18,6 +18,7 @@ export interface WeaponSnapshot extends ModeWeapon {
   equipped: boolean;
   dvTable: string;
   magazineMax: number | null;
+  img: string | null;
 }
 
 export interface CombatantSnapshot {
@@ -62,6 +63,7 @@ export function weaponSnapshot(item: Item): WeaponSnapshot | null {
   return {
     id: item.id,
     name: item.name,
+    img: typeof item.img === "string" && item.img ? item.img : null,
     kind,
     weaponType: type,
     equipped: field(system, "equipped") === "equipped",

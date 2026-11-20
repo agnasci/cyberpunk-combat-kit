@@ -160,6 +160,7 @@ export async function openPackManager(): Promise<void> {
     }),
   ).then(() => refresh?.());
   const choice = await foundry.applications.api.DialogV2.wait({
+    classes: ["cck-app"],
     window: { title: t("CCK.Packs.Title") },
     position: { width: 560 },
     content: `<div class="cck-packs"></div>`,

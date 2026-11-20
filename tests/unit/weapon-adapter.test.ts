@@ -22,6 +22,7 @@ describe("snapshot de arma (campos do CPR v0.92.4, docs/COMPATIBILITY.md)", () =
     expect(weaponSnapshot(heavyPistol)).toEqual({
       id: "pistol0000000001",
       name: "Pistola sintética",
+      img: null,
       kind: "ranged",
       weaponType: "",
       equipped: true,

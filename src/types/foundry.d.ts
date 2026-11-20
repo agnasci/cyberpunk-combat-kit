@@ -11,6 +11,7 @@ interface FoundryUser {
 interface FoundryItem {
   readonly id: string;
   readonly name: string;
+  readonly img?: string | null;
   readonly type: string;
   readonly system: unknown;
   createRoll(type: string, actor: FoundryActor, info?: Record<string, unknown>): unknown;
@@ -415,6 +416,7 @@ declare global {
             content: string;
             buttons: FoundryDialogButton[];
             rejectClose?: boolean;
+            classes?: string[];
             close?: () => unknown;
             render?: (event: Event, element: HTMLElement) => void;
             position?: { width?: number; height?: number };

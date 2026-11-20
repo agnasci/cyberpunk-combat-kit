@@ -80,6 +80,7 @@ export interface MenuEntry {
   disabled: MenuText | null;
   action: MenuAction | null;
   children: MenuEntry[];
+  icon?: string | null;
 }
 
 export interface MenuWeapon extends ModeWeapon {
@@ -87,6 +88,7 @@ export interface MenuWeapon extends ModeWeapon {
   name: string;
   equipped: boolean;
   magazineMax?: number | null;
+  img?: string | null;
 }
 
 export function canReload(weapon: MenuWeapon): boolean {
@@ -235,6 +237,7 @@ function weaponEntry(input: MenuInput, weapon: MenuWeapon): MenuEntry {
     { key: "CCK.Menu.Weapon", data: { name: weapon.name } },
     {
       hint: ammo,
+      icon: weapon.img ?? null,
       children: [
         ...menuModes(weapon).map((mode) => modeEntry(input, weapon, mode)),
         ...(canReload(weapon) ? [reloadEntry(weapon, { key: "CCK.Menu.Reload" })] : []),
@@ -427,9 +430,10 @@ export function buildMenu(input: MenuInput): MenuModel {
           "reload",
           { key: "CCK.Menu.Reload" },
           {
-            children: reloads.map((weapon) =>
-              reloadEntry(weapon, { key: "CCK.Menu.Weapon", data: { name: weapon.name } }),
-            ),
+            children: reloads.map((weapon) => ({
+              ...reloadEntry(weapon, { key: "CCK.Menu.Weapon", data: { name: weapon.name } }),
+              icon: weapon.img ?? null,
+            })),
           },
         ),
       );
@@ -504,6 +508,7 @@ export interface DrawerItem {
 export interface DrawerSection {
   id: string;
   title: MenuText | null;
+  icon?: string | null;
   items: DrawerItem[];
 }
 
@@ -528,6 +533,7 @@ export function drawerSections(entries: readonly MenuEntry[]): DrawerSection[] {
     sections.push({
       id: entry.id,
       title: entry.label,
+      icon: entry.icon ?? null,
       items: entry.children.flatMap((child) => drawerItems(child, [])),
     });
   }

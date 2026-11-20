@@ -14,54 +14,26 @@ Atualizado em: 2026-11-20.
 - Character Panel: v0.2.0 publicada em 2026-11-19 com a API v1 (release `v0.2.0` de lá); a
   integração precisa dela (README).
 
-## Última entrega: E9-01 a E9-05, correções do teste da beta (2026-11-20)
+## Última entrega: E10 refino visual (2026-11-20)
 
-Origem: relatos de um testador da 0.1.0 (docs/PLAN.md, E9). Versão local subiu para 0.1.1
-(`package.json`, `module.json`, lockfile, README); `release/module.zip` gerado, nada
-publicado. Decisões D32–D35.
+E9 publicada antes como v0.1.1 (commit `f4e58fd`, tag e release no GitHub; workflow ok; o
+manifesto `latest` aponta para 0.1.1).
 
-- E9-01: supressivo vale até 25 m no menu (`src/domain/menu.ts`); esquiva à distância só
-  quando o ataque passa a DV (`dodgeOffered` em `attack-rules.ts`, `workflows/attack.ts`).
-- E9-02: pente máximo 0 = não usa munição (`weapon-adapter.ts`, campo `magazineMax`);
-  `thrownWeapon` arma branca só arremessa (`thrown-only` em `modes.ts`); `preferredWeapon`
-  escolhe a primeira equipada pronta; botão "atacar o alvo marcado" do painel abre a escolha de
-  arma quando há mais de uma equipada (`panel-slots.ts`).
-- E9-03: Alt + clique esquerdo marca só este alvo ou desmarca (`token-click.ts`, ajuste de
-  cliente `targetModifier`, `targetToggles` no domínio).
-- E9-04: "Recarregar" no menu (por arma e no próprio token) e no painel, pelo `reload()`
-  nativo (`reloadWeapon`, `reloadFor` em `quick-menu.ts`).
-- E9-05: rodadas seguidas de estrangulamento no card (`chokeStreak` no resultado do mestre,
-  `resolution-card.hbs`) e no menu (`activeChokeStreak`).
-- Também: `.local/` e `foundry-data/` fora do ESLint/Prettier; actions do workflow em v5
-  (pendência do Node 20); docs/COMPATIBILITY.md com o comportamento de `thrownWeapon` e
-  `reload()`; README com os atalhos.
+E10: `styles/combat-kit.css` reescrito com tokens `--cck-*` (D36);
+`panel-bridge.ts` repassa toda a paleta do painel; `classes: ["cck-app"]` nos três DialogV2
+(`defense-prompt`, `pack-manager`, `cue-editor`; tipo em `foundry.d.ts`); `img` da arma no
+snapshot, nas entradas do menu (`MenuEntry.icon`), no botão de arma do painel (com munição
+`6/8`, vermelha quando vazia) e nos títulos da aba Combate.
 
 Validação:
-- Automatizada: `npm run package` exit 0 (`check` com 15 arquivos e 200 testes, 14 novos;
-  guardas sem vazamento; zip com 9 arquivos, v0.1.1).
-- Teste manual real (Foundry 12.343, CPR v0.92.4, mundo `cyberdeck-hud`, Gamemaster, com o
-  Character Panel ativo):
-  1. Supressivo habilitado no menu a 6 m (antes "fora de alcance").
-  2. Esquiva: 15 contra DV 13 pediu esquiva; 4 e 14 contra DV 25 erraram sem pedido.
-  3. Molotov do compêndio (`thrownWeapon` à distância, pente 0/0): acertou e aplicou dano;
-     o CPR mostrou o aviso "*CLICK*" dele, sem bloquear.
-  4. Kendachi Mono-Star (`thrownWeapon` arma branca): "simples" recusado com aviso;
-     arremesso rolou e resolveu.
-  5. Painel: o botão de mira abriu o menu com as 9 armas; Assault Rifle → Recarregar levou o
-     pente de 5 a 25 (caixa 25 → 5); botão de recarga do painel na pistola sem munição deu o
-     aviso do sistema e, com uma caixa de teste, abriu "Select Ammo" e encheu 6 → 8; o botão
-     some com o pente cheio.
-  6. Alt + clique esquerdo no NPC trocou o alvo (só ele) e, de novo, desmarcou; seleção intacta.
-  7. Agarrão no PdM e dois estrangulamentos: cards com "Rodadas seguidas: 1/3" e "2/3"; menu
-     do PdM com "estrangulamento 2/3 rodadas" em Estrangular.
-  Tudo desfeito: danos pelos cards, agarrão solto, itens de teste apagados, munição como
-  antes; atores de teste com PV 40/40. A limpeza clicou também botões de cards antigos de
-  11-18 (já constavam desfeitos); nenhum ator de teste mudou.
-- Não testados: estrangulamento com combate ativo (zerar a contagem entre rodadas está só nos
-  testes unitários); Alt + clique como jogador; recarga em arma de um ator de outro dono; o
-  disparo supressivo em si.
-- Limite: o aviso "*CLICK*" do sistema em arremessáveis à distância e o "No Token(s)
-  targeted!" ao atacar pela API sem alvo marcado vêm do CPR; não dá para tirar sem mexer nele.
+- Automatizada: `npm run check` exit 0 (200 testes).
+- Teste manual real (Foundry, mundo `cyberdeck-hud`, Gamemaster, painel ativo), por
+  capturas: menu do clique direito com ícones das armas e distância em selo; diálogo de
+  esquiva; card com ataque, dano, alvo e desfazer; aba Combate do painel; botão de arma com
+  ícone e munição; janelas "Content packs" e "Effects per event"; aviso de mirar o cartucho
+  (Esc cancelou sem gastar munição). Dano de teste desfeito, REF e munição restaurados.
+- Não testado: aparência sem o Character Panel ativo (cores padrão iguais às do painel);
+  tela pequena.
 
 ## Entregas anteriores
 
@@ -77,8 +49,8 @@ Estados: `TODO`, `EM ANDAMENTO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 
 | ID | Estado | Entrega | Condição |
 |---|---|---|---|
-| E9-06 | TODO | Release 0.1.1 | Versão e pacote prontos; falta commit, tag, push e release a pedido do usuário |
-| E10 | TODO | Refino visual no estilo do Character Panel e do Netrunner HUD | Depois da E9 |
+| F-01 | EM ANDAMENTO | Fluidez: mestre seleciona e clica no alvo para atirar; revisão da experiência de jogador e mestre | Pedido do usuário (2026-11-20) |
+| F-02 | TODO | Integrar armas e itens e automatizar efeitos e sons com a biblioteca de exemplo | Depois da F-01 |
 | P-02 | EM ANDAMENTO | Pacote pessoal com o conteúdo do PneumaQuickHack (só `private/`) | Montado e validado pelo `packs.register` em 2026-11-19; falta carregar `dist-personal/` no Foundry (reinício do servidor) e rodar o Netrunning completo com ele |
 
 ## Dependências externas
@@ -90,7 +62,7 @@ Estados: `TODO`, `EM ANDAMENTO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 - Página do pacote em foundryvtt.com (conta do usuário, manual) com o aviso da Homebrew
   Content Policy: item que falta do checklist do docs/LEGAL.md.
 
-- Decisões D15–D35 aguardam confirmação do usuário em docs/DECISIONS.md.
+- Decisões D15–D36 aguardam confirmação do usuário em docs/DECISIONS.md.
 - Não testados no Foundry: crítico (dois 6) real; arremesso com dano que mostrasse a
   armadura inteira; espingarda com alvo de jogador; explosivo com cobertura; Artes Marciais
   sem o item de perícia; 60 s sem resposta; token não vinculado; dois donos ativos.

@@ -52,6 +52,7 @@ export async function askDefense(data: DefensePromptData): Promise<boolean> {
       ]
     : [{ action: "roll", label: game.i18n.localize("CCK.Defense.RollDefense"), default: true }];
   const choice = await foundry.applications.api.DialogV2.wait({
+    classes: ["cck-app"],
     window: { title: game.i18n.localize("CCK.Defense.Title") },
     content: `<div class="cck-defense"><p>${intro}</p><p>${detail}</p></div>`,
     buttons,
