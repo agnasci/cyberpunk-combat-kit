@@ -26,9 +26,11 @@ Com versão anterior ou sem o painel, o Combat Kit funciona sozinho pelo clique 
   menu de combate com armas, modos, recarga e agarrão.
 - Alt + clique esquerdo num token: torna-o o único alvo, ou o desmarca, sem selecioná-lo.
   Vários alvos de uma vez só nos ataques de área, pelo template.
-- O alvo aparece com cantos no estilo do HUD, na cor do painel; alvos de outros jogadores,
-  como losangos na cor de cada um. O ajuste "Marcador de alvo do Combat Kit" volta às setas
-  do Foundry.
+- O alvo marcado ganha uma mira no estilo do HUD: anel girando, cantos que respiram, setas e
+  a etiqueta "ALVO · distância" até o seu token, na cor escolhida no Character Panel (muda
+  junto, inclusive na prévia). Alvos de outros jogadores aparecem como losangos na cor de
+  cada um. Ajustes de cliente: "Marcador de alvo do Combat Kit" (desligado, volta às setas
+  do Foundry) e "Animar o marcador de alvo"; movimento reduzido também deixa a mira parada.
 - Ferramenta "Tiro rápido" (ícone de pistola nos controles de token): selecione seu token e
   clique com o botão esquerdo num alvo para atacá-lo na hora com a arma equipada.
 - Sem token selecionado, o menu e o painel usam o token do seu personagem na cena.

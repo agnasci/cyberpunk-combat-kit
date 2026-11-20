@@ -170,8 +170,22 @@ interface FoundryPack {
   getDocuments(): Promise<unknown[]>;
 }
 
+interface FoundryPixiText {
+  text: string;
+  x: number;
+  y: number;
+  visible: boolean;
+  readonly width: number;
+  readonly height: number;
+  readonly style: { fill: number | string };
+}
+
 interface FoundryPixiGraphics {
   zIndex: number;
+  visible: boolean;
+  addChild(child: FoundryPixiText): void;
+  arc(cx: number, cy: number, radius: number, start: number, end: number): this;
+  drawPolygon(points: number[]): this;
   renderable: boolean;
   readonly destroyed: boolean;
   readonly parent: unknown;
@@ -234,6 +248,7 @@ declare global {
   type PixiGraphics = FoundryPixiGraphics;
   type PixiTexture = FoundryPixiTexture;
   type PixiSprite = FoundryPixiSprite;
+  type PixiText = FoundryPixiText;
   type ActiveEffect = FoundryActiveEffect;
   type Combat = FoundryCombat;
   type CombatState = FoundryCombatState;
@@ -244,6 +259,7 @@ declare global {
   };
 
   function loadTexture(src: string): Promise<PixiTexture | null>;
+  const PreciseText: new (text: string, style: Record<string, unknown>) => PixiText;
 
   const Hooks: {
     once(hook: "init" | "ready" | "closeFilePicker", fn: () => void): number;

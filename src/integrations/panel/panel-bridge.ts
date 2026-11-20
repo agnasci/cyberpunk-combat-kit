@@ -75,6 +75,17 @@ function applyPalette(palette: PanelPalette | null): void {
   }
 }
 
+let connectedApi: PanelApi | null = null;
+
+export function panelPalette(): PanelPalette | null {
+  if (typeof connectedApi?.getPalette !== "function") return null;
+  try {
+    return connectedApi.getPalette();
+  } catch {
+    return null;
+  }
+}
+
 export function connectPanel(onConnect: (api: PanelApi) => void): void {
   let connected = false;
   const connect = (value: unknown) => {
@@ -85,6 +96,7 @@ export function connectPanel(onConnect: (api: PanelApi) => void): void {
       return;
     }
     connected = true;
+    connectedApi = value;
     applyPalette(value.getPalette());
     Hooks.on("ccpRendered", () => applyPalette(value.getPalette()));
     onConnect(value);

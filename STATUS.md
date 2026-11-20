@@ -16,16 +16,21 @@ Atualizado em: 2026-11-20.
 - Character Panel: v0.2.0 publicada em 2026-11-19 com a API v1 (release `v0.2.0` de lá); a
   integração precisa dela (README).
 
-## Última entrega: marcador de alvo no estilo do HUD (2026-11-20)
+## Última entrega: mira animada do alvo marcado (2026-11-20)
 
-- Tecla de marcar alvo voltou para Alt a pedido do usuário (D35).
-- Marcador próprio (D40): `domain/target-marker.ts` (geometria e cor, testes em
-  `tests/unit/target-marker.test.ts`) e `integrations/foundry/target-marker.ts` (camada
-  no token, gancho `refreshToken`); ajuste de cliente `targetMarker`.
-- Validação: `npm run check` exit 0 (215 testes); no Foundry, Alt + clique marcou o PdM e
-  mostrou os cantos ciano; losango rosa para alvo simulado de outro usuário (inclusive
-  sozinho); ajuste desligado volta às setas nativas; sem erros no console. Não testado:
-  com o Character Panel mudando a paleta; como jogador.
+- Pedido do usuário: UI mais criativa para o alvo marcado, animação desligável e cor ligada à
+  do Character Panel; tecla de marcar alvo continua Alt (D35).
+- D40: `domain/target-marker.ts` (`markerFrame` com tempo: travamento, anel girando,
+  cantos que respiram; `parseCssColor`), `integrations/foundry/target-marker.ts` (camada
+  no token, ticker do canvas, etiqueta com distância), `panelPalette()` em
+  `integrations/panel/panel-bridge.ts`; ajustes `targetMarker` e `targetAnimation`.
+- Validação: `npm run check` exit 0 (217 testes; `check:private` sem vazamento). No Foundry:
+  mira com "TARGET · 6 m" (Foundry em inglês); trocar a cor do painel para magenta mudou a mira
+  na hora; anel muda de posição entre quadros; ao marcar de novo os cantos começam fora e a
+  etiqueta só aparece no fim; com a animação desligada a mira fica parada; console sem erros.
+  Restaurado: cor do painel padrão, animação ligada, sem alvos.
+- Não testado: prévia de cor arrastando o seletor do painel; como jogador; desempenho com
+  muitos alvos.
 
 ## Entrega anterior: revisão de regras (2026-11-20)
 

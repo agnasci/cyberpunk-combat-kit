@@ -106,6 +106,14 @@ export function registerMenuSettings(): void {
     default: true,
     onChange: () => onTargetMarkerChange(),
   });
+  game.settings.register(MODULE_ID, "targetAnimation", {
+    ...client,
+    name: "CCK.Settings.TargetAnimation",
+    hint: "CCK.Settings.TargetAnimationHint",
+    type: Boolean,
+    default: true,
+    onChange: () => onTargetMarkerChange(),
+  });
   game.settings.register(MODULE_ID, "skipRollDialogs", {
     ...client,
     name: "CCK.Settings.SkipRollDialogs",
