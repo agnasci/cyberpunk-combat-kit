@@ -11,7 +11,7 @@ Atualizado em: 2026-11-20.
 - Entrada pelo menu do clique direito, pela aba "Combate" do Character Panel e pela API v1
   (docs/INTEGRATION.md).
 - `main` enviado ao GitHub em 2026-11-20 (E10, F-01, ícone dos Quickhacks, chaves combinadas
-  de cue, revisão de regras, mira do alvo e correção do Tiro rápido), sem release: a última
+  de cue, revisão de regras, mira do alvo, correção do Tiro rápido e turnos D41), sem release: a última
   continua `v0.1.1`; a 0.1.2 sai quando o usuário pedir.
 - Character Panel: v0.2.0 publicada em 2026-11-19 com a API v1 (release `v0.2.0` de lá); a
   integração precisa dela (README).
