@@ -25,6 +25,8 @@ interface MarkerColors {
 const OUTLINE = 0x05070b;
 const FALLBACK: MarkerColors = { accent: 0x22d3ee, strong: 0x7ee8f7, ink: 0x05070b };
 const STATIC_REFRESH_MS = 500;
+const TEXT_SUPERSAMPLE = 3;
+const LABEL_SIZE = 12;
 const layers = new WeakMap<Token, Layer>();
 let colors = FALLBACK;
 let colorsReadAt = -Infinity;
@@ -59,14 +61,15 @@ function layerFor(token: Token): Layer {
   if (existing && !existing.graphics.destroyed && existing.graphics.parent === token) {
     return existing;
   }
-  const graphics = new PIXI.Graphics();
+  const graphics = PIXI.smooth ? new PIXI.smooth.SmoothGraphics() : new PIXI.Graphics();
   const label = new PreciseText("", {
     fontFamily: "Tektur, Jost, sans-serif",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.5,
+    fontSize: LABEL_SIZE * TEXT_SUPERSAMPLE,
+    fontWeight: "600",
+    letterSpacing: 1.5 * TEXT_SUPERSAMPLE,
     fill: colors.ink,
   });
+  label.scale.set(1 / TEXT_SUPERSAMPLE, 1 / TEXT_SUPERSAMPLE);
   graphics.addChild(label);
   token.addChild(graphics);
   const layer = { graphics, label, lockedAt: 0 };
@@ -83,15 +86,6 @@ function stroke(graphics: PixiGraphics, lines: readonly MarkerLine[]): void {
   }
 }
 
-function strokeArcs(graphics: PixiGraphics, frame: MarkerFrame): void {
-  const [cx, cy] = frame.center;
-  for (const arc of frame.arcs) {
-    if (arc.end <= arc.start) continue;
-    graphics.moveTo(cx + Math.cos(arc.start) * arc.radius, cy + Math.sin(arc.start) * arc.radius);
-    graphics.arc(cx, cy, arc.radius, arc.start, arc.end);
-  }
-}
-
 function pass(
   graphics: PixiGraphics,
   frame: MarkerFrame,
@@ -101,7 +95,6 @@ function pass(
 ): void {
   graphics.lineStyle(width, color, alpha * frame.alpha);
   stroke(graphics, frame.brackets);
-  strokeArcs(graphics, frame);
 }
 
 function labelText(token: Token): string {
@@ -195,11 +188,9 @@ function drawMarker(token: Token, now: number): void {
   graphics.clear();
   layer.label.visible = false;
   if (mine) {
-    pass(graphics, frame, 9, colors.accent, 0.16);
-    pass(graphics, frame, 4.5, OUTLINE, 0.8);
-    pass(graphics, frame, 2.2, colors.accent, 1);
-    graphics.lineStyle(1.5, colors.accent, 0.7 * frame.alpha);
-    stroke(graphics, frame.ringTicks);
+    pass(graphics, frame, 7, colors.accent, 0.14);
+    pass(graphics, frame, 4, OUTLINE, 0.75);
+    pass(graphics, frame, 2, colors.accent, 1);
     graphics.lineStyle(1.2, OUTLINE, 0.9 * frame.alpha).beginFill(colors.strong, frame.alpha);
     for (const chevron of frame.chevrons) {
       graphics.drawPolygon(chevron.flatMap(([x, y]) => [x, y]));

@@ -18,6 +18,10 @@ Atualizado em: 2026-11-20.
 
 ## Última entrega: mira animada do alvo marcado (2026-11-20)
 
+- Ajuste pedido depois: anel retirado (informação demais) e nitidez corrigida com traço
+  suavizado (`SmoothGraphics`) e texto supersampled 3×; conferido no Foundry em zoom 1× e
+  2,5× (traço liso, texto nítido, console sem erros).
+
 - Pedido do usuário: UI mais criativa para o alvo marcado, animação desligável e cor ligada à
   do Character Panel; tecla de marcar alvo continua Alt (D35).
 - D40: `domain/target-marker.ts` (`markerFrame` com tempo: travamento, anel girando,

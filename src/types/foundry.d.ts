@@ -172,6 +172,7 @@ interface FoundryPack {
 
 interface FoundryPixiText {
   text: string;
+  readonly scale: { set(x: number, y: number): void };
   x: number;
   y: number;
   visible: boolean;
@@ -255,6 +256,7 @@ declare global {
 
   const PIXI: {
     Graphics: new () => PixiGraphics;
+    smooth?: { SmoothGraphics: new () => PixiGraphics };
     Sprite: new (texture: PixiTexture) => PixiSprite;
   };
 

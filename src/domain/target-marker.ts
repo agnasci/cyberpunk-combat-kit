@@ -1,23 +1,14 @@
 export type MarkerPoint = readonly [number, number];
 export type MarkerLine = readonly MarkerPoint[];
 
-export interface MarkerArc {
-  radius: number;
-  start: number;
-  end: number;
-}
-
 export interface MarkerTime {
   sinceLock: number;
   clock: number;
 }
 
 export interface MarkerFrame {
-  center: MarkerPoint;
   brackets: MarkerLine[];
   chevrons: MarkerLine[];
-  arcs: MarkerArc[];
-  ringTicks: MarkerLine[];
   label: MarkerPoint;
   pips: MarkerPoint[];
   alpha: number;
@@ -29,10 +20,6 @@ const OFFSET = 6;
 const LOCK_TRAVEL = 28;
 const BREATHE = 2;
 const BREATHE_MS = 1600;
-const RING_GAP = 12;
-const RING_SPEED = Math.PI / 6;
-const ARC_COUNT = 3;
-const ARC_FILL = 0.55;
 const PIP_GAP = 16;
 const TAU = Math.PI * 2;
 
@@ -79,14 +66,9 @@ export function markerFrame(
   const bottom = height + offset;
   const cx = width / 2;
   const cy = height / 2;
-  const radius = Math.hypot(width, height) / 2 + RING_GAP;
-  const rotation = time ? (time.clock / 1000) * RING_SPEED : 0;
-  const span = (TAU / ARC_COUNT) * ARC_FILL * progress;
   const flicker = time && progress < 1 ? (Math.floor(time.sinceLock / 45) % 2 ? 0.45 : 1) : 1;
-  const tickTurn = -rotation / 2;
   const pipCenter = cx + (others % 2 === 0 ? PIP_GAP / 2 : 0);
   return {
-    center: [cx, cy],
     brackets: [
       corner(left, top, 1, 1, length),
       corner(right, top, -1, 1, length),
@@ -99,24 +81,11 @@ export function markerFrame(
       chevron([left - 3, cy], 1, 0),
       chevron([right + 3, cy], -1, 0),
     ],
-    arcs: Array.from({ length: ARC_COUNT }, (_, index) => {
-      const start = rotation + (index * TAU) / ARC_COUNT;
-      return { radius, start, end: start + span };
-    }),
-    ringTicks: Array.from({ length: 4 }, (_, index): MarkerLine => {
-      const angle = Math.PI / 4 + (index * Math.PI) / 2 + tickTurn;
-      const cos = Math.cos(angle);
-      const sin = Math.sin(angle);
-      return [
-        [cx + cos * (radius + 3), cy + sin * (radius + 3)],
-        [cx + cos * (radius + 9), cy + sin * (radius + 9)],
-      ];
-    }),
     label: [left, top - 20],
     pips: Array.from({ length: others }, (_, index): MarkerPoint => {
       const step = Math.floor((index + 1) / 2) * PIP_GAP;
       const sign = index % 2 === 0 ? 1 : -1;
-      return [pipCenter + sign * step, cy - radius - 12];
+      return [pipCenter + sign * step, bottom + 18];
     }),
     alpha: flicker,
     locked: progress >= 1,
