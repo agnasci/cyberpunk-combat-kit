@@ -8,6 +8,7 @@ import {
   autofireMultiplier,
   autofireTableName,
   modeBlocker,
+  preferredWeapon,
   suppressionFails,
   withinRange,
   type ModeWeapon,
@@ -43,6 +44,30 @@ const knife: ModeWeapon = {
   magazine: null,
 };
 const fists: ModeWeapon = { ...knife, weaponType: "unarmed" };
+
+describe("arma de arremesso do sistema (E9-02)", () => {
+  const star: ModeWeapon = { ...knife, weaponType: "thrownWeapon" };
+
+  it("arma branca do tipo arremesso só pode ser arremessada", () => {
+    expect(modeBlocker(star, attackProfile(star, "single"))).toBe("thrown-only");
+    expect(modeBlocker(star, attackProfile(star, "aimed"))).toBe("thrown-only");
+    expect(modeBlocker(star, attackProfile(star, "thrown"))).toBeNull();
+  });
+
+  it("arremesso à distância sem pente não esbarra em munição", () => {
+    const molotov: ModeWeapon = { ...pistol, weaponType: "thrownWeapon", magazine: null };
+    expect(modeBlocker(molotov, attackProfile(molotov, "single"))).toBeNull();
+  });
+
+  it("prefere a equipada pronta para uso", () => {
+    const empty = { ...pistol, magazine: 0, equipped: true, id: "a" };
+    const ready = { ...pistol, equipped: true, id: "b" };
+    const stored = { ...pistol, equipped: false, id: "c" };
+    expect(preferredWeapon([stored, empty, ready])?.id).toBe("b");
+    expect(preferredWeapon([stored, empty])?.id).toBe("a");
+    expect(preferredWeapon([stored])).toBeNull();
+  });
+});
 
 describe("tiro mirado (RULES §4; livro base p. 171)", () => {
   it("usa a rolagem mirada nativa e o dano mirado", () => {

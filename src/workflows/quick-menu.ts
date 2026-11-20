@@ -8,11 +8,13 @@ import {
   type MenuGrapple,
   type MenuNet,
 } from "../domain/menu";
+import { activeChokeStreak, type GrappleLink } from "../domain/grapple";
 import { attackProfile } from "../domain/modes";
-import { weaponsOf } from "../integrations/cpr/weapon-adapter";
+import { findItem, reloadWeapon, weaponsOf } from "../integrations/cpr/weapon-adapter";
 import { grappleLink } from "../integrations/foundry/grapple-store";
 import {
   onTokenRightClick,
+  onTokenTargetClick,
   sceneUnits,
   targetOnly,
   toggleTarget,
@@ -22,6 +24,7 @@ import {
 import { attackerToken, distanceBetween, squareSize } from "../integrations/foundry/tokens";
 import { openQuickMenu } from "../ui/quick-menu";
 import { attack } from "./attack";
+import { warn } from "./combat-common";
 import { dvLookup } from "./attack-steps";
 import { grapple } from "./grapple";
 import {
@@ -76,6 +79,17 @@ function formatDistance(distance: number | null): string | null {
   });
 }
 
+function chokeStreakOf(link: GrappleLink, own: TokenDocument | null): number {
+  const defender =
+    link.role === "defender"
+      ? own
+      : (canvas?.tokens?.placeables.find((token) => token.document.uuid === link.partnerUuid)
+          ?.document ?? null);
+  const defenderLink = defender ? grappleLink(defender) : null;
+  if (!defenderLink) return 0;
+  return activeChokeStreak(defenderLink, game.combat?.started ? game.combat.round : null);
+}
+
 export async function menuViewFor(target: Token) {
   const attacker = attackerToken();
   const problem = typeof attacker === "string" ? attacker : null;
@@ -85,7 +99,11 @@ export async function menuViewFor(target: Token) {
   const distance = acting && !self ? distanceBetween(acting, target) : Number.NaN;
   const link = acting ? grappleLink(acting.document) : null;
   const grappleState: MenuGrapple | null = link
-    ? { role: link.role, partnerIsTarget: link.partnerUuid === target.document.uuid }
+    ? {
+        role: link.role,
+        partnerIsTarget: link.partnerUuid === target.document.uuid,
+        chokeStreak: chokeStreakOf(link, acting?.document ?? null),
+      }
     : null;
   const model = buildMenu({
     self,
@@ -106,8 +124,21 @@ export async function menuViewFor(target: Token) {
   };
 }
 
+export async function reloadFor(actor: Actor, weaponId: string): Promise<void> {
+  const item = findItem(actor, weaponId);
+  if (!item || !(await reloadWeapon(item))) warn("CCK.Attack.no-weapon");
+}
+
+async function reloadAttacker(weaponId: string): Promise<void> {
+  const attacker = attackerToken();
+  if (typeof attacker === "string") return warn(`CCK.Attack.${attacker}`);
+  if (attacker.actor) await reloadFor(attacker.actor, weaponId);
+}
+
 export async function runMenuAction(action: MenuAction, target: Token): Promise<void> {
   switch (action.kind) {
+    case "reload":
+      return reloadAttacker(action.weaponId);
     case "target":
       return toggleTarget(target);
     case "attack":
@@ -145,6 +176,7 @@ export async function openMenuFor(target: Token, position: { x: number; y: numbe
 }
 
 export function initQuickMenu(): void {
+  onTokenTargetClick();
   onTokenRightClick((click: TokenClick) => {
     void openMenuFor(click.token, { x: click.clientX, y: click.clientY });
   });

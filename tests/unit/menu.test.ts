@@ -7,6 +7,7 @@ import {
   menuOpens,
   moveFocus,
   needsDv,
+  targetToggles,
   type MenuEntry,
   type MenuInput,
   type MenuNet,
@@ -142,6 +143,19 @@ describe("montagem do menu", () => {
     expect(find(menu.entries, "smg:suppressive")?.disabled?.key).toBe("CCK.Menu.Why-no-ammo-mode");
   });
 
+  it("supressivo vale até 25 m, sem exigir o alvo colado (E9-01)", () => {
+    const at = (distance: number) =>
+      find(
+        buildMenu(input({ weapons: [smg], distance, dvs: { [dvKey("smg", "single")]: 15 } }))
+          .entries,
+        "smg:suppressive",
+      )?.disabled ?? null;
+    expect(at(3)).toBeNull();
+    expect(at(20)).toBeNull();
+    expect(at(25)).toBeNull();
+    expect(at(26)).toEqual({ key: "CCK.Menu.Why-out-of-range" });
+  });
+
   it("corpo a corpo depende de estar a um quadrado", () => {
     const near = buildMenu(input({ weapons: [knife], distance: 2, dvs: {} }));
     expect(find(near.entries, "knife:single")?.disabled).toBeNull();
@@ -191,6 +205,60 @@ describe("montagem do menu", () => {
     expect(menu.entries.map((entry) => entry.id)).toEqual(["grapple"]);
     expect(menu.distance).toBeNull();
     expect(buildMenu(input({ self: true })).entries.map((entry) => entry.id)).toEqual(["nothing"]);
+  });
+});
+
+describe("recarregar (E9-04)", () => {
+  it("arma com pente incompleto ganha a entrada de recarga", () => {
+    const menu = buildMenu(input({ weapons: [{ ...pistol, magazine: 3, magazineMax: 8 }] }));
+    expect(find(menu.entries, "pistol:reload")).toMatchObject({
+      action: { kind: "reload", weaponId: "pistol" },
+      hint: { key: "CCK.Menu.Ammo", data: { ammo: "3/8" } },
+    });
+  });
+
+  it("pente cheio, sem pente ou arma branca não recarregam", () => {
+    const full = buildMenu(input({ weapons: [{ ...pistol, magazine: 8, magazineMax: 8 }] }));
+    expect(find(full.entries, "pistol:reload")).toBeUndefined();
+    const knives = buildMenu(input({ weapons: [knife], distance: 2, dvs: {} }));
+    expect(find(knives.entries, "knife:reload")).toBeUndefined();
+  });
+
+  it("no próprio token lista as armas que podem recarregar", () => {
+    const menu = buildMenu(
+      input({ self: true, weapons: [{ ...pistol, magazine: 0, magazineMax: 8 }] }),
+    );
+    expect(find(menu.entries, "reload")?.children.map((entry) => entry.action)).toEqual([
+      { kind: "reload", weaponId: "pistol" },
+    ]);
+  });
+});
+
+describe("estrangulamento no menu (E9-05)", () => {
+  it("mostra as rodadas seguidas em Estrangular", () => {
+    const menu = buildMenu(
+      input({
+        distance: 2,
+        grapple: { role: "attacker", partnerIsTarget: true, chokeStreak: 2 },
+      }),
+    );
+    expect(find(menu.entries, "grapple:choke")?.hint).toEqual({
+      key: "CCK.Menu.ChokeRounds",
+      data: { rounds: "2", limit: "3" },
+    });
+    const fresh = buildMenu(
+      input({ distance: 2, grapple: { role: "attacker", partnerIsTarget: true } }),
+    );
+    expect(find(fresh.entries, "grapple:choke")?.hint).toBeNull();
+  });
+});
+
+describe("clique para marcar alvo (E9-03)", () => {
+  it("só o botão esquerdo com a tecla e o ajuste ligado", () => {
+    expect(targetToggles({ button: 0, enabled: true, modifier: true })).toBe(true);
+    expect(targetToggles({ button: 0, enabled: true, modifier: false })).toBe(false);
+    expect(targetToggles({ button: 0, enabled: false, modifier: true })).toBe(false);
+    expect(targetToggles({ button: 2, enabled: true, modifier: true })).toBe(false);
   });
 });
 

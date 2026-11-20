@@ -1,5 +1,5 @@
-import { drawerSections, type MenuAction, type MenuText } from "../domain/menu";
-import { pickWeapon, type WeaponSnapshot } from "../integrations/cpr/weapon-adapter";
+import { canReload, drawerSections, type MenuAction, type MenuText } from "../domain/menu";
+import { pickWeapon, weaponsOf, type WeaponSnapshot } from "../integrations/cpr/weapon-adapter";
 import {
   connectPanel,
   type PanelApi,
@@ -9,7 +9,7 @@ import {
 import { singleTarget } from "../integrations/foundry/tokens";
 import { attack } from "./attack";
 import { warn } from "./combat-common";
-import { menuViewFor, openMenuFor, runMenuAction } from "./quick-menu";
+import { menuViewFor, openMenuFor, reloadFor, runMenuAction } from "./quick-menu";
 
 const RERENDER_MS = 120;
 
@@ -85,7 +85,17 @@ function renderQuick(context: PanelSlotContext): Node | null {
   const box = element("div", "cck-pslot__quick");
   if (activeWeapon(context.subject)) {
     box.append(
-      iconButton("attack", "fa-solid fa-crosshairs", game.i18n.localize("CCK.Panel.Attack")),
+      iconButton("choose", "fa-solid fa-crosshairs", game.i18n.localize("CCK.Panel.Attack")),
+    );
+  }
+  const weapon = activeWeapon(context.subject);
+  if (weapon && canReload(weapon)) {
+    box.append(
+      iconButton(
+        "reload",
+        "fa-solid fa-rotate",
+        game.i18n.format("CCK.Panel.Reload", { weapon: weapon.name }),
+      ),
     );
   }
   box.append(iconButton("menu", "fa-solid fa-bars", game.i18n.localize("CCK.Panel.Menu")));
@@ -144,10 +154,21 @@ function renderDrawer(): Node {
   return box;
 }
 
-function quickAttack(subject: PanelSubject | null): void {
+function attackWith(subject: PanelSubject | null): void {
   const weapon = activeWeapon(subject);
   if (!weapon || !ensureControlled(subject)) return;
   void attack({ weaponId: weapon.id, mode: "single" });
+}
+
+function reloadActive(subject: PanelSubject | null): void {
+  const weapon = activeWeapon(subject);
+  if (subject && weapon) void reloadFor(subject.actor, weapon.id);
+}
+
+function quickAttack(subject: PanelSubject | null, event: Event): void {
+  const equipped = subject ? weaponsOf(subject.actor).filter((weapon) => weapon.equipped) : [];
+  if (equipped.length > 1) return openMenu(subject, event);
+  attackWith(subject);
 }
 
 function openMenu(subject: PanelSubject | null, event: Event): void {
@@ -162,8 +183,10 @@ function openMenu(subject: PanelSubject | null, event: Event): void {
 }
 
 function onAction(action: string, event: Event, context: PanelSlotContext): void {
-  if (action === "attack") return quickAttack(context.subject);
+  if (action === "attack") return attackWith(context.subject);
+  if (action === "choose") return quickAttack(context.subject, event);
   if (action === "menu") return openMenu(context.subject, event);
+  if (action === "reload") return reloadActive(context.subject);
   const menuAction = drawerActions.get(action);
   const target = singleTarget();
   if (!menuAction || typeof target === "string") return;

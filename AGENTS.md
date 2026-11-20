@@ -29,7 +29,7 @@ A ficha e o pipeline de rolagem do sistema são a fonte de verdade.
 
 - E0 a E8 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito,
   pacotes, editor de efeitos, Quickhacks (desligados por padrão), encaixe no Character Panel
-  e API v1. Beta 0.1.0 publicada no GitHub (`origin`). Próximo: P-02.
+  e API v1. Beta 0.1.0 publicada no GitHub (`origin`). Próximo: E9 (correções do teste da beta).
 - Separe requisito do usuário, proposta técnica e fato verificado. Não invente
   APIs, campos de ficha, fórmulas, compatibilidade, testes ou resultados.
 - Execute uma tarefa pequena por vez; não implemente etapas futuras por antecipação.

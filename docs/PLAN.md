@@ -80,6 +80,26 @@ geram commit de conteúdo. Apagar este arquivo quando o plano acabar.
 | E8-01 | API v1 (docs/ARCHITECTURE.md) e `docs/INTEGRATION.md` | Macro de exemplo ataca e aplica dano |
 | E8-02 | Beta pública | Checklist de docs/LEGAL.md completo; release de `dist/` |
 
+## E9 — Correções do teste da beta (0.1.1)
+
+Relatos de um testador da 0.1.0 (2026-11-20).
+
+| ID | Entrega | Arquivos | Aceite |
+|---|---|---|---|
+| E9-01 | Supressivo usa o raio de 25 m no menu; esquiva à distância só é oferecida se o ataque passou a DV | `src/domain/menu.ts`, `src/domain/attack-rules.ts`, `src/workflows/attack.ts`, testes | Menu libera o supressivo a 3 m e a 20 m; ataque à distância que não passa a DV termina em erro sem pedir esquiva |
+| E9-02 | Ataque rápido do painel deixa escolher a arma; arma de arremesso sem pente não exige munição | `src/workflows/panel-slots.ts`, `src/integrations/cpr/weapon-adapter.ts`, testes | Com duas armas equipadas, o botão pergunta qual; arma de arremesso do testador ataca sem "sem munição" |
+| E9-03 | Alt + clique esquerdo marca o alvo (tecla configurável) | `src/integrations/foundry/token-click.ts`, `settings.ts` | Marca e desmarca sem selecionar o token |
+| E9-04 | Recarregar pelo painel e pelo menu | `panel-slots.ts`, `src/domain/menu.ts`, adaptador de arma | Pente volta ao máximo pela recarga nativa do sistema |
+| E9-05 | Rodadas de estrangulamento visíveis | `src/workflows/grapple.ts`, card, menu | Card e menu mostram há quantas rodadas o alvo é estrangulado |
+| E9-06 | Release 0.1.1 | `package.json`, `module.json` | Release no GitHub a pedido do usuário |
+
+## E10 — Refino visual
+
+| ID | Entrega | Aceite |
+|---|---|---|
+| E10-01 | Levantar o estilo do Character Panel e do Netrunner HUD (paleta, tipografia, componentes) e propor o ajuste | Proposta aprovada pelo usuário |
+| E10-02 | Aplicar ao menu, aos cards, ao pedido de defesa e às janelas do módulo | Inspeção visual no Foundry com e sem o painel |
+
 ## P — Edição pessoal (somente `private/`)
 
 | ID | Entrega | Condição | Aceite |

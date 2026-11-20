@@ -17,6 +17,7 @@ export const AUTOFIRE_DEFAULTS: Readonly<Record<string, number>> = {
 };
 const EXPLOSIVE_AMMO = new Set(["grenade", "rocket"]);
 const BODY_WEAPONS = new Set(["unarmed", "martialArts"]);
+export const THROWN_WEAPON_TYPE = "thrownWeapon";
 
 export interface ModeWeapon {
   kind: AttackKind;
@@ -39,7 +40,12 @@ export interface AttackProfile {
 }
 
 export type ModeBlocker =
-  "mode-autofire" | "mode-suppressive" | "mode-aimed" | "mode-thrown" | "no-ammo-mode";
+  | "mode-autofire"
+  | "mode-suppressive"
+  | "mode-aimed"
+  | "mode-thrown"
+  | "thrown-only"
+  | "no-ammo-mode";
 
 export function autofireMax(weaponType: string, autoFire: number): number {
   return autoFire > 0 ? autoFire : (AUTOFIRE_DEFAULTS[weaponType] ?? 0);
@@ -95,7 +101,25 @@ export function attackProfile(weapon: ModeWeapon, mode: AttackMode): AttackProfi
   }
 }
 
+export function preferredWeapon<T extends ModeWeapon & { equipped: boolean }>(
+  weapons: readonly T[],
+): T | null {
+  const equipped = weapons.filter((weapon) => weapon.equipped);
+  return (
+    equipped.find((weapon) => weapon.magazine === null || weapon.magazine > 0) ??
+    equipped[0] ??
+    null
+  );
+}
+
 export function modeBlocker(weapon: ModeWeapon, profile: AttackProfile): ModeBlocker | null {
+  if (
+    weapon.kind === "melee" &&
+    weapon.weaponType === THROWN_WEAPON_TYPE &&
+    profile.mode !== "thrown"
+  ) {
+    return "thrown-only";
+  }
   if (profile.mode === "autofire" && (weapon.kind !== "ranged" || weapon.autofireMax < 1)) {
     return "mode-autofire";
   }

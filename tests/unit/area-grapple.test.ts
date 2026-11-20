@@ -7,6 +7,7 @@ import {
   withinSquare,
 } from "../../src/domain/area";
 import {
+  activeChokeStreak,
   chokeOutcome,
   contestWon,
   nextChokeStreak,
@@ -87,6 +88,14 @@ describe("agarrão (RULES §5; p. 178)", () => {
 
   it("três rodadas seguidas estrangulando desmaiam o alvo", () => {
     expect(chokeOutcome(30, 2, 3).knockedOut).toBe(true);
+  });
+
+  it("rodadas mostradas zeram quando uma rodada passou sem estrangular (E9-05)", () => {
+    const choking = { ...link, chokeStreak: 2, lastChokeRound: 4 };
+    expect(activeChokeStreak(choking, 4)).toBe(2);
+    expect(activeChokeStreak(choking, 5)).toBe(2);
+    expect(activeChokeStreak(choking, 6)).toBe(0);
+    expect(activeChokeStreak({ ...link, chokeStreak: 2 }, null)).toBe(2);
   });
 
   it("conta rodadas seguidas pelo tracker; sem combate conta cada uso", () => {

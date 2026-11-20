@@ -1,7 +1,7 @@
 import { postResolution } from "./announce";
 import {
   attackBlocker,
-  canDodge,
+  dodgeOffered,
   resolveAttack,
   type AttackKind,
   type Defense,
@@ -101,7 +101,7 @@ async function singleAttack(context: AttackContext, options: AttackOptions): Pro
   const location = (attackRoll.location as AimLocation | undefined) ?? options.location ?? "head";
   const defender = combatantSnapshot(targetActor);
   let defense: Defense | null = dv === null ? null : { kind: "dv", value: dv };
-  if (canDodge(kind, defender.ref)) {
+  if (dodgeOffered(kind, defender.ref, attackRoll.total, dv)) {
     const answer = await requestDefense(targetActor, {
       purpose: kind,
       skill: "evasion",

@@ -37,6 +37,9 @@
         {{#if applied}}
           <div class="cck-card__detail">{{localize "CCK.Card.HpLost"}}: {{applied.hpReduction}}</div>
         {{/if}}
+        {{#if applied.chokeStreak}}
+          <div class="cck-card__detail">{{localize "CCK.Card.ChokeRounds"}}: {{applied.chokeStreak}}/{{chokeLimit}}</div>
+        {{/if}}
         {{#if effect}}
           <div class="cck-card__detail">{{localize effect}}</div>
         {{/if}}

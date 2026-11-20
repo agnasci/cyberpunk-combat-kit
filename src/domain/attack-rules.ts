@@ -20,6 +20,16 @@ export function canDodge(kind: AttackKind, defenderRef: number): boolean {
   return kind === "melee" || defenderRef >= RANGED_DODGE_MIN_REF;
 }
 
+export function dodgeOffered(
+  kind: AttackKind,
+  defenderRef: number,
+  attackTotal: number,
+  dv: number | null,
+): boolean {
+  if (!canDodge(kind, defenderRef)) return false;
+  return kind === "melee" || dv === null || attackTotal > dv;
+}
+
 export function defenseValue(defense: Defense): number {
   return defense.kind === "dv" ? defense.value : defense.total;
 }

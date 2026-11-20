@@ -1,9 +1,11 @@
 import { attackBlocker, type AttackBlocker } from "./attack-rules";
-import type { GrappleRole } from "./grapple";
+import { CHOKE_ROUNDS_TO_KNOCKOUT, type GrappleRole } from "./grapple";
 import {
   areaFor,
   attackProfile,
   modeBlocker,
+  SUPPRESSION_RANGE,
+  withinRange,
   type AimLocation,
   type AttackMode,
   type ModeBlocker,
@@ -34,6 +36,7 @@ export type MenuAction =
   | { kind: "attack"; weaponId: string; mode: AttackMode; location?: AimLocation }
   | { kind: "grapple"; action: MenuGrappleAction }
   | { kind: "net"; action: MenuNetAction; quickhackId?: string; runnerUuid?: string }
+  | { kind: "reload"; weaponId: string }
   | { kind: "target" };
 
 export type MenuNetAction = "jackIn" | "breach" | "quickhack" | "jackOut" | "forceOut";
@@ -83,6 +86,22 @@ export interface MenuWeapon extends ModeWeapon {
   id: string;
   name: string;
   equipped: boolean;
+  magazineMax?: number | null;
+}
+
+export function canReload(weapon: MenuWeapon): boolean {
+  return (
+    weapon.magazine !== null &&
+    typeof weapon.magazineMax === "number" &&
+    weapon.magazine < weapon.magazineMax
+  );
+}
+
+function reloadEntry(weapon: MenuWeapon, label: MenuText): MenuEntry {
+  return entry(`${weapon.id}:reload`, label, {
+    hint: { key: "CCK.Menu.Ammo", data: { ammo: `${weapon.magazine}/${weapon.magazineMax}` } },
+    action: { kind: "reload", weaponId: weapon.id },
+  });
 }
 
 export type DvValue = number | null | "no-table";
@@ -90,6 +109,7 @@ export type DvValue = number | null | "no-table";
 export interface MenuGrapple {
   role: GrappleRole;
   partnerIsTarget: boolean;
+  chokeStreak?: number;
 }
 
 export interface MenuInput {
@@ -149,6 +169,9 @@ interface RangeCheck {
 }
 
 function rangeCheck(input: MenuInput, weapon: MenuWeapon, mode: AttackMode): RangeCheck {
+  if (mode === "suppressive") {
+    return { inRange: withinRange(input.distance, SUPPRESSION_RANGE), noTable: false, hint: null };
+  }
   if (!needsDv(weapon, mode)) {
     if (attackProfile(weapon, mode).dvSource !== "none") {
       return { inRange: true, noTable: false, hint: null };
@@ -212,25 +235,43 @@ function weaponEntry(input: MenuInput, weapon: MenuWeapon): MenuEntry {
     { key: "CCK.Menu.Weapon", data: { name: weapon.name } },
     {
       hint: ammo,
-      children: menuModes(weapon).map((mode) => modeEntry(input, weapon, mode)),
+      children: [
+        ...menuModes(weapon).map((mode) => modeEntry(input, weapon, mode)),
+        ...(canReload(weapon) ? [reloadEntry(weapon, { key: "CCK.Menu.Reload" })] : []),
+      ],
     },
   );
 }
 
 function grappleEntries(input: MenuInput): MenuEntry[] {
   const own = input.grapple;
-  const pick = (action: MenuGrappleAction, disabled: MenuText | null = null) =>
+  const pick = (
+    action: MenuGrappleAction,
+    disabled: MenuText | null = null,
+    hint: MenuText | null = null,
+  ) =>
     entry(
       `grapple:${action}`,
       { key: `CCK.Menu.Grapple-${action}` },
       {
         disabled,
+        hint,
         action: disabled ? null : { kind: "grapple", action },
       },
     );
   if (own && (input.self || own.partnerIsTarget)) {
-    if (own.role === "attacker") return [pick("choke"), pick("throw"), pick("release")];
-    return [pick("escape")];
+    const streak = own.chokeStreak ?? 0;
+    const choking =
+      streak > 0
+        ? {
+            key: "CCK.Menu.ChokeRounds",
+            data: { rounds: String(streak), limit: String(CHOKE_ROUNDS_TO_KNOCKOUT) },
+          }
+        : null;
+    if (own.role === "attacker") {
+      return [pick("choke", null, choking), pick("throw"), pick("release")];
+    }
+    return [pick("escape", null, choking)];
   }
   if (input.self || own || input.targetGrappled) return [];
   const reach = meleeInReach(input.distance, input.squareSize);
@@ -377,6 +418,22 @@ export function buildMenu(input: MenuInput): MenuModel {
       }
       entries.push(...equipped.map((weapon) => weaponEntry(input, weapon)));
     }
+    const reloads = input.self
+      ? input.weapons.filter((weapon) => weapon.equipped && canReload(weapon))
+      : [];
+    if (reloads.length > 0) {
+      entries.push(
+        entry(
+          "reload",
+          { key: "CCK.Menu.Reload" },
+          {
+            children: reloads.map((weapon) =>
+              reloadEntry(weapon, { key: "CCK.Menu.Weapon", data: { name: weapon.name } }),
+            ),
+          },
+        ),
+      );
+    }
     const grapple = grappleEntries(input);
     if (grapple.length > 0) {
       entries.push(entry("grapple", { key: "CCK.Menu.Grapple" }, { children: grapple }));
@@ -416,6 +473,14 @@ export function menuOpens(input: {
   if (input.modifier) return true;
   if (!input.owner) return true;
   return input.always && !input.controlled;
+}
+
+export function targetToggles(input: {
+  button: number;
+  enabled: boolean;
+  modifier: boolean;
+}): boolean {
+  return input.button === 0 && input.enabled && input.modifier;
 }
 
 export function moveFocus(index: number, enabled: readonly boolean[], step: 1 | -1): number {

@@ -25,6 +25,11 @@ export function nextChokeStreak(link: GrappleLink, round: number | null): number
   return round === link.lastChokeRound + 1 ? link.chokeStreak + 1 : 1;
 }
 
+export function activeChokeStreak(link: GrappleLink, round: number | null): number {
+  if (round === null || link.lastChokeRound === null) return link.chokeStreak;
+  return round <= link.lastChokeRound + 1 ? link.chokeStreak : 0;
+}
+
 export function chokeOutcome(hpBefore: number, body: number, streak: number): ChokeOutcome {
   const raw = hpBefore - body;
   const dropsBelowZero = hpBefore > 1 && raw < 0;

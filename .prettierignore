@@ -6,3 +6,5 @@ package-lock.json
 *.md
 *.hbs
 release/
+.local/
+foundry-data/

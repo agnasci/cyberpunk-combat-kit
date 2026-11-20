@@ -1,6 +1,6 @@
-import { menuOpens } from "../../domain/menu";
+import { menuOpens, targetToggles } from "../../domain/menu";
 import { placementActive } from "./area-placement";
-import { menuSettings, type MenuModifier } from "./settings";
+import { menuSettings, targetModifier, type MenuModifier } from "./settings";
 
 export interface TokenClick {
   token: Token;
@@ -54,6 +54,28 @@ export function onTokenRightClick(handler: (click: TokenClick) => void): () => v
     event.preventDefault();
     event.stopImmediatePropagation();
     handler({ token, clientX: event.clientX, clientY: event.clientY });
+  };
+  document.addEventListener("pointerdown", listener, true);
+  return () => document.removeEventListener("pointerdown", listener, true);
+}
+
+export function onTokenTargetClick(): () => void {
+  const listener = (event: PointerEvent) => {
+    if (event.button !== 0 || !canvas || event.target !== canvas.app.view) return;
+    if (placementActive() || canvas.controls?.ruler?.active) return;
+    const modifier = targetModifier();
+    const toggles = targetToggles({
+      button: event.button,
+      enabled: modifier !== "off",
+      modifier: modifier !== "off" && modifierHeld(event, modifier),
+    });
+    if (!toggles) return;
+    const token = tokenAt(event.clientX, event.clientY);
+    if (!token) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (token.isTargeted) toggleTarget(token);
+    else targetOnly(token);
   };
   document.addEventListener("pointerdown", listener, true);
   return () => document.removeEventListener("pointerdown", listener, true);

@@ -5,7 +5,7 @@ automática, defesa, dano aplicado com armadura e ablação, modos de fogo e ár
 combate no clique direito, efeitos audiovisuais configuráveis e pacotes de conteúdo
 importáveis. Integra-se ao Character Panel quando os dois estão ativos.
 
-**Estado:** beta (0.1.0). Ataques à distância e corpo a corpo, modos de fogo, áreas,
+**Estado:** beta (0.1.1). Ataques à distância e corpo a corpo, modos de fogo, áreas,
 agarrão, dano aplicado pelo mestre com desfazer, efeitos audiovisuais, menu de combate no
 clique direito, pacotes de conteúdo importáveis com editor de efeitos por evento e motor de
 Quickhacks desligado por padrão, com definições só vindas de pacotes, e aba "Combate" no
@@ -19,6 +19,13 @@ Foundry VTT V12 com o sistema Cyberpunk RED – CORE. Em "Instalar módulo", col
 
 A aba "Combate" e os atalhos no painel precisam do Character Panel 0.2.0 ou mais novo (API v1).
 Com versão anterior ou sem o painel, o Combat Kit funciona sozinho pelo clique direito.
+
+## Atalhos
+
+- Clique direito num token alheio (Alt + clique direito num token seu, ou sendo mestre):
+  menu de combate com armas, modos, recarga e agarrão.
+- Alt + clique esquerdo num token: torna-o o único alvo, ou o desmarca, sem selecioná-lo.
+- As duas teclas mudam nos ajustes do módulo (ajustes de cliente).
 
 ## Unofficial content
 

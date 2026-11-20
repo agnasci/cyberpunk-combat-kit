@@ -80,7 +80,7 @@ async function choke(
   const result = await setHitPointsDirect(target.actor, outcome.hpAfter);
   await writeLink(defender, { ...link, chokeStreak: streak, lastChokeRound: round });
   if (outcome.knockedOut) await setStatus(target.actor, "unconscious");
-  return { ...result, knockedOut: outcome.knockedOut };
+  return { ...result, knockedOut: outcome.knockedOut, chokeStreak: streak };
 }
 
 let quickhackSource: () => readonly PackQuickhack[] = () => [];

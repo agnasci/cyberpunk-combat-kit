@@ -3,6 +3,7 @@ import {
   attackBlocker,
   canDodge,
   damageApplicationFrom,
+  dodgeOffered,
   isCriticalInjury,
   remainingArmorAfterIgnore,
   resolveAttack,
@@ -17,6 +18,18 @@ describe("quem pode esquivar (RULES §3, p. 173; §5, p. 177)", () => {
 
   it("no corpo a corpo qualquer um defende", () => {
     expect(canDodge("melee", 2)).toBe(true);
+  });
+});
+
+describe("esquiva só quando muda o resultado (E9-01)", () => {
+  it("à distância, ataque que não supera a DV não oferece esquiva", () => {
+    expect(dodgeOffered("ranged", 8, 15, 15)).toBe(false);
+    expect(dodgeOffered("ranged", 8, 16, 15)).toBe(true);
+    expect(dodgeOffered("ranged", 7, 20, 15)).toBe(false);
+  });
+
+  it("corpo a corpo sempre pede a defesa", () => {
+    expect(dodgeOffered("melee", 2, 3, null)).toBe(true);
   });
 });
 

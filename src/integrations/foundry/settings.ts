@@ -72,6 +72,8 @@ export function prefersReducedMotion(): boolean {
 
 export type MenuModifier = "alt" | "ctrl" | "shift";
 const MODIFIER_CHOICES: MenuModifier[] = ["alt", "ctrl", "shift"];
+export type TargetModifier = MenuModifier | "off";
+const TARGET_CHOICES: TargetModifier[] = ["alt", "ctrl", "shift", "off"];
 
 export function registerMenuSettings(): void {
   const client = { scope: "client", config: true } as const;
@@ -85,6 +87,16 @@ export function registerMenuSettings(): void {
     ),
     default: "alt",
   });
+  game.settings.register(MODULE_ID, "targetModifier", {
+    ...client,
+    name: "CCK.Settings.TargetModifier",
+    hint: "CCK.Settings.TargetModifierHint",
+    type: String,
+    choices: Object.fromEntries(
+      TARGET_CHOICES.map((choice) => [choice, `CCK.Settings.Modifier-${choice}`]),
+    ),
+    default: "alt",
+  });
   game.settings.register(MODULE_ID, "menuAlways", {
     ...client,
     name: "CCK.Settings.MenuAlways",
@@ -92,6 +104,11 @@ export function registerMenuSettings(): void {
     type: Boolean,
     default: false,
   });
+}
+
+export function targetModifier(): TargetModifier {
+  const value = game.settings.get(MODULE_ID, "targetModifier");
+  return TARGET_CHOICES.find((choice) => choice === value) ?? "alt";
 }
 
 export function menuSettings(): { modifier: MenuModifier; always: boolean } {

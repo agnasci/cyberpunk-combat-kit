@@ -3,7 +3,17 @@ import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  { ignores: ["dist/", "dist-personal/", "private/", "node_modules/", "coverage/"] },
+  {
+    ignores: [
+      "dist/",
+      "dist-personal/",
+      "private/",
+      "node_modules/",
+      "coverage/",
+      ".local/",
+      "foundry-data/",
+    ],
+  },
   js.configs.recommended,
   tseslint.configs.strict,
   {

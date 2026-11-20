@@ -1,5 +1,6 @@
 import { MODULE_ID } from "../constants";
 import type { Defense } from "../domain/attack-rules";
+import { CHOKE_ROUNDS_TO_KNOCKOUT } from "../domain/grapple";
 import { isUndoable, type DamageResult } from "../domain/gm-request";
 import type { CardAudience } from "../domain/routing";
 import { gmRecipients } from "../integrations/foundry/users";
@@ -104,6 +105,7 @@ function targetView(target: TargetResult) {
     defenseLabel: defense ? DEFENSE_LABELS[defense.kind] : null,
     defenseValue: defense ? (defense.kind === "dv" ? defense.value : defense.total) : null,
     canUndo: !target.undone && isUndoable(target.applied),
+    chokeLimit: CHOKE_ROUNDS_TO_KNOCKOUT,
   };
 }
 

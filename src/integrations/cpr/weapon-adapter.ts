@@ -1,5 +1,5 @@
 import type { AttackKind } from "../../domain/attack-rules";
-import { autofireMax, type ModeWeapon } from "../../domain/modes";
+import { autofireMax, preferredWeapon, type ModeWeapon } from "../../domain/modes";
 import { dvBandsFromResults, type DvBand } from "../../domain/range";
 
 export const SKILLS = {
@@ -17,6 +17,7 @@ export interface WeaponSnapshot extends ModeWeapon {
   name: string;
   equipped: boolean;
   dvTable: string;
+  magazineMax: number | null;
 }
 
 export interface CombatantSnapshot {
@@ -56,13 +57,16 @@ export function weaponSnapshot(item: Item): WeaponSnapshot | null {
   const dvTable = field(system, "dvTable");
   const weaponType = field(system, "weaponType");
   const type = typeof weaponType === "string" ? weaponType : "";
+  const max = kind === "ranged" ? numberAt(system, "magazine", "max") : null;
+  const usesAmmo = max !== null && max > 0;
   return {
     id: item.id,
     name: item.name,
     kind,
     weaponType: type,
     equipped: field(system, "equipped") === "equipped",
-    magazine: kind === "ranged" ? numberAt(system, "magazine", "value") : null,
+    magazine: usesAmmo ? numberAt(system, "magazine", "value") : null,
+    magazineMax: usesAmmo ? max : null,
     dvTable: typeof dvTable === "string" ? dvTable : "",
     ammoVariety: kind === "ranged" ? loadedAmmoVariety(item) : null,
     autofireMax: autofireMax(type, numberAt(system, "fireModes", "autoFire") ?? 0),
@@ -79,7 +83,7 @@ export function weaponsOf(actor: Actor): WeaponSnapshot[] {
 export function pickWeapon(actor: Actor, weaponId?: string): WeaponSnapshot | null {
   const weapons = weaponsOf(actor);
   if (weaponId) return weapons.find((weapon) => weapon.id === weaponId) ?? null;
-  return weapons.find((weapon) => weapon.equipped) ?? null;
+  return preferredWeapon(weapons);
 }
 
 export function combatantSnapshot(actor: Actor): CombatantSnapshot {
@@ -90,6 +94,17 @@ export function combatantSnapshot(actor: Actor): CombatantSnapshot {
     body: numberAt(actor.system, "stats", "body", "value") ?? 0,
     isNpc: !actor.hasPlayerOwner,
   };
+}
+
+interface ReloadableItem {
+  reload?: () => Promise<unknown>;
+}
+
+export async function reloadWeapon(item: Item): Promise<boolean> {
+  const reload = (item as Item & ReloadableItem).reload;
+  if (typeof reload !== "function") return false;
+  await reload.call(item);
+  return true;
 }
 
 export function findItem(actor: Actor, id: string): Item | undefined {

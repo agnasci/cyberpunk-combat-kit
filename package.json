@@ -1,6 +1,6 @@
 {
   "name": "cyberpunk-combat-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Automação de combate e efeitos audiovisuais para Cyberpunk RED – CORE no Foundry VTT.",
   "type": "module",

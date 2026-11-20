@@ -82,6 +82,7 @@ export interface DamageResult {
   ablation: number;
   location: "body" | "head";
   knockedOut?: boolean;
+  chokeStreak?: number;
   rolled?: number;
   note?: string;
 }
