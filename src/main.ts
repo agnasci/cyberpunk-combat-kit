@@ -21,12 +21,13 @@ import { detonatePending } from "./workflows/area";
 import { undoTarget } from "./workflows/combat-common";
 import { initDefense } from "./workflows/defense";
 import { initPanelSlots } from "./workflows/panel-slots";
-import { initQuickMenu } from "./workflows/quick-menu";
+import { initQuickMenu, registerQuickFireTool } from "./workflows/quick-menu";
 import { availableQuickhacks, initQuickhacks } from "./workflows/quickhack";
 
 Hooks.once("init", () => {
   registerEffectSettings();
   registerMenuSettings();
+  registerQuickFireTool();
   registerQuickhackSettings();
   void loadTemplates([RESOLUTION_TEMPLATE]);
   bindResolutionCards({ undo: undoTarget, detonate: detonatePending });

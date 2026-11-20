@@ -13,6 +13,7 @@ import { attackProfile } from "../domain/modes";
 import { findItem, reloadWeapon, weaponsOf } from "../integrations/cpr/weapon-adapter";
 import { grappleLink } from "../integrations/foundry/grapple-store";
 import {
+  onTokenFireClick,
   onTokenRightClick,
   onTokenTargetClick,
   sceneUnits,
@@ -22,6 +23,7 @@ import {
   type TokenClick,
 } from "../integrations/foundry/token-click";
 import { attackerToken, distanceBetween, squareSize } from "../integrations/foundry/tokens";
+import { quickFireOn, setQuickFire, skipRollDialogs } from "../integrations/foundry/settings";
 import { openQuickMenu } from "../ui/quick-menu";
 import { attack } from "./attack";
 import { warn } from "./combat-common";
@@ -146,15 +148,17 @@ export async function runMenuAction(action: MenuAction, target: Token): Promise<
       return attack({
         weaponId: action.weaponId,
         mode: action.mode,
+        skipDialog: skipRollDialogs(),
         ...(action.location ? { location: action.location } : {}),
       });
     case "grapple":
       if (action.action === "grab") targetOnly(target);
-      return grapple({ action: action.action });
+      return grapple({ action: action.action, skipDialog: skipRollDialogs() });
     case "net":
       if (action.action !== "forceOut") targetOnly(target);
       return quickhack({
         action: action.action,
+        skipDialog: skipRollDialogs(),
         ...(action.quickhackId ? { quickhackId: action.quickhackId } : {}),
         ...(action.runnerUuid ? { runnerUuid: action.runnerUuid } : {}),
       });
@@ -175,8 +179,32 @@ export async function openMenuFor(target: Token, position: { x: number; y: numbe
   });
 }
 
+export function registerQuickFireTool(): void {
+  Hooks.on("getSceneControlButtons", (controls) => {
+    controls
+      .find((control) => control.name === "token")
+      ?.tools.push({
+        name: "cck-quick-fire",
+        title: "CCK.QuickFire.Tool",
+        icon: "fa-solid fa-gun",
+        toggle: true,
+        active: quickFireOn(),
+        onClick: (toggled) => {
+          void setQuickFire(toggled === true);
+          ui.notifications.info(
+            game.i18n.localize(toggled ? "CCK.QuickFire.On" : "CCK.QuickFire.Off"),
+          );
+        },
+      });
+  });
+}
+
 export function initQuickMenu(): void {
   onTokenTargetClick();
+  onTokenFireClick((token) => {
+    targetOnly(token);
+    void attack({ mode: "single", skipDialog: true });
+  });
   onTokenRightClick((click: TokenClick) => {
     void openMenuFor(click.token, { x: click.clientX, y: click.clientY });
   });

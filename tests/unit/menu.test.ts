@@ -7,6 +7,7 @@ import {
   menuOpens,
   moveFocus,
   needsDv,
+  quickFireApplies,
   targetToggles,
   type MenuEntry,
   type MenuInput,
@@ -250,6 +251,29 @@ describe("estrangulamento no menu (E9-05)", () => {
       input({ distance: 2, grapple: { role: "attacker", partnerIsTarget: true } }),
     );
     expect(find(fresh.entries, "grapple:choke")?.hint).toBeNull();
+  });
+});
+
+describe("tiro rápido (F-01)", () => {
+  const base = {
+    button: 0,
+    active: true,
+    modifier: false,
+    controlled: 1,
+    clickedIsControlled: false,
+  };
+
+  it("com um token selecionado, clique esquerdo em outro ataca", () => {
+    expect(quickFireApplies(base)).toBe(true);
+  });
+
+  it("desligado, com tecla, sem seleção única ou no próprio token, segue o Foundry", () => {
+    expect(quickFireApplies({ ...base, active: false })).toBe(false);
+    expect(quickFireApplies({ ...base, modifier: true })).toBe(false);
+    expect(quickFireApplies({ ...base, controlled: 0 })).toBe(false);
+    expect(quickFireApplies({ ...base, controlled: 2 })).toBe(false);
+    expect(quickFireApplies({ ...base, clickedIsControlled: true })).toBe(false);
+    expect(quickFireApplies({ ...base, button: 2 })).toBe(false);
   });
 });
 

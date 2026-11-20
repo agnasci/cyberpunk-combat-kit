@@ -8,6 +8,22 @@ interface FoundryUser {
   can(permission: string): boolean;
 }
 
+interface FoundrySceneControlTool {
+  name: string;
+  title: string;
+  icon: string;
+  toggle?: boolean;
+  button?: boolean;
+  active?: boolean;
+  visible?: boolean;
+  onClick?: (toggled?: boolean) => void;
+}
+
+interface FoundrySceneControl {
+  name: string;
+  tools: FoundrySceneControlTool[];
+}
+
 interface FoundryItem {
   readonly id: string;
   readonly name: string;
@@ -233,6 +249,7 @@ declare global {
       hook: "updateToken",
       fn: (token: FoundryTokenDocument, changes: Record<string, unknown>) => void,
     ): number;
+    on(hook: "getSceneControlButtons", fn: (controls: FoundrySceneControl[]) => void): number;
     on(
       hook:
         "ccpReady" | "ccpRendered" | "targetToken" | "controlToken" | "updateActor" | "updateItem",

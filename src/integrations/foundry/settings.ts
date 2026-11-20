@@ -97,6 +97,20 @@ export function registerMenuSettings(): void {
     ),
     default: "alt",
   });
+  game.settings.register(MODULE_ID, "skipRollDialogs", {
+    ...client,
+    name: "CCK.Settings.SkipRollDialogs",
+    hint: "CCK.Settings.SkipRollDialogsHint",
+    type: Boolean,
+    default: false,
+  });
+  game.settings.register(MODULE_ID, "quickFire", {
+    scope: "client",
+    config: false,
+    name: "CCK.QuickFire.Tool",
+    type: Boolean,
+    default: false,
+  });
   game.settings.register(MODULE_ID, "menuAlways", {
     ...client,
     name: "CCK.Settings.MenuAlways",
@@ -104,6 +118,18 @@ export function registerMenuSettings(): void {
     type: Boolean,
     default: false,
   });
+}
+
+export function skipRollDialogs(): boolean {
+  return game.settings.get(MODULE_ID, "skipRollDialogs") === true;
+}
+
+export function quickFireOn(): boolean {
+  return game.settings.get(MODULE_ID, "quickFire") === true;
+}
+
+export async function setQuickFire(active: boolean): Promise<void> {
+  await game.settings.set(MODULE_ID, "quickFire", active);
 }
 
 export function targetModifier(): TargetModifier {

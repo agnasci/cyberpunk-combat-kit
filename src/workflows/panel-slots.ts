@@ -7,6 +7,7 @@ import {
   type PanelSubject,
 } from "../integrations/panel/panel-bridge";
 import { singleTarget } from "../integrations/foundry/tokens";
+import { skipRollDialogs } from "../integrations/foundry/settings";
 import { attack } from "./attack";
 import { warn } from "./combat-common";
 import { menuViewFor, openMenuFor, reloadFor, runMenuAction } from "./quick-menu";
@@ -176,7 +177,7 @@ function renderDrawer(): Node {
 function attackWith(subject: PanelSubject | null): void {
   const weapon = activeWeapon(subject);
   if (!weapon || !ensureControlled(subject)) return;
-  void attack({ weaponId: weapon.id, mode: "single" });
+  void attack({ weaponId: weapon.id, mode: "single", skipDialog: skipRollDialogs() });
 }
 
 function reloadActive(subject: PanelSubject | null): void {

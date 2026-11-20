@@ -1,6 +1,6 @@
-import { menuOpens, targetToggles } from "../../domain/menu";
+import { menuOpens, quickFireApplies, targetToggles } from "../../domain/menu";
 import { placementActive } from "./area-placement";
-import { menuSettings, targetModifier, type MenuModifier } from "./settings";
+import { menuSettings, quickFireOn, targetModifier, type MenuModifier } from "./settings";
 
 export interface TokenClick {
   token: Token;
@@ -76,6 +76,28 @@ export function onTokenTargetClick(): () => void {
     event.stopImmediatePropagation();
     if (token.isTargeted) toggleTarget(token);
     else targetOnly(token);
+  };
+  document.addEventListener("pointerdown", listener, true);
+  return () => document.removeEventListener("pointerdown", listener, true);
+}
+
+export function onTokenFireClick(handler: (token: Token) => void): () => void {
+  const listener = (event: PointerEvent) => {
+    if (event.button !== 0 || !canvas || event.target !== canvas.app.view) return;
+    if (!quickFireOn() || placementActive() || canvas.controls?.ruler?.active) return;
+    const token = tokenAt(event.clientX, event.clientY);
+    if (!token) return;
+    const applies = quickFireApplies({
+      button: event.button,
+      active: true,
+      modifier: event.altKey || event.ctrlKey || event.metaKey || event.shiftKey,
+      controlled: canvas.tokens?.controlled.length ?? 0,
+      clickedIsControlled: token.controlled,
+    });
+    if (!applies) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    handler(token);
   };
   document.addEventListener("pointerdown", listener, true);
   return () => document.removeEventListener("pointerdown", listener, true);

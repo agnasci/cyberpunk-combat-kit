@@ -479,6 +479,22 @@ export function menuOpens(input: {
   return input.always && !input.controlled;
 }
 
+export function quickFireApplies(input: {
+  button: number;
+  active: boolean;
+  modifier: boolean;
+  controlled: number;
+  clickedIsControlled: boolean;
+}): boolean {
+  return (
+    input.button === 0 &&
+    input.active &&
+    !input.modifier &&
+    input.controlled === 1 &&
+    !input.clickedIsControlled
+  );
+}
+
 export function targetToggles(input: {
   button: number;
   enabled: boolean;
