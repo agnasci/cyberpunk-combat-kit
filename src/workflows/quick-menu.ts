@@ -208,8 +208,7 @@ export function registerQuickFireTool(): void {
 export function initQuickMenu(): void {
   onTokenTargetClick();
   onTokenFireClick((token) => {
-    targetOnly(token);
-    void attack({ mode: "single", skipDialog: true });
+    void attack({ mode: "single", target: token, skipDialog: true });
   });
   onTokenRightClick((click: TokenClick) => {
     void openMenuFor(click.token, { x: click.clientX, y: click.clientY });

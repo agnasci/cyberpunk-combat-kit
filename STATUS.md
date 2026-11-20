@@ -18,6 +18,11 @@ Atualizado em: 2026-11-20.
 
 ## Última entrega: mira animada do alvo marcado (2026-11-20)
 
+- Correção: o Tiro rápido marcava o token clicado como alvo antes de atacar, então o alvo
+  trocava sem Alt mesmo quando o ataque era recusado. Agora ataca o token clicado sem mexer
+  nos alvos (D37). Testado no Foundry: com Tiro rápido, clique atacou o NPC e o alvo
+  continuou o PdM; desligado, o clique só seleciona; Alt + clique marca.
+
 - Ajuste pedido depois: anel retirado (informação demais) e nitidez corrigida com traço
   suavizado (`SmoothGraphics`) e texto supersampled 3×; conferido no Foundry em zoom 1× e
   2,5× (traço liso, texto nítido, console sem erros).
