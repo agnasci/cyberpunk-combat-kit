@@ -251,7 +251,7 @@ export async function playSprite(
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(to.x, to.y);
     sprite.width = size;
-    sprite.height = size;
+    sprite.height = texture.width > 0 ? (size * texture.height) / texture.width : size;
   }
   sprite.zIndex = EFFECT_Z_INDEX;
   layer.addChild(sprite);

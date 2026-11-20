@@ -49,7 +49,10 @@ Lista fechada e versionada, emitida pelos workflows. Contexto sempre com `source
 - Qualificadores de ataque, do mais específico ao mais geral: tipo da arma do CPR
   (`assaultRifle`, `shotgun`…), forma (`shell`, `explosion`, `autofire`, `suppressive`,
   `thrown`, `single`, `aimed`) e `melee`/`ranged`. Procura chave por chave e, em cada uma,
-  registrado por código antes do padrão (D25).
+  registrado por código antes do padrão (D25). Antes das chaves simples vêm as combinadas do
+  primeiro qualificador com cada um dos outros (`attack.fire:assaultRifle+autofire`, depois
+  `attack.fire:assaultRifle+ranged`), para um pacote mudar um tipo de arma sem perder a forma
+  do disparo (D38).
 - Efeitos próprios (PIXI, `canvas.interface` com `zIndex` 950): `flash`, `tracer`, `impact`,
   `explosion`, `miss`, `critical`, `flatline`. Animação pelo ticker do canvas; cada efeito sai
   do ticker e é destruído ao terminar ou ao desmontar a cena.
@@ -136,7 +139,10 @@ Pasta com `cck-pack.json` na raiz, colocada em `Data/` do Foundry (ex.:
 }
 ```
 
-- Chave de cue: `evento[:qualificador]` (tipo de arma, modo, id de Quickhack).
+- Chave de cue: `evento[:qualificador]` (tipo de arma, modo, id de Quickhack) ou
+  `evento:qualificador+qualificador` (no máximo dois; o primeiro é o tipo de arma).
+- Passo `sprite` parado (`at` diferente de `path`) usa `scale` × grade como largura e mantém
+  a proporção da imagem.
 - Caminhos relativos ao manifesto; validação no domínio rejeita `..`, URLs externas e tipos
   fora da lista (`ogg`, `mp3`, `wav`, `webm`, `webp`, `png`, `svg`, `json`).
 - Passos dos cues como na E4 (`procedural`, `synth`, `sound`, `sprite`); em `sound` e

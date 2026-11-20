@@ -117,7 +117,9 @@ export const DEFAULT_CUES: CueMap = {
 };
 
 export function cueKeys(name: CombatEventName, qualifiers: readonly string[]): string[] {
-  return [...qualifiers.map((qualifier) => `${name}:${qualifier}`), name];
+  const [first, ...others] = qualifiers;
+  const pairs = first ? others.map((other) => `${name}:${first}+${other}`) : [];
+  return [...pairs, ...qualifiers.map((qualifier) => `${name}:${qualifier}`), name];
 }
 
 export function resolveCue(
@@ -249,5 +251,7 @@ export function parseCueSteps(value: unknown): CueStep[] | null {
 export function isCueKey(key: unknown): key is string {
   if (typeof key !== "string") return false;
   const [name, ...rest] = key.split(":");
-  return includes(COMBAT_EVENTS, name) && rest.length <= 1 && rest.every((q) => QUALIFIER.test(q));
+  if (!includes(COMBAT_EVENTS, name) || rest.length > 1) return false;
+  const parts = rest[0]?.split("+") ?? [];
+  return parts.length <= 2 && parts.every((part) => QUALIFIER.test(part));
 }

@@ -177,6 +177,8 @@ interface FoundryPixiGraphics {
 }
 
 interface FoundryPixiTexture {
+  readonly width: number;
+  readonly height: number;
   readonly baseTexture: { readonly resource?: { readonly source?: unknown } | null };
 }
 

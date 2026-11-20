@@ -25,10 +25,31 @@ const event = {
 describe("cue resolution", () => {
   it("tries qualifiers from most specific to the bare event", () => {
     expect(cueKeys("attack.fire", ["shotgun", "shell"])).toEqual([
+      "attack.fire:shotgun+shell",
       "attack.fire:shotgun",
       "attack.fire:shell",
       "attack.fire",
     ]);
+  });
+
+  it("tries the weapon type combined with each other qualifier first", () => {
+    expect(cueKeys("attack.fire", ["assaultRifle", "autofire", "ranged"]).slice(0, 2)).toEqual([
+      "attack.fire:assaultRifle+autofire",
+      "attack.fire:assaultRifle+ranged",
+    ]);
+    expect(cueKeys("attack.hit", [])).toEqual(["attack.hit"]);
+  });
+
+  it("lets a combined key win over the form default and the type alone", () => {
+    const own = [{ type: "synth", sound: "burst", volume: 1 }] as const;
+    const pack: CueMap = { "attack.fire:smg+autofire": own, "attack.fire:smg": [] };
+    expect(resolveCue("attack.fire", ["smg", "autofire"], [pack, DEFAULT_CUES])).toBe(own);
+  });
+
+  it("accepts combined cue keys of at most two qualifiers", () => {
+    expect(isCueKey("attack.fire:smg+autofire")).toBe(true);
+    expect(isCueKey("attack.fire:smg+autofire+ranged")).toBe(false);
+    expect(isCueKey("attack.fire:smg+")).toBe(false);
   });
 
   it("prefers a specific default over a generic registered cue", () => {
