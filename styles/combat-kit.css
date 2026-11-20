@@ -888,3 +888,50 @@
   margin: 0;
   color: var(--ccp-text-dim, var(--cck-text-dim));
 }
+
+.cck-turn-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 1px 7px 1px 6px;
+  border: 1px solid var(--cck-accent-line);
+  background: rgb(5 7 11 / 0.72);
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+  color: var(--cck-accent-strong);
+  font-family: Tektur, Jost, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.cck-turn-badge--reset {
+  cursor: pointer;
+}
+
+.cck-turn-badge--reset:hover {
+  border-color: var(--cck-accent);
+}
+
+.cck-turn-badge--over {
+  border-color: #ff4d5e;
+  color: #ff4d5e;
+}
+
+.cck-turn-badge__action {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  border: 1.5px solid var(--cck-accent);
+}
+
+.cck-turn-badge__action--full {
+  background: var(--cck-accent);
+}
+
+.cck-turn-badge__action--half {
+  background: linear-gradient(135deg, var(--cck-accent) 50%, transparent 50%);
+}

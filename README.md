@@ -33,6 +33,13 @@ Com versão anterior ou sem o painel, o Combat Kit funciona sozinho pelo clique 
   do Foundry) e "Animar o marcador de alvo"; movimento reduzido também deixa a mira parada.
 - Ferramenta "Tiro rápido" (ícone de pistola nos controles de token): selecione seu token e
   clique com o botão esquerdo num alvo para atacá-lo na hora com a arma equipada.
+- Em combate, quem está no turno ganha uma placa sob o token com o movimento que resta e a
+  Ação da rodada (losango cheio, meio ou vazio); o tracker de combate mostra o mesmo para
+  todos, e o mestre clica no selo para devolver tudo. Cada personagem anda até MOV
+  quadrados por rodada (diagonal conta 1); passar disso pergunta se quer Correr, que gasta a
+  Ação. Ataques, agarrão, recarga e levantar-se gastam a Ação (armas de cadência 2 fazem dois
+  ataques simples); caído não anda. Ajuste de mundo "Contador de ações e movimento":
+  desligado, só contar ou contar e bloquear (padrão); ajuste de cliente "Indicador de turno".
 - Sem token selecionado, o menu e o painel usam o token do seu personagem na cena.
 - Ajustes: "Pular diálogos de rolagem" (cliente) e "Defesa dos PdMs" (mundo, mestre).
 - As duas teclas mudam nos ajustes do módulo (ajustes de cliente).

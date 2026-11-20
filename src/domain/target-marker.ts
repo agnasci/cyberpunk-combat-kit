@@ -55,6 +55,7 @@ export function markerFrame(
   height: number,
   others: number,
   time: MarkerTime | null,
+  pipDrop = 0,
 ): MarkerFrame {
   const progress = lockProgress(time);
   const breathe = time ? Math.sin((time.clock / BREATHE_MS) * TAU) * BREATHE : 0;
@@ -85,7 +86,7 @@ export function markerFrame(
     pips: Array.from({ length: others }, (_, index): MarkerPoint => {
       const step = Math.floor((index + 1) / 2) * PIP_GAP;
       const sign = index % 2 === 0 ? 1 : -1;
-      return [pipCenter + sign * step, bottom + 18];
+      return [pipCenter + sign * step, bottom + 18 + pipDrop];
     }),
     alpha: flicker,
     locked: progress >= 1,

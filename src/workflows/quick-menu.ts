@@ -41,6 +41,8 @@ import {
   quickhack,
   quickhacksEnabled,
 } from "./quickhack";
+import { FULL_ACTION } from "../domain/turn-budget";
+import { actionGate, chargeAction } from "./turn-economy";
 
 function netInput(acting: Token | null, target: Token): MenuNet | null {
   if (!acting || !quickhacksEnabled()) return null;
@@ -134,7 +136,10 @@ export async function menuViewFor(target: Token) {
 
 export async function reloadFor(actor: Actor, weaponId: string): Promise<void> {
   const item = findItem(actor, weaponId);
-  if (!item || !(await reloadWeapon(item))) warn("CCK.Attack.no-weapon");
+  if (!item) return warn("CCK.Attack.no-weapon");
+  if (!actionGate(actor, FULL_ACTION)) return;
+  if (!(await reloadWeapon(item))) return warn("CCK.Attack.no-weapon");
+  await chargeAction(actor, FULL_ACTION);
 }
 
 async function reloadAttacker(weaponId: string): Promise<void> {

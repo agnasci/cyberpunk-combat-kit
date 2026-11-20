@@ -28,6 +28,7 @@ describe("snapshot de arma (campos do CPR v0.92.4, docs/COMPATIBILITY.md)", () =
       equipped: true,
       magazine: 8,
       magazineMax: 8,
+      rof: 1,
       dvTable: "DV Pistol",
       ammoVariety: null,
       autofireMax: 0,

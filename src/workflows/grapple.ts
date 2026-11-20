@@ -17,6 +17,8 @@ import { newState, type Outcome, type TargetResult } from "../ui/resolution-card
 import { speakerFor, targetEntry, warn } from "./combat-common";
 import { cueGrapple, cueOutcomes } from "./combat-cues";
 import { requestDefense } from "./defense";
+import { FULL_ACTION } from "../domain/turn-budget";
+import { actionGate, chargeAction } from "./turn-economy";
 
 export type GrappleAction = "grab" | "choke" | "throw" | "release" | "escape";
 
@@ -56,6 +58,7 @@ async function contest(
   }
   const mine = await rollSkill(skill, { actor: self.actor, tokenId: self.token.id, skipDialog });
   if (!mine) return null;
+  void chargeAction(self.actor, FULL_ACTION, self.token);
   const answer = await requestDefense(opponent.actor, {
     purpose: "grapple",
     skill: "brawling",
@@ -159,6 +162,7 @@ async function partnerAction(self: Actorish, action: "choke" | "throw"): Promise
           body,
         },
   );
+  if (result.ok) void chargeAction(self.actor, FULL_ACTION, self.token);
   const outcome: Outcome = "applied";
   const applied = result.ok ? result.result : null;
   const entry = {
@@ -221,6 +225,7 @@ export async function grapple(options: GrappleOptions): Promise<void> {
   const self = acting();
   if (!self) return;
   const skipDialog = options.skipDialog ?? false;
+  if (options.action !== "release" && !actionGate(self.actor, FULL_ACTION, self.token)) return;
   switch (options.action) {
     case "grab":
       return grab(self, skipDialog);

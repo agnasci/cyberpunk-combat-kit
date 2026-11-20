@@ -47,6 +47,7 @@ interface FoundryActor {
   readonly items: { find(fn: (item: FoundryItem) => boolean): FoundryItem | undefined };
   readonly itemTypes: Record<string, FoundryItem[] | undefined>;
   readonly effects: FoundryActiveEffect[];
+  readonly statuses?: Set<string>;
   testUserPermission(user: FoundryUser, level: string): boolean;
   update(data: Record<string, unknown>): Promise<unknown>;
   createEmbeddedDocuments(name: string, data: Record<string, unknown>[]): Promise<unknown[]>;
@@ -57,6 +58,8 @@ interface FoundryActor {
 interface FoundryActiveEffect {
   readonly id: string;
   readonly name: string;
+  readonly statuses?: Set<string>;
+  readonly parent?: unknown;
   getFlag(scope: string, key: string): unknown;
   setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
 }
@@ -69,14 +72,24 @@ interface FoundryCombatState {
 
 interface FoundryCombatant {
   readonly id: string;
+  readonly name: string;
   readonly actor: FoundryActor | null;
   readonly token: FoundryTokenDocument | null;
+  readonly tokenId: string | null;
+  readonly sceneId: string | null;
+  readonly actorId: string | null;
+  readonly isOwner: boolean;
+  getFlag(scope: string, key: string): unknown;
+  setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
 }
 
 interface FoundryCombat {
   readonly id: string;
   readonly round: number;
+  readonly turn: number | null;
   readonly started: boolean;
+  readonly combatant: FoundryCombatant | null;
+  readonly scene: { readonly id: string } | null;
   readonly combatants: {
     readonly contents: FoundryCombatant[];
     get(id: string): FoundryCombatant | undefined;
@@ -99,6 +112,7 @@ interface FoundryTokenDocument {
   getFlag(scope: string, key: string): unknown;
   setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
   unsetFlag(scope: string, key: string): Promise<unknown>;
+  update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
 }
 
 interface FoundryToken {
@@ -114,6 +128,7 @@ interface FoundryToken {
   readonly w: number;
   readonly h: number;
   readonly renderFlags: { set(flags: Record<string, boolean>): void };
+  readonly nameplate?: { readonly visible: boolean; readonly y: number; readonly height: number };
   addChild(child: FoundryPixiGraphics): void;
   readonly bounds: { contains(x: number, y: number): boolean };
   setTarget(
@@ -192,6 +207,13 @@ interface FoundryPixiGraphics {
   readonly parent: unknown;
   clear(): this;
   lineStyle(width: number, color?: number, alpha?: number): this;
+  lineStyle(style: {
+    width: number;
+    color: number;
+    alpha: number;
+    cap?: string;
+    join?: string;
+  }): this;
   beginFill(color: number, alpha?: number): this;
   endFill(): this;
   drawCircle(x: number, y: number, radius: number): this;
@@ -253,10 +275,13 @@ declare global {
   type ActiveEffect = FoundryActiveEffect;
   type Combat = FoundryCombat;
   type CombatState = FoundryCombatState;
+  type Combatant = FoundryCombatant;
 
   const PIXI: {
     Graphics: new () => PixiGraphics;
     smooth?: { SmoothGraphics: new () => PixiGraphics };
+    LINE_CAP: { SQUARE: string };
+    LINE_JOIN: { MITER: string };
     Sprite: new (texture: PixiTexture) => PixiSprite;
   };
 
@@ -278,6 +303,20 @@ declare global {
     on(
       hook: "updateToken",
       fn: (token: FoundryTokenDocument, changes: Record<string, unknown>) => void,
+    ): number;
+    on(
+      hook:
+        | "preUpdateToken"
+        | "preDeleteActiveEffect"
+        | "deleteActiveEffect"
+        | "updateCombat"
+        | "updateCombatant"
+        | "deleteCombat"
+        | "createCombatant"
+        | "deleteCombatant"
+        | "renderCombatTracker"
+        | "canvasReady",
+      fn: (...args: unknown[]) => unknown,
     ): number;
     on(hook: "getSceneControlButtons", fn: (controls: FoundrySceneControl[]) => void): number;
     on(
@@ -393,6 +432,7 @@ declare global {
         readonly hud: { readonly token: { clear(): void } | null } | null;
         readonly grid: {
           readonly size: number;
+          readonly isGridless: boolean;
           getCenterPoint(point: { x: number; y: number }): { x: number; y: number };
           measurePath(waypoints: { x: number; y: number }[]): { distance: number };
         };
@@ -480,6 +520,7 @@ declare global {
   };
 
   const ui: {
+    combat?: { render(force?: boolean): unknown };
     notifications: {
       info(message: string): unknown;
       warn(message: string): unknown;

@@ -18,6 +18,7 @@ export interface WeaponSnapshot extends ModeWeapon {
   equipped: boolean;
   dvTable: string;
   magazineMax: number | null;
+  rof: number;
   img: string | null;
 }
 
@@ -69,6 +70,7 @@ export function weaponSnapshot(item: Item): WeaponSnapshot | null {
     equipped: field(system, "equipped") === "equipped",
     magazine: usesAmmo ? numberAt(system, "magazine", "value") : null,
     magazineMax: usesAmmo ? max : null,
+    rof: numberAt(system, "rof") ?? 1,
     dvTable: typeof dvTable === "string" ? dvTable : "",
     ammoVariety: kind === "ranged" ? loadedAmmoVariety(item) : null,
     autofireMax: autofireMax(type, numberAt(system, "fireModes", "autoFire") ?? 0),

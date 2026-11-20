@@ -7,7 +7,9 @@ import {
   SKILLS,
   THROWN_DV_TABLE,
 } from "../integrations/cpr/weapon-adapter";
+import { attackCost } from "../domain/turn-budget";
 import { warn, type AttackContext } from "./combat-common";
+import { chargeAction } from "./turn-economy";
 
 export type DvLookup = (distance: number) => number | null;
 
@@ -35,6 +37,10 @@ export async function dvFor(
   return lookup === "no-table" ? lookup : lookup(distance);
 }
 
+export function actionCost(context: Pick<AttackContext, "profile" | "weapon">): number {
+  return attackCost(context.profile.mode, context.weapon.rof);
+}
+
 export async function nativeAttack(
   context: AttackContext,
   location?: AimLocation,
@@ -46,9 +52,15 @@ export async function nativeAttack(
       warn("CCK.Attack.no-skill", { skill: SKILLS.athletics });
       return null;
     }
-    return rollSkill(skill, roll);
+    return charged(context, await rollSkill(skill, roll));
   }
-  return rollAttack(item, profile.nativeType, roll, (native) => {
+  const result = await rollAttack(item, profile.nativeType, roll, (native) => {
     if (profile.nativeType === "aimed") native.location = location ?? "head";
   });
+  return charged(context, result);
+}
+
+function charged(context: AttackContext, result: NativeRollResult | null): NativeRollResult | null {
+  if (result) void chargeAction(context.actor, actionCost(context), context.token);
+  return result;
 }

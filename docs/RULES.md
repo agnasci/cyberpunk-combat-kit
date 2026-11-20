@@ -13,8 +13,14 @@ de tabela vêm do sistema em execução (compêndios `internal_dv-tables` e
 - Iniciativa = REF + 1d10; o tracker nativo do sistema já rola (`CPRInitiative`).
 - Turno = 1 Ação de Movimento + 1 Ação. Ações relevantes: Atacar, Agarrar, Estrangular,
   Arremessar, Esquivar (como reação ao ataque), Recarregar, Levantar-se, Net Action.
-- O módulo **não** controla orçamento de ações (decisão D08); só avisa quando a regra exige
-  (ex.: um Quickhack por alvo por turno).
+- Ação de Movimento: até MOV quadrados (MOV × 2 m), diagonal conta 1; numa grade não se
+  para entre quadrados. Correr é uma Ação que dá outra Ação de Movimento. Caído não usa a
+  Ação de Movimento até a Ação de Levantar-se (p. 169).
+- Cadência 2: dois ataques simples por Ação, que podem ser divididos com o movimento;
+  tiro mirado, rajada e supressão gastam a Ação inteira (p. 169–173).
+- Orçamento de ações opcional (D41, substitui a D08): contado por rodada na flag do
+  combatente; Ações NET e Quickhacks ficam fora (só o aviso de um Quickhack por alvo por
+  turno).
 
 ## 2. Testes resistidos e DV — livro base p. 169–173
 

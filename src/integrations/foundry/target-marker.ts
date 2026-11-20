@@ -9,6 +9,7 @@ import { MODULE_ID } from "../../constants";
 import { panelPalette } from "../panel/panel-bridge";
 import { effectSettings, prefersReducedMotion } from "./settings";
 import { attackerToken, distanceBetween } from "./tokens";
+import { plateDrop } from "./turn-indicator";
 
 interface Layer {
   graphics: PixiGraphics;
@@ -16,7 +17,7 @@ interface Layer {
   lockedAt: number;
 }
 
-interface MarkerColors {
+export interface MarkerColors {
   accent: number;
   strong: number;
   ink: number;
@@ -51,7 +52,11 @@ export function hudMarkerOn(): boolean {
   return game.settings.get(MODULE_ID, "targetMarker") !== false;
 }
 
-function animationOn(): boolean {
+export function hudColors(): MarkerColors {
+  return colors;
+}
+
+export function animationOn(): boolean {
   if (game.settings.get(MODULE_ID, "targetAnimation") === false) return false;
   return !reducedMotion(effectSettings().motion, prefersReducedMotion());
 }
@@ -93,7 +98,13 @@ function pass(
   color: number,
   alpha: number,
 ): void {
-  graphics.lineStyle(width, color, alpha * frame.alpha);
+  graphics.lineStyle({
+    width,
+    color,
+    alpha: alpha * frame.alpha,
+    cap: PIXI.LINE_CAP.SQUARE,
+    join: PIXI.LINE_JOIN.MITER,
+  });
   stroke(graphics, frame.brackets);
 }
 
@@ -183,6 +194,7 @@ function drawMarker(token: Token, now: number): void {
     token.h,
     others.length,
     animated ? { sinceLock: now - layer.lockedAt, clock: now } : null,
+    plateDrop(token),
   );
   const { graphics } = layer;
   graphics.clear();

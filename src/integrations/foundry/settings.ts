@@ -1,3 +1,4 @@
+import { ECONOMY_MODES, economyMode, type EconomyMode } from "../../domain/turn-budget";
 import { MODULE_ID } from "../../constants";
 import type { NpcDefenseMode } from "../../domain/routing";
 import { clamp, type MotionSetting } from "../../domain/cues";
@@ -114,6 +115,26 @@ export function registerMenuSettings(): void {
     default: true,
     onChange: () => onTargetMarkerChange(),
   });
+  game.settings.register(MODULE_ID, "turnIndicator", {
+    ...client,
+    name: "CCK.Settings.TurnIndicator",
+    hint: "CCK.Settings.TurnIndicatorHint",
+    type: Boolean,
+    default: true,
+    onChange: () => onTurnChange(),
+  });
+  game.settings.register(MODULE_ID, "actionEconomy", {
+    scope: "world",
+    config: true,
+    name: "CCK.Settings.ActionEconomy",
+    hint: "CCK.Settings.ActionEconomyHint",
+    type: String,
+    choices: Object.fromEntries(
+      ECONOMY_MODES.map((mode) => [mode, `CCK.Settings.ActionEconomy-${mode}`]),
+    ),
+    default: "enforce",
+    onChange: () => onTurnChange(),
+  });
   game.settings.register(MODULE_ID, "skipRollDialogs", {
     ...client,
     name: "CCK.Settings.SkipRollDialogs",
@@ -154,6 +175,19 @@ export async function setQuickFire(active: boolean): Promise<void> {
 }
 
 let onTargetMarkerChange: () => void = () => undefined;
+let onTurnChange: () => void = () => undefined;
+
+export function setTurnListener(listener: () => void): void {
+  onTurnChange = listener;
+}
+
+export function actionEconomy(): EconomyMode {
+  return economyMode(game.settings.get(MODULE_ID, "actionEconomy"));
+}
+
+export function turnIndicatorOn(): boolean {
+  return game.settings.get(MODULE_ID, "turnIndicator") !== false;
+}
 
 export function setTargetMarkerListener(listener: () => void): void {
   onTargetMarkerChange = listener;

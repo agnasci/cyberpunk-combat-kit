@@ -11,11 +11,13 @@ import {
   registerMenuSettings,
   registerQuickhackSettings,
   setTargetMarkerListener,
+  setTurnListener,
   settingsMenuType,
 } from "./integrations/foundry/settings";
 import { registerPackSettings } from "./integrations/foundry/pack-store";
 import { initSocket } from "./integrations/foundry/socket";
 import { initTargetMarker, refreshTargetMarkers } from "./integrations/foundry/target-marker";
+import { initTurnIndicator, refreshTurnIndicator } from "./integrations/foundry/turn-indicator";
 import { openCueEditor } from "./ui/cue-editor";
 import { openPackManager } from "./ui/pack-manager";
 import { bindResolutionCards, RESOLUTION_TEMPLATE } from "./ui/resolution-card";
@@ -25,11 +27,20 @@ import { initDefense } from "./workflows/defense";
 import { initPanelSlots } from "./workflows/panel-slots";
 import { initQuickMenu, registerQuickFireTool } from "./workflows/quick-menu";
 import { availableQuickhacks, initQuickhacks } from "./workflows/quickhack";
+import { initTurnEconomy, setBudgetListener } from "./workflows/turn-economy";
 
 Hooks.once("init", () => {
   registerEffectSettings();
   registerMenuSettings();
   setTargetMarkerListener(refreshTargetMarkers);
+  setTurnListener(() => {
+    refreshTurnIndicator();
+    ui.combat?.render();
+  });
+  setBudgetListener(() => {
+    refreshTurnIndicator();
+    refreshTargetMarkers();
+  });
   registerQuickFireTool();
   registerQuickhackSettings();
   void loadTemplates([RESOLUTION_TEMPLATE]);
@@ -77,6 +88,10 @@ Hooks.once("ready", () => {
   initQuickhacks();
   initPanelSlots();
   initTargetMarker();
+  initTurnEconomy();
+  initTurnIndicator();
+  Hooks.on("canvasReady", () => refreshTurnIndicator());
+  Hooks.on("updateActor", () => refreshTurnIndicator());
   void preloadDvTables();
   void removeLeftoverAreas();
   const module = game.modules.get(MODULE_ID);

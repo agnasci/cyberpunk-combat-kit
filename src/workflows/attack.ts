@@ -28,7 +28,7 @@ import {
 import { executorId } from "../integrations/foundry/users";
 import { newState, type TargetResult } from "../ui/resolution-card";
 import { explosiveAttack, shellAttack } from "./area";
-import { dvFor, nativeAttack } from "./attack-steps";
+import { actionCost, dvFor, nativeAttack } from "./attack-steps";
 import { cueFire, cueOutcomes, qualifiersFor } from "./combat-cues";
 import {
   applicationFor,
@@ -41,6 +41,7 @@ import {
 } from "./combat-common";
 import { requestDefense } from "./defense";
 import { suppressiveFire } from "./suppressive";
+import { actionGate } from "./turn-economy";
 
 function buildContext(options: AttackOptions): AttackContext | null {
   const token = options.attacker === undefined ? attackerToken() : ownedToken(options.attacker);
@@ -178,6 +179,7 @@ async function singleAttack(context: AttackContext, options: AttackOptions): Pro
 export async function attack(options: AttackOptions = {}): Promise<void> {
   const context = buildContext(options);
   if (!context) return;
+  if (!actionGate(context.actor, actionCost(context), context.token)) return;
   if (context.profile.mode === "suppressive") return suppressiveFire(context);
   if (context.profile.area === "shell") return shellAttack(context);
   if (context.profile.area === "explosion") return explosiveAttack(context);
