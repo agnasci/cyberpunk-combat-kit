@@ -4,7 +4,7 @@ Atualizado em: 2026-11-23.
 
 ## Situação
 
-- E0 a E11, F-01, P-02, P-04, P-05, a revisão de regras R-01 e os turnos (D41) concluídos (E11 e P-05 em 2026-11-23; commits locais, sem push). Última release pública: `v0.1.2` (2026-11-20)
+- E0 a E11, F-01, P-02, P-04, P-05, a revisão de regras R-01 e os turnos (D41) concluídos (E11 e P-05 em 2026-11-23). Última release pública: `v0.2.0` (2026-11-23)
   em https://github.com/agnasci/cyberpunk-combat-kit, com
   `module.json` e `module.zip`. Manifesto:
   `https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
@@ -15,7 +15,21 @@ Atualizado em: 2026-11-23.
 - Character Panel: v0.2.0 (2026-11-19) trouxe a API v1, exigida pela integração; v0.2.1
   (2026-11-20) trouxe `setAttention`, exigido pelo destaque de turno (README).
 
-## Última entrega: E11 e P-05 — animações de módulos instalados e conversor do Automated Animations (2026-11-23)
+## Última entrega: release v0.2.0 e kit pessoal para teste (2026-11-23)
+
+- Pedido do usuário: publicar a versão atual e gerar a edição pessoal como pasta para um
+  amigo testar.
+- `v0.2.0` (beta): versão em `package.json`, `module.json` e README; `npm run package` exit 0
+  (252 testes, `check:private` sem vazamento); antes do push, conferido que os commits não
+  trazem nomes de arquivos pessoais. Tag e release com `module.json` e `module.zip`; o workflow
+  `release.yml` passou e reenviou os dois; o manifesto público devolve 0.2.0 e o zip baixado é
+  idêntico ao `dist/`.
+- Edição pessoal 0.2.0-personal montada e ativa no Foundry do usuário (servidor reiniciado
+  sem mundo aberto; setup mostra 0.2.0-personal). Kit em `.local/para-amigo-0.2.0/` (fora do
+  Git): zip para `Data/modules`, LEIA-ME com instalação (JB2A grátis para os vídeos; sem
+  Automated Animations) e o que testar, e os avisos de licença. Não testado no Foundry do amigo.
+
+## Entrega anterior: E11 e P-05 — animações de módulos instalados e conversor do Automated Animations (2026-11-23)
 
 - Pedido do usuário: usar no Combat Kit, sem o Automated Animations, a configuração de
   animações e os sons que ele tem (plano pessoal em `private/`).
