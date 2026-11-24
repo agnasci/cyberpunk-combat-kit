@@ -12,6 +12,7 @@ import {
 const PACKS = "packs";
 const OVERRIDES = "cueOverrides";
 const PERSONAL_FLAG = "personalPack";
+const PERSONAL_LIST_FLAG = "personalPacks";
 
 export function registerPackSettings(handlers: { packs: () => void; overrides: () => void }): void {
   const world = { scope: "world", config: false, type: Object } as const;
@@ -71,13 +72,18 @@ export function overlappingAnimationModules(): string[] {
   return OVERLAPPING_MODULES.filter((id) => game.modules.get(id)?.active);
 }
 
-export function personalPackFolder(): string | null {
+export function personalPackFolders(): string[] {
   const flags = game.modules.get(MODULE_ID)?.flags?.[MODULE_ID];
-  const path =
-    flags !== null && typeof flags === "object"
-      ? (flags as Record<string, unknown>)[PERSONAL_FLAG]
-      : undefined;
-  return typeof path === "string" ? normalizeFolder(`modules/${MODULE_ID}/${path}`) : null;
+  const record =
+    flags !== null && typeof flags === "object" ? (flags as Record<string, unknown>) : {};
+  const list = Array.isArray(record[PERSONAL_LIST_FLAG])
+    ? (record[PERSONAL_LIST_FLAG] as unknown[])
+    : [record[PERSONAL_FLAG]];
+  return list.flatMap((path) => {
+    if (typeof path !== "string") return [];
+    const folder = normalizeFolder(`modules/${MODULE_ID}/${path}`);
+    return folder ? [folder] : [];
+  });
 }
 
 function pick(type: "folder" | "audio", current: string | null): Promise<string | null> {

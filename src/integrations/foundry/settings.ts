@@ -21,6 +21,7 @@ export function registerEffectSettings(): void {
     hint: "CCK.Settings.VisualsHint",
     type: Boolean,
     default: true,
+    onChange: () => onStatusSetting?.(),
   });
   game.settings.register(MODULE_ID, "fxSounds", {
     ...client,
@@ -44,6 +45,7 @@ export function registerEffectSettings(): void {
     type: Number,
     range: { min: 0.25, max: 1.5, step: 0.25 },
     default: 1,
+    onChange: () => onStatusSetting?.(),
   });
   game.settings.register(MODULE_ID, "fxMotion", {
     ...client,

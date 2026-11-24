@@ -69,6 +69,7 @@ function collectPackIds(manifest) {
     if (entry && typeof entry.id === "string") ids.push(entry.id);
   }
   for (const key of Object.keys(manifest.assets ?? {})) ids.push(key);
+  for (const key of Object.keys(manifest.external ?? {})) ids.push(key);
   return ids;
 }
 
@@ -94,6 +95,10 @@ function privateTokens(root) {
   for (const file of walk(templateRoot)) templateTokens.add(basename(file));
 
   const ids = new Set(collectPackIds(readJson(join(privateRoot, "pack", "cck-pack.json"))));
+  for (const file of walk(join(privateRoot, "packs"))) {
+    if (basename(file) === "cck-pack.json")
+      collectPackIds(readJson(file)).forEach((id) => ids.add(id));
+  }
   for (const file of walk(join(privateRoot, "compendium", "src"))) {
     if (file.endsWith(".json")) collectDocumentIds(readJson(file), []).forEach((id) => ids.add(id));
   }

@@ -10,7 +10,7 @@ import {
   cueOverrides,
   fetchManifest,
   packEntries,
-  personalPackFolder,
+  personalPackFolders,
 } from "../integrations/foundry/pack-store";
 import { setCueOverrides, setPackCues } from "./engine";
 
@@ -81,11 +81,10 @@ export function unregisterPack(id: string): void {
 }
 
 export async function initPacks(): Promise<void> {
-  const personal = personalPackFolder();
-  if (personal) {
-    const result = await fetchManifest(personal);
+  for (const folder of personalPackFolders()) {
+    const result = await fetchManifest(folder);
     if (result.ok) codePacks.set(result.pack.id, result.pack);
-    else console.warn("cyberpunk-combat-kit | personal pack", result.errors);
+    else console.warn("cyberpunk-combat-kit | personal pack", folder, result.errors);
   }
   await reloadPacks();
 }

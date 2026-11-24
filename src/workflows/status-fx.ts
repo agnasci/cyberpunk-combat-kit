@@ -31,10 +31,11 @@ function desired(): Map<string, { tokenId: string; src: string; scale: number; o
     for (const cue of persistentCues(tokenQualifiers(token), layers)) {
       const src = cue.step.src[0];
       if (!src) continue;
-      wanted.set(`${token.id}|${cue.id}|${src}`, {
+      const scale = cue.step.scale * settings.intensity;
+      wanted.set(`${token.id}|${cue.id}|${src}|${scale}`, {
         tokenId: token.id,
         src,
-        scale: cue.step.scale * settings.intensity,
+        scale,
         opacity: cue.step.opacity,
       });
     }

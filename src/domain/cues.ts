@@ -387,7 +387,7 @@ function parseStep(value: unknown): CueStep | null {
         type: "sprite",
         src: list,
         at: value.at,
-        scale: number(value.scale, 1, 0.1, 4),
+        scale: number(value.scale, 1, 0.1, 10),
         duration: value.duration === undefined ? null : number(value.duration, 1000, 100, 10000),
         template: shape,
         opacity: number(value.opacity, 1, 0.05, 1),
