@@ -114,6 +114,77 @@ Lista fechada e versionada, emitida pelos workflows. Contexto sempre com `source
   injury: "<nome no compêndio do sistema>", rounds?}` ou `{type: "guided"}`; `rounds` de 1
   a 1200. Uso no motor: docs/ARCHITECTURE.md ("Quickhacks (R09)").
 
+## Como ficou na E11 (animações de módulos instalados)
+
+- **Assets de outro módulo (D45)**: o manifesto ganha `requires` (ids de módulo, até 10) e
+  `external` (`{chave: "modules/<id>/caminho"}`, mesmas regras de caminho seguro; o `<id>`
+  tem de estar em `requires`). As chaves de `external` dividem o espaço de nomes com
+  `assets`. Qualquer valor de `assets` ou `external` pode ser uma lista de até 8 arquivos.
+  Módulo exigido inativo: o pacote carrega, os passos com arquivos dele saem e, se o passo de
+  sprite tiver `fallback`, vira o efeito procedural; o gerenciador avisa qual módulo falta.
+  Com o Automated Animations ativo, o gerenciador avisa que pode haver animação dobrada.
+- **Sprite (D46, D47)**: `src` aceita lista. Em `at: "path"` o motor escolhe pela
+  distância a menor variante com `_NNft_` no nome que cobre o alvo (metros × 3,28; acima da
+  maior, a maior); fora de `path`, sorteia. `template: [grade, início, fim]` em pixels do
+  vídeo diz onde o projétil começa e termina: o motor estica só o trecho útil até o alvo e
+  mantém a proporção (convenção dos vídeos de distância: `[200, 200, 200]`; golpes:
+  `[200, 300, 300]`). Opções: `duration` (sem ela, a duração do vídeo; imagem 1 s),
+  `opacity`, `playbackRate` (0,25–4), `randomOffset`, `delay`, `repeat` (até 10) com
+  `repeatDelay`, `fallback` (efeito procedural se o arquivo não carregar) e `scale` até 10.
+  Passo com essas opções vai sempre pelo backend próprio; o Sequencer só recebe o passo simples.
+- **Som (D47)**: `src` aceita lista (sorteia), `startTime` (ms, começa no meio do arquivo),
+  `delay`, `repeat`, `repeatDelay`; FLAC aceito.
+- **Qualificadores (D48)**: antes dos que já existiam vêm `item-<slug do nome da arma>`,
+  `ammo-<variedade>-<tipo>` e `ammo-<variedade>` (munição carregada, ids do sistema, como
+  `ammo-rifle-armorPiercing`). Ordem das chaves: cada identidade (item, munição, tipo de
+  arma) combinada com cada forma, depois sozinha; depois as formas; depois o evento. Sem item
+  nem munição fica igual à D38. Eventos de área (`area.place`, `area.detonate`) também
+  recebem os qualificadores da arma.
+- **Efeitos persistentes (D49)**: evento `status.active:<id do estado ou slug do nome do
+  efeito ativo>`; só passos `sprite` com `persist: true`, até 4 por token, presos ao token
+  (seguem o movimento, escondem com ele). Cada cliente reconcilia o que deve aparecer a partir
+  do estado dos tokens da cena (`canvasReady`, efeitos ativos, tokens, atores e mudança de
+  pacotes); nada trafega nem é gravado. Ajuste de cliente "Efeitos persistentes de estado".
+- **Pré-carga**: 1,5 s depois de abrir a cena, carrega os vídeos de `attack.fire`,
+  `attack.hit` e `area.detonate` das armas dos tokens da cena (até 60 arquivos).
+- **Conversor (D50)**: `scripts/import-aa.mjs` transforma uma exportação "autorec" do
+  Automated Animations num pacote. Detalhe na seção abaixo.
+
+## Conversor de exportação do Automated Animations
+
+```text
+node scripts/import-aa.mjs --export <autorec.json> --sounds <pasta dos sons>
+  --animations <arquivo de banco de animações no formato do AA> --modules <Data/modules>
+  --system <pasta do sistema CPR> --out <pasta do pacote> [--module JB2A_DnD5e]
+  [--id aa-import] [--title "..."] [--overrides <ajustes.json>]
+```
+
+- Lê os menus `melee`, `range`, `preset` (`proToTemp`) e `aefx` (`ontoken`); o resto vai
+  para o relatório como não suportado. Ignora partes desligadas, `meleeSwitch`, `levels3d`
+  e macros.
+- Rótulo → chave: `"<calibre> (<tipo>)"` casa com `CPR.ammoVarieties` e `CPR.ammoTypes`
+  (rótulos do `lang/en.json` do sistema, normalizados: sem "Ammo", singular) e vira
+  `ammo-<variedade>-<tipo>`; rótulo de tipo de arma vira o tipo; o resto vira `item-<slug>`;
+  `aefx` vira `status.active:<slug>`. "... No Template" é coberto pelo preset do cartucho.
+- `range` e `melee` → `attack.fire` com sprite em `path` (modelo de distância ou de golpe,
+  reserva `tracer`/`impact`) e som; secundário ligado → sprite no alvo. `preset` →
+  `attack.fire` (projétil até o ponto) e `area.detonate` (explosão no ponto, tamanho 5
+  quadrados × escala do AA, reserva `explosion`); em cartucho, o impacto vai para
+  `attack.hit`. `aefx` → sprite persistente no token.
+- Vídeo: chave do AA (`seção.tipo.animação.variante.cor`) procurada no banco de animações
+  passado em `--animations` (lido como dado, sem executar); só arquivos que existem no
+  módulo de `--module` dentro de `--modules`. Sem a cor: outra cor da mesma animação; sem
+  variante: outra variante. Caminho próprio de outro módulo: mesmo caminho no módulo alvo ou
+  mesmo nome de arquivo. Tudo no relatório.
+- Ajustes (`--overrides`): `keys` (`"menu:rótulo": "chave"` ou `null` para tirar; o
+  impacto de preset é `"preset-impact:rótulo"`), `videos` (chave do AA ou caminho próprio →
+  outra chave do banco ou caminho de arquivo) e `extra` (`"chave nova": {from, sound,
+  volume?}`: copia os visuais de outro efeito e troca o som).
+- Saída: `cck-pack.json` (com `requires` e `external`), `sounds/` (só os usados, nomes em
+  slug) e `import-report.json` (convertidos, ignorados com motivo, nota de cada vídeo,
+  rótulos pelo nome do item, munição sem casamento, sons). Mesma entrada, mesmo arquivo.
+- Testes: `tests/unit/import-aa.test.ts` com exportação, banco, sistema e módulo fictícios.
+
 ## Formato de pacote
 
 Pasta com `cck-pack.json` na raiz, colocada em `Data/` do Foundry (ex.:

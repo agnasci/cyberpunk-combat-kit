@@ -79,6 +79,13 @@ resolução tem uma lista de alvos, cada um com resultado, dano e "Desfazer".
 
 ## Efeitos (R07–R08)
 
+E11: efeitos persistentes de estado (`src/workflows/status-fx.ts`) não são eventos: cada
+cliente calcula, a partir de `actor.statuses` e dos efeitos ativos dos tokens da cena, quais
+sprites presos deveriam existir (`persistentCues` no domínio) e cria ou remove a diferença
+(`attachLoop` em `fx-canvas.ts`). Pré-carga das texturas da cena em
+`src/workflows/fx-preload.ts`. Assets de outros módulos e o filtro de módulos ausentes em
+`domain/pack.ts` (`withActiveModules`), aplicado em `effects/packs.ts`.
+
 Ver [EFFECTS.md](EFFECTS.md) (seção "Como ficou na E4"). Motor de cues desacoplado: workflows emitem eventos; o motor
 procura o efeito associado ao evento (pacote ativo → padrão próprio) e toca localmente em
 cada cliente, sem tráfego de quadro a quadro pelo servidor.

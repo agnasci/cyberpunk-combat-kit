@@ -16,6 +16,8 @@ private/                       (no .gitignore; criar a partir de private.example
     text/<pacote>/<id>.html    texto original colado pelo usuário (D14)
   module.personal.json         sobreposição do manifesto (packs, versão "-personal")
   NOTICES.md                   avisos de licença do que foi copiado (ex.: MIT do Pneuma)
+  packs/<nome>/                 outros pacotes pessoais (ex.: gerados por scripts/import-aa.mjs)
+  sources/                     arquivos de apoio da conversão (nunca vão para o build)
 dist-personal/                 saída do build pessoal (no .gitignore)
 ```
 
@@ -32,7 +34,13 @@ dados fictícios, para recriar `private/` numa máquina nova.
 - O manifesto pessoal mantém o id `cyberpunk-combat-kit`, mas **sem** `manifest` e
   `download` e com versão `X.Y.Z-personal`, para o Foundry não sobrescrever a edição pessoal
   com uma atualização pública.
-- Quando `private/pack/` existe, `build:personal` grava
+- Cada `private/packs/<nome>/` com `cck-pack.json` vai para
+  `dist-personal/personal-packs/<nome>/` (sem `overrides.json` e `import-report.json`);
+  `private/pack/` vai para `dist-personal/personal/`. A flag
+  `flags["cyberpunk-combat-kit"].personalPacks` lista as pastas na ordem de prioridade
+  (`packs/*` em ordem alfabética, depois `personal`), e o módulo registra cada uma no
+  `ready` (D51). A flag antiga `personalPack` continua lida.
+- Antes da D51: quando `private/pack/` existe, `build:personal` grava
   `flags["cyberpunk-combat-kit"].personalPack = "personal"` no manifesto; no `ready` o
   módulo lê `modules/cyberpunk-combat-kit/personal/cck-pack.json` e registra como pacote de
   código. Sem a flag (edição pública) nada é requisitado.
@@ -47,7 +55,8 @@ ignorados pelo Git e `dist/`.
 1. `git ls-files private dist-personal` precisa estar vazio.
 2. Nenhum arquivo verificado pode ter o mesmo hash de um arquivo não vazio de `private/`.
 3. Nenhum id pessoal pode aparecer em arquivo verificado (inclusive docs): ids de
-   Quickhack e chaves de `assets` de `private/pack/cck-pack.json`, `_id` e `quickhackId`
+   Quickhack e chaves de `assets` e `external` de `private/pack/cck-pack.json` e de cada
+   `private/packs/*/cck-pack.json`, `_id` e `quickhackId`
    das fontes em `private/compendium/src/`.
 4. Nenhum nome de arquivo de `private/` pode aparecer em `src/`, `lang/`, `templates/`,
    `styles/` ou `dist/` (docs podem citar nomes de arquivos dos módulos de referência).

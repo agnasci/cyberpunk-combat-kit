@@ -1,10 +1,10 @@
 # Estado e passagem de contexto
 
-Atualizado em: 2026-11-20.
+Atualizado em: 2026-11-23.
 
 ## Situação
 
-- E0 a E10, F-01, P-02, P-04, a revisão de regras R-01 e os turnos (D41) concluídos (2026-11-20). Última release pública: `v0.1.2` (2026-11-20)
+- E0 a E11, F-01, P-02, P-04, P-05, a revisão de regras R-01 e os turnos (D41) concluídos (E11 e P-05 em 2026-11-23; commits locais, sem push). Última release pública: `v0.1.2` (2026-11-20)
   em https://github.com/agnasci/cyberpunk-combat-kit, com
   `module.json` e `module.zip`. Manifesto:
   `https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
@@ -15,7 +15,55 @@ Atualizado em: 2026-11-20.
 - Character Panel: v0.2.0 (2026-11-19) trouxe a API v1, exigida pela integração; v0.2.1
   (2026-11-20) trouxe `setAttention`, exigido pelo destaque de turno (README).
 
-## Última entrega: usabilidade — desfazer estados, Death Save dos PdMs, destaque de turno (2026-11-20)
+## Última entrega: E11 e P-05 — animações de módulos instalados e conversor do Automated Animations (2026-11-23)
+
+- Pedido do usuário: usar no Combat Kit, sem o Automated Animations, a configuração de
+  animações e os sons que ele tem (plano pessoal em `private/`).
+- E11-01 a E11-05 (código público, D45–D49): `domain/pack.ts` (`requires`, `external`,
+  listas, `withActiveModules`), `domain/cues.ts` (opções de sprite e som, FLAC, variantes,
+  qualificadores `item-`/`ammo-`, `status.active`, `persistentCues`), `effects/engine.ts`,
+  `fx-canvas.ts` (`template`, `attachLoop`, pré-carga), `fx-audio.ts` (início no meio),
+  `weapon-adapter.ts` (tipo da munição), `combat-cues.ts`/`area.ts` (qualificadores em
+  áreas), `pack-store.ts`/`packs.ts`/`pack-manager.ts` (módulos ativos, aviso), novos
+  `workflows/status-fx.ts` e `fx-preload.ts`, ajuste `fxStatus`, textos, CSS.
+- E11-06 e E11-07 (D50, D51): `scripts/import-aa.mjs`, `scripts/lib/aa-convert.mjs`,
+  `scripts/lib/js-literal.mjs` (lê bancos em JS como dado, sem executar),
+  `build-personal.mjs` (`private/packs/*`, `personalPacks`), `check-private.mjs` (varre
+  `private/packs` e chaves de `external`).
+- P-05 (só `private/`): pacote gerado com 184 efeitos, 55 vídeos do JB2A grátis e 39 sons;
+  ajustes manuais num arquivo de ajustes; aviso em `private/NOTICES.md`. O JB2A grátis
+  (`JB2A_DnD5e` 0.9.4, baixado com permissão do usuário) foi instalado em `Data/modules`.
+- Validação automatizada: `npm run check` exit 0 (16 arquivos de teste, 252 testes; novos
+  `e11-fx.test.ts` e `import-aa.test.ts`; `check:private` sem vazamento).
+- Teste manual real (Foundry 12.343, CPR v0.92.4, `cyberdeck-hud`, Gamemaster, edição
+  pessoal 0.1.1-personal pela junção em `dist-personal/`, servidor reiniciado para ler o
+  manifesto):
+  1. Os dois pacotes pessoais carregaram e passaram na validação do módulo; o gerenciador
+     lista os dois em "Registrados por código".
+  2. JB2A desligado: o rifle tocou o traço procedural de reserva e o som da exportação.
+  3. JB2A ligado: rifle com "Rifle (Basic)" a 2 m usou a variante de 15 pés (âncora 0,20) e a
+     ~11 m a de 60 pés (âncora 0,07), bala vista na tela indo até o alvo; automático tocou o
+     som de rajada encaixado; faca (golpe 400×300, âncora 0,375) e desarmado; espingarda
+     (disparo e impacto); granada perfurante (projétil até o ponto, pino em FLAC começando em
+     1 s, explosão 600×600 = 6 quadrados); EMP (vídeo depois do primeiro carregamento);
+     Jack In pelo efeito do cyberdeck.
+  4. Ataque real pela API (faca contra o PdM, defesa rolada): som e golpe da exportação,
+     acerto, 2 PV; desfeito pelo card (PV 9 de novo).
+  5. Caído no PdM: indicador persistente apareceu, seguiu o token ao mover, sumiu ao tirar o
+     estado, voltou depois de F5; desligar "Efeitos persistentes" ou "Efeitos visuais" tira na
+     hora e religar devolve.
+  6. Movimento reduzido: vídeo parado no primeiro quadro e removido depois.
+  - A aba do navegador embutido estava como oculta para o navegador; para ver os efeitos,
+    `document.hidden` foi sobrescrito só no console daquela aba (o motor não toca em aba
+    oculta, de propósito).
+- Restaurado: junção de volta para `dist/`, Foundry reiniciado sem mundo aberto (como
+  estava), PdM sem Caído e na posição 600,500. Ficaram: JB2A instalado e ativo no
+  `cyberdeck-hud`; mensagens de teste no chat.
+- Não testado: como jogador e em dois clientes; JB2A Patreon; granadas especiais (casadas
+  pelo nome do item, que pode não bater); armas de marca com nome próprio do compêndio;
+  quadro parado com movimento reduzido mostra o primeiro quadro, que em balas é vazio.
+
+## Entrega anterior: usabilidade — desfazer estados, Death Save dos PdMs, destaque de turno (2026-11-20)
 
 - Pedido do usuário (lista de ideias de usabilidade, itens 9, 11 e 14): D42 (desfazer também
   os estados que a ação ligou), D43 (botão "Death Save dos PdMs" no tracker, mestre) e D44
@@ -80,12 +128,10 @@ cards de teste. Uma aba do navegador embutido aberta como Gamemaster.
 
 ## Próximas tarefas
 
-Estados: `TODO`, `EM ANDAMENTO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
+Estados: `TODO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 
 | ID | Estado | Entrega | Condição |
 |---|---|---|---|
-| E11 | EM ANDAMENTO | Animações de módulos instalados e importação de configurações por item (docs/PLAN.md) | Pedido do usuário em 2026-11-23 |
-| P-05 | EM ANDAMENTO | Pacote pessoal gerado pelo conversor | Depois de E11 |
 | P-03 | TODO | Compêndio pessoal (CEMK): armas e itens com dados mecânicos | Bloqueada: dados mecânicos vêm do livro do usuário (D14) |
 
 ## Dependências externas
@@ -97,7 +143,7 @@ Estados: `TODO`, `EM ANDAMENTO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 - Página do pacote em foundryvtt.com (conta do usuário, manual) com o aviso da Homebrew
   Content Policy: item que falta do checklist do docs/LEGAL.md.
 
-- Decisões D15–D41 aguardam confirmação do usuário em docs/DECISIONS.md.
+- Decisões D15–D41 e D45–D51 aguardam confirmação do usuário em docs/DECISIONS.md.
 - Não testados no Foundry: crítico (dois 6) real; arremesso com dano que mostrasse a
   armadura inteira; espingarda com alvo de jogador; explosivo com cobertura; 60 s sem resposta; token não vinculado; dois donos ativos; defesa
   automática dos PdMs em supressão e agarrão; tiro rápido como jogador de outro cliente.

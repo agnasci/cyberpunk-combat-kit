@@ -17,6 +17,7 @@ Runner Teste (confirmar com o usuário antes de usar outro mundo).
 | `npm run build:personal` | Edição pessoal em `dist-personal/` (`scripts/build-personal.mjs`, docs/PERSONAL.md) |
 | `npm run check:private` | Guardas de vazamento (`scripts/check-private.mjs`) |
 | `npm run check` | typecheck, lint, test, build e `check:private` |
+| `node scripts/import-aa.mjs …` | Converte uma exportação do Automated Animations num pacote (docs/EFFECTS.md) |
 | `npm run package` | `check` + `release/module.zip` e `release/module.json` a partir de `dist/` (`scripts/package.mjs`) |
 
 Versões das dependências iguais às do Character Panel (D02). `npm audit` acusa um aviso

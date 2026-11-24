@@ -23,6 +23,9 @@ the property of R. Talsorian Games and its licensees."
 | Pneuma Combat Tools, Visual Tools e demais da suíte | Sem licença (todos os direitos reservados) | Só ideias e fluxos, reescritos do zero | Só com decisão do usuário, uso privado |
 | Sistema `cyberpunk-red-core` | GPL v3 (código) + licença RTG (conteúdo) | Chamar em execução; não copiar arquivos, templates, CSS ou imagens | Igual |
 | cpr-combat-hud | MIT | Ideias | Ideias |
+| JB2A (Jules&Ben's Animated Assets), grátis | CC BY-NC-SA 4.0 | Só referência a arquivos do módulo instalado pelo usuário; nada copiado | Igual |
+| JB2A Patreon | Licença do Patreon (sem redistribuição) | Nunca | Só referência ao módulo instalado |
+| Automated Animations e exportações de configuração | Sem licença declarada | Só o formato (o conversor lê o arquivo do usuário em execução) | Dados convertidos ficam em `private/` |
 
 ## Proibido na edição pública
 

@@ -64,6 +64,16 @@ SP 7, 40 PV).
 | Itens do CEMK e Quickhacks **não** estão no sistema | Lido (nenhum pacote com esse conteúdo) |
 | Item do tipo `gear` serve de contêiner para Quickhack (técnica do PneumaQuickHack) | Lido em PneumaQuickHack; documento `gear` lido de compêndio do módulo como `CPRGearItem` (abaixo); flag a verificar em E5 |
 
+## Munição carregada (E11)
+
+- `item._getLoadedAmmoProp("variety")` e `("type")` devolvem os ids de `CPR.ammoVarieties`
+  (`rifle`, `shotgunShell`, `grenade`…) e `CPR.ammoTypes` (`basic`, `armorPiercing`…).
+  Conferido no Foundry em 2026-11-23: rifle com "Rifle (Basic)" → `rifle`/`basic`.
+- Itens de munição do compêndio do sistema se chamam `"<calibre> (<tipo>)"` ("Rifle (Basic)",
+  "Grenade (Armor-Piercing)"). Ids e rótulos em `modules/system/config.js` e
+  `lang/en.json` do sistema (rótulos de variedade no plural: "Rifle Ammo", "Grenades").
+- `actor.statuses` (ids) e `actor.effects` (nome, `disabled`) alimentam `status.active`.
+
 ## Foundry V12
 
 | Fato | Estado |

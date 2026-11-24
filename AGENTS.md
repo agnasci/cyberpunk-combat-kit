@@ -27,9 +27,10 @@ A ficha e o pipeline de rolagem do sistema são a fonte de verdade.
 
 ## Regras de trabalho
 
-- E0 a E8 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito,
-  pacotes, editor de efeitos, Quickhacks (desligados por padrão), encaixe no Character Panel
-  e API v1. Beta 0.1.0 publicada no GitHub (`origin`). Próximo: E9 (correções do teste da beta).
+- E0 a E11 existem: ataques, modos, áreas, agarrão, efeitos, menu do clique direito,
+  pacotes, editor de efeitos, Quickhacks (desligados por padrão), encaixe no Character Panel,
+  API v1, turnos e animações de módulos instalados com conversor do Automated Animations (E11).
+  Release pública atual: `v0.1.2` no GitHub (`origin`).
 - Separe requisito do usuário, proposta técnica e fato verificado. Não invente
   APIs, campos de ficha, fórmulas, compatibilidade, testes ou resultados.
 - Execute uma tarefa pequena por vez; não implemente etapas futuras por antecipação.
