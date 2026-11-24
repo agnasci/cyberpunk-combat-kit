@@ -84,6 +84,8 @@ Estados: `TODO`, `EM ANDAMENTO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 
 | ID | Estado | Entrega | Condição |
 |---|---|---|---|
+| E11 | EM ANDAMENTO | Animações de módulos instalados e importação de configurações por item (docs/PLAN.md) | Pedido do usuário em 2026-11-23 |
+| P-05 | EM ANDAMENTO | Pacote pessoal gerado pelo conversor | Depois de E11 |
 | P-03 | TODO | Compêndio pessoal (CEMK): armas e itens com dados mecânicos | Bloqueada: dados mecânicos vêm do livro do usuário (D14) |
 
 ## Dependências externas

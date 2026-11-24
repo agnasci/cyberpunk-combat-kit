@@ -58,6 +58,7 @@ interface FoundryActor {
 interface FoundryActiveEffect {
   readonly id: string;
   readonly name: string;
+  readonly disabled?: boolean;
   readonly statuses?: Set<string>;
   readonly parent?: unknown;
   getFlag(scope: string, key: string): unknown;
@@ -232,11 +233,14 @@ interface FoundryPixiTexture {
 
 interface FoundryPixiSprite {
   zIndex: number;
+  alpha: number;
+  visible: boolean;
   readonly anchor: { set(x: number, y: number): void };
   readonly position: { set(x: number, y: number): void };
   rotation: number;
   width: number;
   height: number;
+  readonly destroyed: boolean;
   destroy(): void;
 }
 
@@ -310,6 +314,11 @@ declare global {
         | "preUpdateToken"
         | "preDeleteActiveEffect"
         | "deleteActiveEffect"
+        | "createActiveEffect"
+        | "updateActiveEffect"
+        | "createToken"
+        | "deleteToken"
+        | "updateActor"
         | "updateCombat"
         | "updateCombatant"
         | "deleteCombat"
@@ -370,6 +379,10 @@ declare global {
     audio: {
       readonly locked: boolean;
       readonly interface?: AudioContext & { readonly gainNode?: GainNode };
+      play(
+        src: string,
+        options: { context?: AudioContext; volume?: number; offset?: number; loop?: boolean },
+      ): Promise<unknown>;
     };
     combat: FoundryCombat | null;
     time: { readonly worldTime: number };
@@ -382,6 +395,7 @@ declare global {
       get(
         id: string,
       ): { api?: unknown; active?: boolean; flags?: Record<string, unknown> } | undefined;
+      values(): IterableIterator<{ id: string; active: boolean }>;
     };
   };
 

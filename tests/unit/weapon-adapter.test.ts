@@ -31,6 +31,7 @@ describe("snapshot de arma (campos do CPR v0.92.4, docs/COMPATIBILITY.md)", () =
       rof: 1,
       dvTable: "DV Pistol",
       ammoVariety: null,
+      ammoType: null,
       autofireMax: 0,
       suppressive: false,
     });

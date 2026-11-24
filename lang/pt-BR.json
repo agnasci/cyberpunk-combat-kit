@@ -339,5 +339,10 @@
   "CCK.Turn.Stay": "Ficar",
   "CCK.DeathSave.Button": "Death Save dos PdMs",
   "CCK.DeathSave.Hint": "Rola o Death Save de cada PdM mortalmente ferido neste combate",
-  "CCK.DeathSave.None": "Nenhum PdM mortalmente ferido neste combate"
+  "CCK.DeathSave.None": "Nenhum PdM mortalmente ferido neste combate",
+  "CCK.Packs.Error-bad-requires": "requires precisa ser uma lista de ids de módulo.",
+  "CCK.Packs.Missing": "Precisa do módulo {modules}; enquanto ele não estiver ativo, os vídeos dele viram efeitos próprios.",
+  "CCK.Packs.Overlap": "{modules} está ativo: os ataques podem tocar duas animações. Desligue-o neste mundo para usar só os efeitos do Combat Kit.",
+  "CCK.Settings.StatusEffects": "Efeitos persistentes de estado",
+  "CCK.Settings.StatusEffectsHint": "Mostra efeitos em loop nos tokens enquanto um estado ou efeito ativo durar, quando um pacote ativo os define."
 }

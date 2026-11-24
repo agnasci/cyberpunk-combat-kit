@@ -1,10 +1,17 @@
-import { isCueKey, isSafeAssetPath, parseCueSteps, type CueMap, type CueStep } from "./cues";
+import {
+  isCueKey,
+  isSafeAssetPath,
+  parseCueSteps,
+  withoutSources,
+  type CueMap,
+  type CueStep,
+} from "./cues";
 
 export const MANIFEST_FILE = "cck-pack.json";
-export const MANIFEST_MAX_BYTES = 256 * 1024;
+export const MANIFEST_MAX_BYTES = 512 * 1024;
 export const PACK_KINDS = ["cues", "quickhacks"] as const;
 export type PackKind = (typeof PACK_KINDS)[number];
-export const ASSET_EXTENSIONS = ["ogg", "mp3", "wav", "webm", "webp", "png", "svg", "json"];
+export const ASSET_EXTENSIONS = ["ogg", "mp3", "wav", "flac", "webm", "webp", "png", "svg", "json"];
 export const QUICKHACK_EFFECTS = ["damage", "status", "criticalInjury", "guided"] as const;
 export type QuickhackEffectType = (typeof QUICKHACK_EFFECTS)[number];
 export const MAX_EFFECT_ROUNDS = 1200;
@@ -17,7 +24,16 @@ export type QuickhackEffect =
   | { type: "criticalInjury"; injury: string; rounds: number | null }
   | { type: "guided" };
 
-const LIMITS = { assets: 200, cues: 200, quickhacks: 100, title: 80, folder: 160 } as const;
+const LIMITS = {
+  assets: 400,
+  cues: 400,
+  quickhacks: 100,
+  title: 80,
+  folder: 160,
+  requires: 10,
+  variants: 8,
+} as const;
+const MODULE_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 const PACK_ID = /^[a-z0-9][a-z0-9-]{0,47}$/;
 export const RESERVED_SOURCES = ["default", "code"];
 const ASSET_KEY = /^[A-Za-z0-9_-]{1,48}$/;
@@ -41,6 +57,7 @@ export interface ContentPack {
   title: string;
   kinds: PackKind[];
   folder: string;
+  requires: string[];
   cues: CueMap;
   quickhacks: PackQuickhack[];
 }
@@ -60,6 +77,7 @@ export type PackErrorCode =
   | "bad-cue"
   | "unknown-asset"
   | "bad-quickhack"
+  | "bad-requires"
   | "duplicate";
 
 export interface PackError {
@@ -90,33 +108,102 @@ export function manifestPath(folder: string): string {
   return `${folder}/${MANIFEST_FILE}`;
 }
 
-function resolveAssets(value: unknown, folder: string, errors: PackError[]): Map<string, string> {
-  const assets = new Map<string, string>();
-  if (value === undefined) return assets;
+function parseRequires(value: unknown, errors: PackError[]): string[] {
+  if (value === undefined) return [];
+  const valid =
+    Array.isArray(value) &&
+    value.length <= LIMITS.requires &&
+    value.every((id) => typeof id === "string" && MODULE_ID_PATTERN.test(id));
+  if (!valid) {
+    errors.push({ code: "bad-requires", at: "requires" });
+    return [];
+  }
+  return [...new Set(value as string[])];
+}
+
+function pathList(value: unknown): unknown[] | null {
+  const list: unknown[] = Array.isArray(value) ? value : [value];
+  return list.length > 0 && list.length <= LIMITS.variants ? list : null;
+}
+
+export function externalModule(path: string): string | null {
+  const [root, id] = path.split("/");
+  return root === "modules" && id && MODULE_ID_PATTERN.test(id) ? id : null;
+}
+
+function resolveAssets(
+  value: unknown,
+  folder: string,
+  errors: PackError[],
+  assets: Map<string, string[]>,
+): void {
+  if (value === undefined) return;
   if (!isRecord(value)) {
     errors.push({ code: "bad-asset-key", at: "assets" });
-    return assets;
+    return;
   }
   const entries = Object.entries(value);
   if (entries.length > LIMITS.assets) errors.push({ code: "too-many", at: "assets" });
-  for (const [key, path] of entries.slice(0, LIMITS.assets)) {
+  for (const [key, raw] of entries.slice(0, LIMITS.assets)) {
     if (!ASSET_KEY.test(key)) {
       errors.push({ code: "bad-asset-key", at: `assets.${key}` });
       continue;
     }
-    const full = `${folder}/${String(path)}`;
-    if (!isSafeAssetPath(path, ASSET_EXTENSIONS) || !isSafeAssetPath(full, ASSET_EXTENSIONS)) {
+    const list = pathList(raw);
+    const full = list?.map((path) => `${folder}/${String(path)}`);
+    const safe =
+      list?.every((path) => isSafeAssetPath(path, ASSET_EXTENSIONS)) &&
+      full?.every((path) => isSafeAssetPath(path, ASSET_EXTENSIONS));
+    if (!safe || !full) {
       errors.push({ code: "bad-asset-path", at: `assets.${key}` });
       continue;
     }
     assets.set(key, full);
   }
-  return assets;
+}
+
+function resolveExternal(
+  value: unknown,
+  requires: readonly string[],
+  errors: PackError[],
+  assets: Map<string, string[]>,
+): void {
+  if (value === undefined) return;
+  if (!isRecord(value)) {
+    errors.push({ code: "bad-asset-key", at: "external" });
+    return;
+  }
+  const entries = Object.entries(value);
+  if (entries.length + assets.size > LIMITS.assets) {
+    errors.push({ code: "too-many", at: "external" });
+  }
+  for (const [key, raw] of entries.slice(0, LIMITS.assets)) {
+    const at = `external.${key}`;
+    if (!ASSET_KEY.test(key)) {
+      errors.push({ code: "bad-asset-key", at });
+      continue;
+    }
+    if (assets.has(key)) {
+      errors.push({ code: "duplicate", at });
+      continue;
+    }
+    const list = pathList(raw);
+    const valid = list?.every((path) => {
+      if (!isSafeAssetPath(path, ASSET_EXTENSIONS)) return false;
+      const id = externalModule(path);
+      return id !== null && requires.includes(id);
+    });
+    if (!valid || !list) {
+      errors.push({ code: "bad-asset-path", at });
+      continue;
+    }
+    assets.set(key, list as string[]);
+  }
 }
 
 function withAssets(
   steps: unknown,
-  assets: Map<string, string>,
+  assets: Map<string, string[]>,
   at: string,
   errors: PackError[],
 ): unknown {
@@ -136,7 +223,7 @@ function withAssets(
 
 function parseCues(
   value: unknown,
-  assets: Map<string, string>,
+  assets: Map<string, string[]>,
   errors: PackError[],
 ): Record<string, CueStep[]> {
   const cues: Record<string, CueStep[]> = {};
@@ -212,7 +299,7 @@ function optionalFlag(value: unknown, fallback: boolean): boolean | null {
 
 function parseQuickhack(
   value: unknown,
-  assets: Map<string, string>,
+  assets: Map<string, string[]>,
   folder: string,
 ): PackQuickhack | null {
   if (!isRecord(value) || !isRecord(value.effect)) return null;
@@ -227,7 +314,7 @@ function parseQuickhack(
   if (alerts === null || requiresUnaware === null) return null;
   let icon: string | null = null;
   if (value.icon !== undefined) {
-    const key = typeof value.icon === "string" ? assets.get(value.icon) : undefined;
+    const key = typeof value.icon === "string" ? assets.get(value.icon)?.[0] : undefined;
     const direct = `${folder}/${String(value.icon)}`;
     if (key) icon = key;
     else if (
@@ -242,7 +329,7 @@ function parseQuickhack(
 
 function parseQuickhacks(
   value: unknown,
-  assets: Map<string, string>,
+  assets: Map<string, string[]>,
   folder: string,
   errors: PackError[],
 ): PackQuickhack[] {
@@ -292,13 +379,35 @@ export function parseManifest(value: unknown, folderInput: string): ManifestResu
   const title = text(value.title, LIMITS.title);
   if (!title) errors.push({ code: "bad-title", at: "title" });
   const kinds = parseKinds(value.kinds, errors);
-  const assets = resolveAssets(value.assets, folder, errors);
+  const requires = parseRequires(value.requires, errors);
+  const assets = new Map<string, string[]>();
+  resolveAssets(value.assets, folder, errors, assets);
+  resolveExternal(value.external, requires, errors, assets);
   const cues = kinds.includes("cues") ? parseCues(value.cues, assets, errors) : {};
   const quickhacks = kinds.includes("quickhacks")
     ? parseQuickhacks(value.quickhacks, assets, folder, errors)
     : [];
   if (errors.length > 0 || !id || !version || !title) return { ok: false, errors };
-  return { ok: true, pack: { id, version, title, kinds, folder, cues, quickhacks } };
+  return { ok: true, pack: { id, version, title, kinds, folder, requires, cues, quickhacks } };
+}
+
+export function missingModules(pack: ContentPack, active: ReadonlySet<string>): string[] {
+  return pack.requires.filter((id) => !active.has(id));
+}
+
+export function withActiveModules(pack: ContentPack, active: ReadonlySet<string>): ContentPack {
+  const missing = new Set(missingModules(pack, active));
+  if (missing.size === 0) return pack;
+  const absent = (src: string) => {
+    const id = externalModule(src);
+    return id !== null && missing.has(id);
+  };
+  const cues: Record<string, CueStep[]> = {};
+  for (const [key, steps] of Object.entries(pack.cues)) {
+    const kept = withoutSources(steps, absent);
+    if (kept.length > 0) cues[key] = kept;
+  }
+  return { ...pack, cues };
 }
 
 export function parseManifestText(text: string, folder: string): ManifestResult {

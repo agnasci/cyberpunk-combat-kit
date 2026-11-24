@@ -1,7 +1,15 @@
-import { normalizeFolder, type ManifestResult, type PackEntry } from "../domain/pack";
+import {
+  missingModules,
+  normalizeFolder,
+  type ContentPack,
+  type ManifestResult,
+  type PackEntry,
+} from "../domain/pack";
 import { codePackList } from "../effects/packs";
 import {
+  activeModuleIds,
   fetchManifest,
+  overlappingAnimationModules,
   packEntries,
   pickFolder,
   savePackEntries,
@@ -38,6 +46,11 @@ function iconButton(icon: string, label: string, onClick: () => void): HTMLButto
   return button;
 }
 
+function missingNote(pack: ContentPack): string[] {
+  const missing = missingModules(pack, activeModuleIds());
+  return missing.length > 0 ? [t("CCK.Packs.Missing", { modules: missing.join(", ") })] : [];
+}
+
 export function resultLines(result: ManifestResult | null): { ok: boolean; lines: string[] } {
   if (!result) return { ok: false, lines: [t("CCK.Packs.Checking")] };
   if (!result.ok) {
@@ -57,6 +70,7 @@ export function resultLines(result: ManifestResult | null): { ok: boolean; lines
         cues: String(Object.keys(pack.cues).length),
         quickhacks: String(pack.quickhacks.length),
       }),
+      ...missingNote(pack),
     ],
   };
 }
@@ -134,6 +148,16 @@ function mount(root: HTMLElement, rows: Row[]): void {
       });
     });
     root.append(list, add);
+    const overlapping = overlappingAnimationModules();
+    if (overlapping.length > 0) {
+      root.append(
+        element(
+          "p",
+          "cck-packs__warn",
+          t("CCK.Packs.Overlap", { modules: overlapping.join(", ") }),
+        ),
+      );
+    }
     const code = codePackList();
     if (code.length > 0) {
       root.append(element("h4", "cck-packs__subtitle", t("CCK.Packs.Code")));

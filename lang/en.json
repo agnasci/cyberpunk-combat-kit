@@ -339,5 +339,10 @@
   "CCK.Turn.Stay": "Stay",
   "CCK.DeathSave.Button": "NPC Death Saves",
   "CCK.DeathSave.Hint": "Rolls a Death Save for each mortally wounded NPC in this combat",
-  "CCK.DeathSave.None": "No mortally wounded NPC in this combat"
+  "CCK.DeathSave.None": "No mortally wounded NPC in this combat",
+  "CCK.Packs.Error-bad-requires": "requires must be a list of module ids.",
+  "CCK.Packs.Missing": "Needs the module {modules}; until it is active, its videos fall back to built-in effects.",
+  "CCK.Packs.Overlap": "{modules} is active: attacks may play two animations. Turn it off in this world to use only Combat Kit effects.",
+  "CCK.Settings.StatusEffects": "Persistent status effects",
+  "CCK.Settings.StatusEffectsHint": "Show looping effects on tokens while a status or active effect lasts, when an active pack defines them."
 }

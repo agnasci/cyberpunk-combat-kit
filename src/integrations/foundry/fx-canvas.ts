@@ -1,5 +1,5 @@
 import type { Point } from "../../domain/area";
-import type { CombatEvent, ProceduralEffect } from "../../domain/cues";
+import type { CombatEvent, ProceduralEffect, SpriteTemplate } from "../../domain/cues";
 
 export interface Anchor {
   point: Point;
@@ -11,6 +11,7 @@ export interface SceneAnchors {
   targets: Anchor[];
   point: Anchor | null;
   gridSize: number;
+  gridDistance: number;
 }
 
 export interface Placement {
@@ -51,6 +52,7 @@ export function sceneAnchors(event: CombatEvent): SceneAnchors | null {
       ? { point: event.point, visible: pointVisible(event.point, gridSize) }
       : null,
     gridSize,
+    gridDistance: canvas.scene.grid.distance || 2,
   };
 }
 
@@ -229,30 +231,69 @@ function videoOf(texture: PixiTexture): HTMLVideoElement | null {
   return source instanceof HTMLVideoElement ? source : null;
 }
 
-export async function playSprite(
-  src: string,
+export interface SpriteOptions {
+  stretch: boolean;
+  duration: number | null;
+  template: SpriteTemplate | null;
+  opacity: number;
+  playbackRate: number;
+  reduced: boolean;
+}
+
+const IMAGE_DURATION = 1000;
+const MAX_DURATION = 10000;
+
+function fitSprite(
+  sprite: PixiSprite,
+  texture: PixiTexture,
   placement: Placement,
-  stretch: boolean,
-  duration: number,
-  reduced: boolean,
-): Promise<void> {
-  const layer = canvas?.interface;
-  const texture = await loadTexture(src).catch(() => null);
-  if (!layer || !texture) return;
-  const sprite = new PIXI.Sprite(texture);
+  options: SpriteOptions,
+) {
   const { from, to, size } = placement;
-  if (stretch) {
-    sprite.anchor.set(0, 0.5);
-    sprite.position.set(from.x, from.y);
-    sprite.rotation = Math.atan2(to.y - from.y, to.x - from.x);
-    sprite.width = Math.hypot(to.x - from.x, to.y - from.y);
-    sprite.height = size;
-  } else {
+  if (!options.stretch) {
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(to.x, to.y);
     sprite.width = size;
     sprite.height = texture.width > 0 ? (size * texture.height) / texture.width : size;
+    return;
   }
+  const distance = Math.max(1, Math.hypot(to.x - from.x, to.y - from.y));
+  sprite.position.set(from.x, from.y);
+  sprite.rotation = Math.atan2(to.y - from.y, to.x - from.x);
+  const template = options.template;
+  const usable = template ? texture.width - template[1] - template[2] : 0;
+  if (!template || usable <= 0 || texture.width <= 0) {
+    sprite.anchor.set(0, 0.5);
+    sprite.width = distance;
+    sprite.height = size;
+    return;
+  }
+  const scale = distance / usable;
+  sprite.anchor.set(template[1] / texture.width, 0.5);
+  sprite.width = texture.width * scale;
+  sprite.height = texture.height * scale;
+}
+
+function playTime(video: HTMLVideoElement | null, options: SpriteOptions): number {
+  if (options.duration !== null) return options.duration;
+  if (!video || options.reduced || !Number.isFinite(video.duration) || video.duration <= 0) {
+    return IMAGE_DURATION;
+  }
+  return Math.min(MAX_DURATION, (video.duration * 1000) / options.playbackRate);
+}
+
+export async function playSprite(
+  src: string,
+  placement: Placement,
+  options: SpriteOptions,
+): Promise<boolean> {
+  const layer = canvas?.interface;
+  const texture = await loadTexture(src).catch(() => null);
+  if (!layer) return true;
+  if (!texture) return false;
+  const sprite = new PIXI.Sprite(texture);
+  fitSprite(sprite, texture, placement, options);
+  sprite.alpha = options.opacity;
   sprite.zIndex = EFFECT_Z_INDEX;
   layer.addChild(sprite);
   layer.sortChildren();
@@ -260,15 +301,67 @@ export async function playSprite(
   if (video) {
     video.loop = false;
     video.currentTime = 0;
-    if (!reduced) void video.play().catch(() => undefined);
+    video.playbackRate = options.playbackRate;
+    if (!options.reduced) void video.play().catch(() => undefined);
   }
-  const timer = window.setTimeout(() => finish(), duration);
+  const timer = window.setTimeout(() => finish(), playTime(video, options));
   const finish = track(() => {
     window.clearTimeout(timer);
     video?.pause();
     layer.removeChild(sprite);
     sprite.destroy();
   });
+  return true;
+}
+
+export async function preloadTextures(sources: readonly string[]): Promise<void> {
+  for (const src of sources) await loadTexture(src).catch(() => null);
+}
+
+export interface LoopHandle {
+  stop(): void;
+}
+
+export async function attachLoop(
+  tokenId: string,
+  src: string,
+  scale: number,
+  opacity: number,
+  reduced: boolean,
+): Promise<LoopHandle | null> {
+  const layer = canvas?.interface;
+  const texture = await loadTexture(src).catch(() => null);
+  if (!layer || !texture) return null;
+  const sprite = new PIXI.Sprite(texture);
+  sprite.anchor.set(0.5, 0.5);
+  sprite.alpha = opacity;
+  sprite.zIndex = EFFECT_Z_INDEX - 1;
+  const video = videoOf(texture);
+  if (video) {
+    video.loop = true;
+    if (!reduced) void video.play().catch(() => undefined);
+  }
+  layer.addChild(sprite);
+  layer.sortChildren();
+  const ticker = canvas.app.ticker;
+  const follow = () => {
+    const token = canvas?.tokens?.placeables.find((entry) => entry.id === tokenId);
+    if (!token || sprite.destroyed) return;
+    const width = token.w * scale;
+    sprite.visible = token.isVisible;
+    sprite.position.set(token.center.x, token.center.y);
+    sprite.width = width;
+    sprite.height = texture.width > 0 ? (width * texture.height) / texture.width : width;
+  };
+  follow();
+  ticker.add(follow);
+  const stop = track(() => {
+    ticker.remove(follow);
+    video?.pause();
+    layer.removeChild(sprite);
+    sprite.destroy();
+  });
+  return { stop };
 }
 
 function stopAllEffects(): void {

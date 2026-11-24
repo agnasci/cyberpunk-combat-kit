@@ -20,6 +20,7 @@ export interface WeaponSnapshot extends ModeWeapon {
   magazineMax: number | null;
   rof: number;
   img: string | null;
+  ammoType: string | null;
 }
 
 export interface CombatantSnapshot {
@@ -34,11 +35,11 @@ interface LoadableItem {
   _getLoadedAmmoProp?: (prop: string) => unknown;
 }
 
-function loadedAmmoVariety(item: Item): string | null {
+function loadedAmmo(item: Item, prop: "variety" | "type"): string | null {
   const reader = (item as Item & LoadableItem)._getLoadedAmmoProp;
   if (typeof reader !== "function") return null;
-  const variety = reader.call(item, "variety");
-  return typeof variety === "string" && variety.length > 0 ? variety : null;
+  const value = reader.call(item, prop);
+  return typeof value === "string" && value.length > 0 ? value : null;
 }
 
 function field(source: unknown, key: string): unknown {
@@ -72,7 +73,8 @@ export function weaponSnapshot(item: Item): WeaponSnapshot | null {
     magazineMax: usesAmmo ? max : null,
     rof: numberAt(system, "rof") ?? 1,
     dvTable: typeof dvTable === "string" ? dvTable : "",
-    ammoVariety: kind === "ranged" ? loadedAmmoVariety(item) : null,
+    ammoVariety: kind === "ranged" ? loadedAmmo(item, "variety") : null,
+    ammoType: kind === "ranged" ? loadedAmmo(item, "type") : null,
     autofireMax: autofireMax(type, numberAt(system, "fireModes", "autoFire") ?? 0),
     suppressive: field(field(system, "fireModes"), "suppressiveFire") === true,
   };

@@ -1,14 +1,18 @@
 import type { Point } from "../domain/area";
 import {
   DEFAULT_CUES,
+  FEET_PER_METER,
   isCueKey,
   parseCombatEvent,
   parseCueSteps,
+  pickVariant,
   reducedMotion,
   resolveCue,
   type CombatEventName,
   type CueMap,
   type CueStep,
+  type SpriteStep,
+  type StepTiming,
 } from "../domain/cues";
 import { overrideLayer, type CueOverride, type CueSource } from "../domain/overrides";
 import { playFile, playSynth } from "../integrations/foundry/fx-audio";
@@ -31,6 +35,15 @@ const registered = new Map<string, CueStep[]>();
 let packSources: CueSource[] = [];
 let overrides: Record<string, CueOverride> = {};
 let layers: CueMap[] = [DEFAULT_CUES];
+const layerListeners = new Set<() => void>();
+
+export function currentLayers(): readonly CueMap[] {
+  return layers;
+}
+
+export function onLayersChanged(listener: () => void): void {
+  layerListeners.add(listener);
+}
 
 export function cueSources(): CueSource[] {
   return [
@@ -43,6 +56,7 @@ export function cueSources(): CueSource[] {
 function rebuildLayers(): void {
   const sources = cueSources();
   layers = [overrideLayer(overrides, sources), ...sources.map((source) => source.cues)];
+  for (const listener of layerListeners) listener();
 }
 
 export function setPackCues(sources: CueSource[]): void {
@@ -86,6 +100,63 @@ function placements(at: CueStep & { at: string }, anchors: SceneAnchors, size: n
   return result;
 }
 
+function schedule(timing: StepTiming, run: () => void): void {
+  for (let index = 0; index < timing.repeat; index += 1) {
+    const wait = timing.delay + index * timing.repeatDelay;
+    if (wait <= 0) run();
+    else window.setTimeout(run, wait);
+  }
+}
+
+function randomOf<T>(list: readonly T[]): T | undefined {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function jitter(placement: Placement, gridSize: number): Placement {
+  const reach = gridSize * 0.2;
+  const dx = (Math.random() * 2 - 1) * reach;
+  const dy = (Math.random() * 2 - 1) * reach;
+  return { ...placement, to: { x: placement.to.x + dx, y: placement.to.y + dy } };
+}
+
+function spriteSource(step: SpriteStep, placement: Placement, anchors: SceneAnchors) {
+  if (step.at !== "path") return randomOf(step.src) ?? null;
+  const pixels = Math.hypot(placement.to.x - placement.from.x, placement.to.y - placement.from.y);
+  const meters = (pixels / anchors.gridSize) * anchors.gridDistance;
+  return pickVariant(step.src, meters * FEET_PER_METER);
+}
+
+function playSpriteStep(
+  step: SpriteStep,
+  base: Placement,
+  anchors: SceneAnchors,
+  reduced: boolean,
+): void {
+  const placement = step.randomOffset ? jitter(base, anchors.gridSize) : base;
+  const src = spriteSource(step, placement, anchors);
+  if (!src) return;
+  const stretch = step.at === "path";
+  const plain = step.template === null && step.opacity === 1 && step.playbackRate === 1 && !reduced;
+  const duration = step.duration ?? 1000;
+  if (plain && step.duration !== null && playSequencerSprite(src, placement, stretch, duration)) {
+    return;
+  }
+  const options = {
+    stretch,
+    duration: step.duration,
+    template: step.template,
+    opacity: step.opacity,
+    playbackRate: step.playbackRate,
+    reduced,
+  };
+  void playSprite(src, placement, options).then((shown) => {
+    if (!shown && step.fallback) {
+      const at = stretch ? { ...placement, from: placement.to } : placement;
+      playProcedural(step.fallback, at, reduced);
+    }
+  });
+}
+
 function anyVisible(anchors: SceneAnchors): boolean {
   const all = [anchors.source, anchors.point, ...anchors.targets];
   return all.some((anchor) => anchor?.visible);
@@ -107,9 +178,14 @@ function play(input: unknown): void {
       continue;
     }
     if (step.type === "sound") {
-      if (audible) playFile(step.src, step.volume * settings.volume);
+      if (!audible) continue;
+      schedule(step, () => {
+        const src = randomOf(step.src);
+        if (src) playFile(src, step.volume * settings.volume, step.startTime);
+      });
       continue;
     }
+    if (step.type === "sprite" && step.persist) continue;
     if (!settings.visuals) continue;
     const size = anchors.gridSize * step.scale * settings.intensity;
     for (const placement of placements(step, anchors, size)) {
@@ -117,10 +193,7 @@ function play(input: unknown): void {
         playProcedural(step.effect, placement, reduced);
         continue;
       }
-      const stretch = step.at === "path";
-      if (reduced || !playSequencerSprite(step.src, placement, stretch, step.duration)) {
-        void playSprite(step.src, placement, stretch, step.duration, reduced);
-      }
+      schedule(step, () => playSpriteStep(step, placement, anchors, reduced));
     }
   }
 }

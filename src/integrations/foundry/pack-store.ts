@@ -59,6 +59,18 @@ export async function fetchManifest(folder: string): Promise<ManifestResult> {
   }
 }
 
+const OVERLAPPING_MODULES = ["autoanimations"];
+
+export function activeModuleIds(): Set<string> {
+  const ids = new Set<string>();
+  for (const module of game.modules.values()) if (module.active) ids.add(module.id);
+  return ids;
+}
+
+export function overlappingAnimationModules(): string[] {
+  return OVERLAPPING_MODULES.filter((id) => game.modules.get(id)?.active);
+}
+
 export function personalPackFolder(): string | null {
   const flags = game.modules.get(MODULE_ID)?.flags?.[MODULE_ID];
   const path =

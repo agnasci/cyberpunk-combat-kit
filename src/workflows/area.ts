@@ -10,7 +10,7 @@ import {
 import { EXPLOSION_SIDE, SHELL_DV, SHELL_RANGE } from "../domain/modes";
 import { resolutionAudience } from "../domain/routing";
 import { rollDamage, type NativeRollOptions } from "../integrations/cpr/attack-adapter";
-import { combatantSnapshot, findItem } from "../integrations/cpr/weapon-adapter";
+import { combatantSnapshot, findItem, weaponSnapshot } from "../integrations/cpr/weapon-adapter";
 import {
   placeArea,
   removeArea,
@@ -34,7 +34,7 @@ import {
   type TargetResult,
 } from "../ui/resolution-card";
 import { dvLookup, nativeAttack } from "./attack-steps";
-import { cueArea, cueFire, cueOutcomes, qualifiersFor } from "./combat-cues";
+import { cueArea, cueFire, cueOutcomes, qualifiersFor, weaponQualifiers } from "./combat-cues";
 import {
   applicationFor,
   applyTo,
@@ -59,9 +59,13 @@ async function choose(
   }
 }
 
-async function withArea<T>(area: AreaShape, run: () => Promise<T>): Promise<T> {
+async function withArea<T>(
+  area: AreaShape,
+  cue: { qualifiers: string[]; source?: Token },
+  run: () => Promise<T>,
+): Promise<T> {
   const template = await showArea(area);
-  cueArea("area.place", area.t === "rect" ? blastCenter(area) : area);
+  cueArea("area.place", area.t === "rect" ? blastCenter(area) : area, cue.source, cue.qualifiers);
   try {
     return await run();
   } finally {
@@ -168,7 +172,7 @@ export async function shellAttack(context: AttackContext): Promise<void> {
   const tokens = tokensInArea(area, { exclude: context.token, sightFrom: origin });
   if (tokens.length === 0) return warn("CCK.Area.empty");
 
-  await withArea(area, async () => {
+  await withArea(area, { qualifiers: qualifiersFor(context), source: context.token }, async () => {
     const attackRoll = await nativeAttack(context);
     if (!attackRoll) return;
     cueFire(context, tokens);
@@ -229,10 +233,11 @@ interface Detonation {
   weaponName: string;
   attackTotal: number;
   roll: NativeRollOptions;
+  qualifiers: string[];
 }
 
 async function detonate(area: AreaShape, detonation: Detonation) {
-  cueArea("area.detonate", blastCenter(area));
+  cueArea("area.detonate", blastCenter(area), undefined, detonation.qualifiers);
   const tokens = tokensInArea(area, { sightFrom: blastCenter(area) });
   const defended = await gatherDodges(tokens, {
     purpose: "area",
@@ -274,7 +279,7 @@ export async function explosiveAttack(context: AttackContext): Promise<void> {
   const dv = lookup(distance);
   if (dv === null) return warn("CCK.Attack.out-of-range");
 
-  await withArea(area, async () => {
+  await withArea(area, { qualifiers: qualifiersFor(context), source: context.token }, async () => {
     const attackRoll = await nativeAttack(context);
     if (!attackRoll) return;
     cueFire(context, [], center);
@@ -314,6 +319,7 @@ export async function explosiveAttack(context: AttackContext): Promise<void> {
       weaponName: context.weapon.name,
       attackTotal: attackRoll.total,
       roll: context.roll,
+      qualifiers: qualifiersFor(context),
     });
     await postResolution(
       newState({
@@ -336,28 +342,34 @@ export async function detonatePending(message: ChatMessage, state: ResolutionSta
   const actor = attackerToken?.actor ?? null;
   const item = actor ? findItem(actor, pending.weaponId) : undefined;
   if (!pending.center || !attackerToken || !actor || !item) return warn("CCK.Gm.not-found");
+  const snapshot = weaponSnapshot(item);
   const intended = pending.center;
   const area = await choose("CCK.Area.PlaceLanding", blastAt, intended, (point) =>
     withinSquare(intended, EXPLOSION_SIDE, pixelsPerUnit(), snapToCenter(point)),
   );
   if (!area) return;
-  await withArea(area, async () => {
-    const result = await detonate(area, {
-      attackerUuid: state.attackerUuid,
-      attackerName: state.attackerName,
-      item,
-      weaponName: state.weaponName,
-      attackTotal: pending.attackTotal,
-      roll: { actor, tokenId: attackerToken.id, skipDialog: false },
-    });
-    await updateCard(message, {
-      ...state,
-      pending: null,
-      notes: [...state.notes, "CCK.Explosion.Detonated"],
-      damageTotal: result.damageTotal,
-      critical: result.critical,
-      targets: result.targets,
-    });
-    cueOutcomes(tokenForUuid(pending.attackerTokenUuid), [], result.targets, result.critical);
-  });
+  await withArea(
+    area,
+    { qualifiers: snapshot ? weaponQualifiers(snapshot, "explosion") : [] },
+    async () => {
+      const result = await detonate(area, {
+        attackerUuid: state.attackerUuid,
+        attackerName: state.attackerName,
+        item,
+        weaponName: state.weaponName,
+        attackTotal: pending.attackTotal,
+        roll: { actor, tokenId: attackerToken.id, skipDialog: false },
+        qualifiers: snapshot ? weaponQualifiers(snapshot, "explosion") : [],
+      });
+      await updateCard(message, {
+        ...state,
+        pending: null,
+        notes: [...state.notes, "CCK.Explosion.Detonated"],
+        damageTotal: result.damageTotal,
+        critical: result.critical,
+        targets: result.targets,
+      });
+      cueOutcomes(tokenForUuid(pending.attackerTokenUuid), [], result.targets, result.critical);
+    },
+  );
 }

@@ -1,8 +1,15 @@
-import { clamp, COMBAT_EVENTS, isCueKey, isSafeAssetPath, type CueMap, type CueStep } from "./cues";
+import {
+  clamp,
+  COMBAT_EVENTS,
+  isCueKey,
+  isSafeAssetPath,
+  SOUND_EXTENSIONS,
+  type CueMap,
+  type CueStep,
+} from "./cues";
 
 export const AUTO = "auto";
 export const SILENCE = "none";
-export const SOUND_EXTENSIONS = ["ogg", "mp3", "wav"];
 const LIMIT = 300;
 
 export interface CueOverride {
@@ -97,7 +104,18 @@ export function overrideSteps(
   if (base === null) return null;
   if (!override.sound) return [...base];
   const visuals = base.filter((step) => step.type !== "sound" && step.type !== "synth");
-  return [...visuals, { type: "sound", src: override.sound, volume: override.volume }];
+  return [
+    ...visuals,
+    {
+      type: "sound",
+      src: [override.sound],
+      volume: override.volume,
+      startTime: 0,
+      delay: 0,
+      repeat: 1,
+      repeatDelay: 0,
+    },
+  ];
 }
 
 export function overrideLayer(

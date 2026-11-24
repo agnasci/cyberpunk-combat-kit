@@ -13,7 +13,17 @@ import {
 const pack: CueSource = {
   id: "exemplo",
   cues: {
-    "attack.hit": [{ type: "sound", src: "cck-packs/exemplo/hit.ogg", volume: 1 }],
+    "attack.hit": [
+      {
+        type: "sound",
+        src: ["cck-packs/exemplo/hit.ogg"],
+        volume: 1,
+        startTime: 0,
+        delay: 0,
+        repeat: 1,
+        repeatDelay: 0,
+      },
+    ],
     "attack.fire:shotgun": [{ type: "synth", sound: "burst", volume: 1 }],
   },
 };
@@ -53,7 +63,15 @@ describe("associações do mestre", () => {
     );
     expect(steps).toEqual([
       { type: "procedural", effect: "explosion", at: "point", scale: 1 },
-      { type: "sound", src: "sons/bum.ogg", volume: 0.5 },
+      {
+        type: "sound",
+        src: ["sons/bum.ogg"],
+        volume: 0.5,
+        startTime: 0,
+        delay: 0,
+        repeat: 1,
+        repeatDelay: 0,
+      },
     ]);
   });
 

@@ -145,7 +145,8 @@ export function playSynth(sound: SynthSound, volume: number): void {
   window.setTimeout(() => master.disconnect(), 3000);
 }
 
-export function playFile(src: string, volume: number): void {
-  if (!interfaceContext() || volume <= 0) return;
-  void foundry.audio.AudioHelper.play({ src, volume, loop: false, autoplay: true }, false);
+export function playFile(src: string, volume: number, startMs = 0): void {
+  const context = interfaceContext();
+  if (!context || volume <= 0) return;
+  void game.audio.play(src, { context, volume, offset: startMs / 1000 }).catch(() => undefined);
 }

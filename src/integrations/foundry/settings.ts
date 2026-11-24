@@ -55,6 +55,24 @@ export function registerEffectSettings(): void {
     ),
     default: "auto",
   });
+  game.settings.register(MODULE_ID, "fxStatus", {
+    ...client,
+    name: "CCK.Settings.StatusEffects",
+    hint: "CCK.Settings.StatusEffectsHint",
+    type: Boolean,
+    default: true,
+    onChange: () => onStatusSetting?.(),
+  });
+}
+
+let onStatusSetting: (() => void) | null = null;
+
+export function watchStatusSetting(listener: () => void): void {
+  onStatusSetting = listener;
+}
+
+export function statusEffectsEnabled(): boolean {
+  return game.settings.get(MODULE_ID, "fxStatus") !== false;
 }
 
 export function effectSettings(): EffectSettings {

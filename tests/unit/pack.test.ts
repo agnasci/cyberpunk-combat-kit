@@ -35,11 +35,19 @@ describe("manifesto válido", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.pack.cues["attack.fire:heavyPistol"]).toEqual([
-      { type: "sound", src: "cck-packs/exemplo/sounds/shot.ogg", volume: 0.8 },
+      {
+        type: "sound",
+        src: ["cck-packs/exemplo/sounds/shot.ogg"],
+        volume: 0.8,
+        startTime: 0,
+        delay: 0,
+        repeat: 1,
+        repeatDelay: 250,
+      },
     ]);
     expect(result.pack.cues["attack.hit"]?.[0]).toMatchObject({
       type: "sprite",
-      src: "cck-packs/exemplo/fx/spark.webm",
+      src: ["cck-packs/exemplo/fx/spark.webm"],
       at: "target",
     });
   });
@@ -160,7 +168,7 @@ describe("caminhos maliciosos", () => {
 });
 
 describe("tipos proibidos", () => {
-  it.each([["script.js"], ["pagina.html"], ["som.flac"], ["imagem.gif"], ["sem-extensao"]])(
+  it.each([["script.js"], ["pagina.html"], ["som.aiff"], ["imagem.gif"], ["sem-extensao"]])(
     "recusa %s",
     (path) => {
       expect(codes(parseManifest(manifest({ assets: { shot: path } }), FOLDER))).toContain(
@@ -228,13 +236,13 @@ describe("chaves inválidas", () => {
 
   it("JSON quebrado, arquivo grande demais e raiz que não é objeto", () => {
     expect(codes(parseManifestText("{", FOLDER))).toEqual(["not-object"]);
-    expect(codes(parseManifestText(" ".repeat(300 * 1024), FOLDER))).toEqual(["too-many"]);
+    expect(codes(parseManifestText(" ".repeat(600 * 1024), FOLDER))).toEqual(["too-many"]);
     expect(codes(parseManifest([], FOLDER))).toEqual(["not-object"]);
   });
 
   it("limite de quantidade", () => {
     const cues = Object.fromEntries(
-      Array.from({ length: 201 }, (_, index) => [
+      Array.from({ length: 401 }, (_, index) => [
         `attack.hit:q${index}`,
         [{ type: "synth", sound: "shot" }],
       ]),

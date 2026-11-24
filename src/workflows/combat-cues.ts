@@ -3,6 +3,7 @@ import { attackQualifiers, mortallyWounded, type CombatEventName } from "../doma
 import { emitCue } from "../effects/engine";
 import { tokenForUuid } from "../integrations/foundry/tokens";
 import type { Outcome, TargetResult } from "../ui/resolution-card";
+import type { WeaponSnapshot } from "../integrations/cpr/weapon-adapter";
 import type { AttackContext } from "./combat-common";
 
 const OUTCOME_EVENTS: Partial<Record<Outcome, CombatEventName>> = {
@@ -18,6 +19,9 @@ export function qualifiersFor(context: AttackContext): string[] {
     mode: context.profile.mode,
     area: context.profile.area,
     melee: context.profile.dvSource === "none",
+    itemName: context.weapon.name,
+    ammoVariety: context.weapon.ammoVariety,
+    ammoType: context.weapon.ammoType,
   });
 }
 
@@ -31,8 +35,25 @@ export function cueFire(context: AttackContext, targets: Token[], point: Point |
   });
 }
 
-export function cueArea(name: "area.place" | "area.detonate", point: Point, source?: Token) {
-  emitCue({ name, point, source: source?.id ?? null });
+export function cueArea(
+  name: "area.place" | "area.detonate",
+  point: Point,
+  source?: Token,
+  qualifiers: string[] = [],
+) {
+  emitCue({ name, point, source: source?.id ?? null, qualifiers });
+}
+
+export function weaponQualifiers(weapon: WeaponSnapshot, area: "explosion" | "shell"): string[] {
+  return attackQualifiers({
+    weaponType: weapon.weaponType,
+    mode: "single",
+    area,
+    melee: false,
+    itemName: weapon.name,
+    ammoVariety: weapon.ammoVariety,
+    ammoType: weapon.ammoType,
+  });
 }
 
 export function cueGrapple(name: "grapple.start" | "grapple.end", source: Token, target?: Token) {

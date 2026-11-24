@@ -1,10 +1,12 @@
 import {
   parseManifest,
+  withActiveModules,
   type ContentPack,
   type ManifestResult,
   type PackEntry,
 } from "../domain/pack";
 import {
+  activeModuleIds,
   cueOverrides,
   fetchManifest,
   packEntries,
@@ -31,10 +33,11 @@ export function activePacks(): ContentPack[] {
 }
 
 function apply(): void {
+  const modules = activeModuleIds();
   setPackCues(
     activePacks()
       .filter((pack) => pack.kinds.includes("cues"))
-      .map((pack) => ({ id: pack.id, cues: pack.cues })),
+      .map((pack) => ({ id: pack.id, cues: withActiveModules(pack, modules).cues })),
   );
   setCueOverrides(cueOverrides());
 }

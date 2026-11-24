@@ -100,6 +100,22 @@ Relatos de um testador da 0.1.0 (2026-11-20).
 | E10-01 | Levantar o estilo do Character Panel e do Netrunner HUD (paleta, tipografia, componentes) e propor o ajuste | Proposta aprovada pelo usuário |
 | E10-02 | Aplicar ao menu, aos cards, ao pedido de defesa e às janelas do módulo | Inspeção visual no Foundry com e sem o painel |
 
+## E11 — Animações de módulos instalados e importação de configurações por item
+
+Pedido do usuário (2026-11-23): tocar no Combat Kit, sem outro módulo de automação, as
+animações e sons de uma configuração exportada de outro módulo de animações. Tudo genérico;
+nenhum conteúdo no repositório.
+
+| ID | Entrega | Arquivos | Aceite |
+|---|---|---|---|
+| E11-01 | Pacote aponta para arquivos de outro módulo (`requires`, `external`) | `domain/pack.ts`, `effects/packs.ts`, `pack-store.ts`, `ui/pack-manager.ts` | Testes de caminho; módulo inativo não quebra o pacote |
+| E11-02 | Sprite com variantes de distância, âncora `facing`, atraso, repetição, opacidade, velocidade e reserva procedural; pré-carga | `domain/cues.ts`, `fx-canvas.ts`, `fx-sequencer.ts`, `effects/engine.ts` | Tiro curto e longo escolhem variantes diferentes; arquivo ausente cai na reserva |
+| E11-03 | Som com atraso, início e repetição; FLAC | `domain/cues.ts`, `overrides.ts`, `pack.ts`, `fx-audio.ts` | Som começa no ponto pedido; FLAC toca |
+| E11-04 | Qualificadores `item-*` e `ammo-*` | `domain/cues.ts`, `cpr/weapon-adapter.ts`, `workflows/combat-cues.ts`, `area.ts` | Mesma arma com munições diferentes toca cues diferentes |
+| E11-05 | Efeitos persistentes de estado (`status.active`) | `domain/cues.ts`, `workflows/status-fx.ts`, `fx-canvas.ts` | Efeito aparece, segue o token, some com o estado e volta após F5 |
+| E11-06 | Conversor genérico de exportação de autorec (`scripts/import-aa.mjs`) | `scripts/`, `tests/unit/import-aa.test.ts` | Testes com exportação fictícia |
+| E11-07 | Vários pacotes pessoais (`personalPacks`) | `scripts/build-personal.mjs`, `pack-store.ts`, `effects/packs.ts` | Dois pacotes pessoais ativos |
+
 ## P — Edição pessoal (somente `private/`)
 
 | ID | Entrega | Condição | Aceite |
@@ -108,3 +124,4 @@ Relatos de um testador da 0.1.0 (2026-11-20).
 | P-02 | Pacote pessoal com o conteúdo do PneumaQuickHack | Depois de E5-01 e E6-03 | 11 Quickhacks com ícones e efeitos do Pneuma funcionando; aviso MIT em `private/NOTICES.md` |
 | P-03 | Compêndio pessoal (CEMK) | Depois de E0-04 (LevelDB) | Itens do Edgerunners Armory e Quickhacks no compêndio com dados mecânicos e arquivo de texto por item (D14); texto colado pelo usuário aparece como descrição; nenhum duplicado do sistema |
 | P-04 | Assets do Combat/Visual Tools (D13) | Depois de E4-01 e P-01 | Cues pessoais com os sons e imagens deles; nada fora de `private/` |
+| P-05 | Pacote pessoal gerado pelo conversor da E11-06 | Depois de E11 | Conversão sem rótulo sem casamento; teste real no Foundry com o roteiro do plano pessoal |

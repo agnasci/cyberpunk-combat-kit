@@ -111,8 +111,31 @@ describe("cue steps from code", () => {
       ]),
     ).toEqual([
       { type: "procedural", effect: "impact", at: "target", scale: 1 },
-      { type: "sound", src: "modules/x/shot.ogg", volume: 1.5 },
-      { type: "sprite", src: "modules/x/spark.webm", at: "path", scale: 1, duration: 1000 },
+      {
+        type: "sound",
+        src: ["modules/x/shot.ogg"],
+        volume: 1.5,
+        startTime: 0,
+        delay: 0,
+        repeat: 1,
+        repeatDelay: 250,
+      },
+      {
+        type: "sprite",
+        src: ["modules/x/spark.webm"],
+        at: "path",
+        scale: 1,
+        duration: null,
+        template: null,
+        opacity: 1,
+        playbackRate: 1,
+        randomOffset: false,
+        persist: false,
+        fallback: null,
+        delay: 0,
+        repeat: 1,
+        repeatDelay: 250,
+      },
     ]);
   });
 
