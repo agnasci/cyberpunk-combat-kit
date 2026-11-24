@@ -5,7 +5,7 @@ automática, defesa, dano aplicado com armadura e ablação, modos de fogo e ár
 combate no clique direito, efeitos audiovisuais configuráveis e pacotes de conteúdo
 importáveis. Integra-se ao Character Panel quando os dois estão ativos.
 
-**Estado:** beta (0.1.1). Ataques à distância e corpo a corpo, modos de fogo, áreas,
+**Estado:** beta (0.2.0). Ataques à distância e corpo a corpo, modos de fogo, áreas,
 agarrão, dano aplicado pelo mestre com desfazer, efeitos audiovisuais, menu de combate no
 clique direito, pacotes de conteúdo importáveis com editor de efeitos por evento e motor de
 Quickhacks desligado por padrão, com definições só vindas de pacotes, e aba "Combate" no
@@ -16,6 +16,13 @@ Character Panel quando ele está ativo. Macros e outros módulos usam a API v1
 
 Foundry VTT V12 com o sistema Cyberpunk RED – CORE. Em "Instalar módulo", cole o manifesto:
 `https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
+
+Pacotes de efeitos podem usar vídeos de outro módulo instalado, como o JB2A grátis
+("Jules and Ben's Animated Assets"): o pacote diz qual módulo usa; sem ele ativo, os vídeos viram
+os efeitos próprios do Combat Kit e os sons continuam. Uma configuração do Automated
+Animations pode virar pacote pelo conversor `scripts/import-aa.mjs`
+([docs/EFFECTS.md](docs/EFFECTS.md)); o Automated Animations não é necessário e, ativo junto,
+dobra as animações.
 
 A aba "Combate" e os atalhos no painel precisam do Character Panel 0.2.0 ou mais novo (API v1).
 Com versão anterior ou sem o painel, o Combat Kit funciona sozinho pelo clique direito.

@@ -56,8 +56,9 @@ Atualizado em: 2026-11-23.
   - A aba do navegador embutido estava como oculta para o navegador; para ver os efeitos,
     `document.hidden` foi sobrescrito só no console daquela aba (o motor não toca em aba
     oculta, de propósito).
-- Restaurado: junção de volta para `dist/`, Foundry reiniciado sem mundo aberto (como
-  estava), PdM sem Caído e na posição 600,500. Ficaram: JB2A instalado e ativo no
+- Depois, a pedido do usuário (2026-11-23), a junção ficou em `dist-personal/` (edição
+  pessoal ativa no Foundry dele; voltar para `dist/` para testar a pública). Antes disso:
+  Foundry reiniciado sem mundo aberto (como estava), PdM sem Caído e na posição 600,500. Ficaram: JB2A instalado e ativo no
   `cyberdeck-hud`; mensagens de teste no chat.
 - Não testado: como jogador e em dois clientes; JB2A Patreon; granadas especiais (casadas
   pelo nome do item, que pode não bater); armas de marca com nome próprio do compêndio;
