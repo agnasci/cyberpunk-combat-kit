@@ -5,7 +5,7 @@ automática, defesa, dano aplicado com armadura e ablação, modos de fogo e ár
 combate no clique direito, efeitos audiovisuais configuráveis e pacotes de conteúdo
 importáveis. Integra-se ao Character Panel quando os dois estão ativos.
 
-**Estado:** beta (0.2.0). Ataques à distância e corpo a corpo, modos de fogo, áreas,
+**Estado:** beta (0.2.1). Ataques à distância e corpo a corpo, modos de fogo, áreas,
 agarrão, dano aplicado pelo mestre com desfazer, efeitos audiovisuais, menu de combate no
 clique direito, pacotes de conteúdo importáveis com editor de efeitos por evento e motor de
 Quickhacks desligado por padrão, com definições só vindas de pacotes, e aba "Combate" no
