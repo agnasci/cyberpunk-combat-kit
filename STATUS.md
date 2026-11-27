@@ -15,7 +15,17 @@ Atualizado em: 2026-11-26.
 - Character Panel: v0.2.0 (2026-11-19) trouxe a API v1, exigida pela integração; v0.2.1
   (2026-11-20) trouxe `setAttention`, exigido pelo destaque de turno (README).
 
-## Última entrega: E12 — correções do teste da 0.2.0 (2026-11-26)
+## Última entrega: release v0.2.1 e kit pessoal 0.2.1 (2026-11-26)
+
+- Pedido do usuário: commit, push, release e kit para o amigo.
+- Commits  e ;   exit 0 (261 testes, sem vazamento); diff conferido sem nomes de arquivos pessoais. Tag e
+  release  com  e ; workflow  passou; manifesto
+  público devolve 0.2.1 e o zip baixado é idêntico ao .
+- Edição pessoal 0.2.1-personal em  (junção do Foundry aponta para lá; o
+  servidor só mostra a versão nova depois de reiniciado). Kit em   (fora do Git): zip de 91 entradas, LEIA-ME com o que mudou na 0.2.1, avisos de licença. Não
+  testado no Foundry do amigo.
+
+## Entrega anterior: E12 — correções do teste da 0.2.0 (2026-11-26)
 
 - Pedido do usuário, 7 itens: hover transparente; rajada com poucas balas e som sem visual;
   supressivo com uma bala só; tirar o "piu" do erro e o "pow" do acerto; aviso de iniciativa
