@@ -18,12 +18,14 @@ Atualizado em: 2026-11-26.
 ## Última entrega: release v0.2.1 e kit pessoal 0.2.1 (2026-11-26)
 
 - Pedido do usuário: commit, push, release e kit para o amigo.
-- Commits  e ;   exit 0 (261 testes, sem vazamento); diff conferido sem nomes de arquivos pessoais. Tag e
-  release  com  e ; workflow  passou; manifesto
-  público devolve 0.2.1 e o zip baixado é idêntico ao .
-- Edição pessoal 0.2.1-personal em  (junção do Foundry aponta para lá; o
-  servidor só mostra a versão nova depois de reiniciado). Kit em   (fora do Git): zip de 91 entradas, LEIA-ME com o que mudou na 0.2.1, avisos de licença. Não
-  testado no Foundry do amigo.
+- Commits `fix: correções do teste da 0.2.0 (E12)` e `chore: release v0.2.1 (beta)`;
+  `npm run package` exit 0 (261 testes, sem vazamento); diff conferido sem nomes de arquivos
+  pessoais. Tag e release `v0.2.1` com `module.json` e `module.zip`; workflow `release.yml`
+  passou; manifesto público devolve 0.2.1 e o zip baixado é idêntico ao `dist/`.
+- Edição pessoal 0.2.1-personal em `dist-personal/` (a junção do Foundry aponta para lá; o
+  servidor só mostra a versão nova depois de reiniciado). Kit em `.local/para-amigo-0.2.1/`
+  (fora do Git): zip de 91 entradas, LEIA-ME com o que mudou na 0.2.1, avisos de licença.
+  Não testado no Foundry do amigo.
 
 ## Entrega anterior: E12 — correções do teste da 0.2.0 (2026-11-26)
 
