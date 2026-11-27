@@ -1,6 +1,6 @@
 import {
   damageApplicationFrom,
-  mortalCriticalInjury,
+  criticalInjuryFor,
   type DamageApplication,
 } from "../domain/attack-rules";
 import { isUndoable } from "../domain/gm-request";
@@ -50,6 +50,7 @@ export async function applyTo(
   target: TargetResult,
   application: DamageApplication,
   source: DamageSource = "attack",
+  critical = false,
 ): Promise<TargetResult> {
   const result = await requestGm({
     op: "applyDamage",
@@ -62,15 +63,15 @@ export async function applyTo(
     announceDamage({ attackerUuid, targetUuid: target.uuid, source, result: result.result });
   }
   const applied = result.ok ? result.result : null;
-  const mortal =
-    source === "attack" &&
-    applied !== null &&
-    mortalCriticalInjury(applied.hpBefore, applied.damaged ?? applied.hpReduction > 0);
+  const injury =
+    source === "attack" && applied !== null
+      ? criticalInjuryFor({ critical, hpBefore: applied.hpBefore, location: applied.location })
+      : null;
   return {
     ...target,
     applied,
     error: result.ok ? null : `CCK.Gm.${result.error}`,
-    wound: mortal ? "CCK.Wound.MortalCritical" : null,
+    injury,
   };
 }
 
@@ -94,6 +95,29 @@ export async function undoTarget(
   if (!result.ok) return warn(`CCK.Gm.${result.error}`);
   const targets = state.targets.map((entry, position) =>
     position === index ? { ...entry, undone: true } : entry,
+  );
+  await updateCard(message, { ...state, targets });
+}
+
+export async function rollTargetInjury(
+  message: ChatMessage,
+  state: ResolutionState,
+  index: number,
+): Promise<void> {
+  const target = state.targets[index];
+  const injury = target?.injury ?? null;
+  if (!target || !injury || injury.rolled) return;
+  const result = await requestGm({
+    op: "criticalInjury",
+    attackerUuid: state.attackerUuid,
+    targetUuid: target.uuid,
+    table: injury.table,
+  });
+  if (!result.ok) return warn(`CCK.Gm.${result.error}`);
+  const rolled = result.result?.injury;
+  if (!rolled) return warn("CCK.Gm.failed");
+  const targets = state.targets.map((entry, position) =>
+    position === index ? { ...entry, injury: { ...injury, rolled } } : entry,
   );
   await updateCard(message, { ...state, targets });
 }

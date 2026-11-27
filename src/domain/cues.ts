@@ -47,7 +47,7 @@ export const SYNTH_SOUNDS = [
 ] as const;
 export type SynthSound = (typeof SYNTH_SOUNDS)[number];
 
-export const ANCHORS = ["source", "target", "point", "path"] as const;
+export const ANCHORS = ["source", "target", "point", "path", "spray"] as const;
 export type Anchor = (typeof ANCHORS)[number];
 
 export interface StepTiming {
@@ -79,11 +79,15 @@ export interface SpriteStep extends StepTiming {
   fallback: ProceduralEffect | null;
 }
 
+export interface ProceduralStep extends Partial<StepTiming> {
+  type: "procedural";
+  effect: ProceduralEffect;
+  at: Anchor;
+  scale: number;
+}
+
 export type CueStep =
-  | { type: "procedural"; effect: ProceduralEffect; at: Anchor; scale: number }
-  | { type: "synth"; sound: SynthSound; volume: number }
-  | SoundStep
-  | SpriteStep;
+  ProceduralStep | { type: "synth"; sound: SynthSound; volume: number } | SoundStep | SpriteStep;
 
 export type CueMap = Readonly<Record<string, readonly CueStep[]>>;
 
@@ -98,13 +102,19 @@ export interface CombatEvent {
 
 export type MotionSetting = "auto" | "reduce" | "full";
 
+const MAX_REPEAT = 20;
 const LIMITS = { targets: 50, qualifiers: 8, steps: 8, id: 64, src: 256, variants: 8 } as const;
 const QUALIFIER = /^[A-Za-z0-9-]{1,48}$/;
 export const SOUND_EXTENSIONS = ["ogg", "mp3", "wav", "flac"];
 const SPRITE_EXTENSIONS = ["webm", "webp", "png", "svg"];
 
-function procedural(effect: ProceduralEffect, at: Anchor, scale = 1): CueStep {
-  return { type: "procedural", effect, at, scale };
+function procedural(
+  effect: ProceduralEffect,
+  at: Anchor,
+  scale = 1,
+  burst?: Partial<StepTiming>,
+): CueStep {
+  return { type: "procedural", effect, at, scale, ...burst };
 }
 
 function synth(sound: SynthSound, volume = 1): CueStep {
@@ -117,10 +127,14 @@ export const DEFAULT_CUES: CueMap = {
   "attack.fire:thrown": [procedural("tracer", "path", 0.6), synth("swing", 0.8)],
   "attack.fire:autofire": [
     procedural("flash", "source", 1.2),
-    procedural("tracer", "path"),
+    procedural("tracer", "path", 1, { repeat: 10, repeatDelay: 75 }),
     synth("burst"),
   ],
-  "attack.fire:suppressive": [procedural("flash", "source", 1.2), synth("burst")],
+  "attack.fire:suppressive": [
+    procedural("flash", "source", 1.2),
+    procedural("tracer", "spray", 1, { repeat: 10, repeatDelay: 75 }),
+    synth("burst"),
+  ],
   "attack.fire:shell": [
     procedural("flash", "source", 1.5),
     procedural("tracer", "path", 1.5),
@@ -131,10 +145,9 @@ export const DEFAULT_CUES: CueMap = {
     procedural("tracer", "path"),
     synth("launch"),
   ],
-  "attack.hit": [procedural("impact", "target"), synth("impact")],
-  "attack.miss": [procedural("miss", "target"), synth("ricochet", 0.6)],
-  "attack.miss:melee": [procedural("miss", "target"), synth("whoosh", 0.6)],
-  "attack.dodged": [procedural("miss", "target"), synth("whoosh", 0.7)],
+  "attack.hit": [procedural("impact", "target")],
+  "attack.miss": [procedural("miss", "target")],
+  "attack.dodged": [procedural("miss", "target")],
   "attack.critical": [procedural("critical", "target"), synth("alarm", 0.5)],
   "area.detonate": [procedural("explosion", "point"), synth("explosion")],
   "actor.mortallyWounded": [procedural("flatline", "target"), synth("flatline", 0.4)],
@@ -336,9 +349,13 @@ function number(value: unknown, fallback: number, min: number, max: number): num
 function timing(value: Record<string, unknown>): StepTiming {
   return {
     delay: number(value.delay, 0, 0, 5000),
-    repeat: Math.round(number(value.repeat, 1, 1, 10)),
+    repeat: Math.round(number(value.repeat, 1, 1, MAX_REPEAT)),
     repeatDelay: number(value.repeatDelay, 250, 0, 5000),
   };
+}
+
+function hasTiming(value: Record<string, unknown>): boolean {
+  return ["delay", "repeat", "repeatDelay"].some((key) => value[key] !== undefined);
 }
 
 function sources(value: unknown, extensions: readonly string[]): string[] | null {
@@ -361,7 +378,12 @@ function parseStep(value: unknown): CueStep | null {
   switch (value.type) {
     case "procedural":
       if (!includes(PROCEDURAL_EFFECTS, value.effect) || !includes(ANCHORS, value.at)) return null;
-      return procedural(value.effect, value.at, number(value.scale, 1, 0.1, 4));
+      return procedural(
+        value.effect,
+        value.at,
+        number(value.scale, 1, 0.1, 4),
+        hasTiming(value) ? timing(value) : undefined,
+      );
     case "synth":
       if (!includes(SYNTH_SOUNDS, value.sound)) return null;
       return synth(value.sound, number(value.volume, 1, 0, 1.5));
@@ -420,10 +442,16 @@ export function withoutSources(
     const src = step.src.filter((entry) => !missing(entry));
     if (src.length > 0) kept.push({ ...step, src });
     else if (step.type === "sprite" && step.fallback) {
-      kept.push(procedural(step.fallback, step.at === "path" ? "target" : step.at, step.scale));
+      const at = step.at === "path" ? "target" : step.at;
+      const burst = step.repeat > 1 ? timingOf(step) : undefined;
+      kept.push(procedural(step.fallback, at, step.scale, burst));
     }
   }
   return kept;
+}
+
+function timingOf(step: StepTiming): StepTiming {
+  return { delay: step.delay, repeat: step.repeat, repeatDelay: step.repeatDelay };
 }
 
 export function parseCueSteps(value: unknown): CueStep[] | null {

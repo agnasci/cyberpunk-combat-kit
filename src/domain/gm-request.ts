@@ -1,4 +1,4 @@
-import type { DamageApplication } from "./attack-rules";
+import type { DamageApplication, InjuryTable } from "./attack-rules";
 
 export interface ApplyDamageRequest {
   op: "applyDamage";
@@ -15,6 +15,13 @@ export interface ReverseDamageRequest {
   location: "body" | "head";
   ablation: number;
   statuses: string[];
+}
+
+export interface CriticalInjuryRequest {
+  op: "criticalInjury";
+  attackerUuid: string;
+  targetUuid: string;
+  table: InjuryTable;
 }
 
 export interface ChokeRequest {
@@ -70,6 +77,7 @@ export type NetRequest = NetJackInRequest | NetHackRequest | NetSimpleRequest;
 export type GmRequest =
   | ApplyDamageRequest
   | ReverseDamageRequest
+  | CriticalInjuryRequest
   | ChokeRequest
   | ThrowDownRequest
   | GrappleStartRequest
@@ -88,6 +96,7 @@ export interface DamageResult {
   rolled?: number;
   note?: string;
   statuses?: string[];
+  injury?: string;
 }
 
 export function isUndoable(result: DamageResult | null): boolean {
@@ -202,6 +211,10 @@ export function parseGmRequest(value: unknown): GmRequest | null {
       ablation,
       statuses,
     };
+  }
+  if (data.op === "criticalInjury") {
+    const table = location(data.table);
+    return table ? { op: "criticalInjury", attackerUuid, targetUuid, table } : null;
   }
   if (data.op === "choke" || data.op === "throwDown") {
     const body = intIn(data.body, LIMITS.body);

@@ -43,8 +43,26 @@ export function isCriticalInjury(damageFaces: readonly number[]): boolean {
   return damageFaces.filter((face) => face === 6).length >= CRITICAL_SIXES;
 }
 
-export function mortalCriticalInjury(hpBefore: number, damaged: boolean): boolean {
-  return hpBefore < 1 && damaged;
+export type InjuryTable = "body" | "head";
+export type InjuryReason = "sixes" | "mortal";
+
+export interface CriticalInjury {
+  table: InjuryTable;
+  reason: InjuryReason;
+  rolled: string | null;
+}
+
+export function criticalInjuryFor(input: {
+  critical: boolean;
+  hpBefore: number;
+  location: InjuryTable;
+}): CriticalInjury | null {
+  if (!input.critical && input.hpBefore >= 1) return null;
+  return {
+    table: input.location,
+    reason: input.critical ? "sixes" : "mortal",
+    rolled: null,
+  };
 }
 
 export function damageTaken(input: {

@@ -11,6 +11,7 @@ import {
   type CombatEventName,
   type CueMap,
   type CueStep,
+  type ProceduralStep,
   type SpriteStep,
   type StepTiming,
 } from "../domain/cues";
@@ -81,7 +82,7 @@ function placements(at: CueStep & { at: string }, anchors: SceneAnchors, size: n
   const { source, targets, point } = anchors;
   const result: Placement[] = [];
   const add = (from: Point, to: Point) => result.push({ from, to, size });
-  if (at.at === "source") {
+  if (at.at === "source" || at.at === "spray") {
     if (source?.visible) add(source.point, source.point);
     return result;
   }
@@ -100,9 +101,14 @@ function placements(at: CueStep & { at: string }, anchors: SceneAnchors, size: n
   return result;
 }
 
-function schedule(timing: StepTiming, run: () => void): void {
-  for (let index = 0; index < timing.repeat; index += 1) {
-    const wait = timing.delay + index * timing.repeatDelay;
+const SPRAY_REACH = { min: 4, max: 10 } as const;
+
+function schedule(timing: Partial<StepTiming>, run: () => void): void {
+  const repeat = timing.repeat ?? 1;
+  const delay = timing.delay ?? 0;
+  const gap = timing.repeatDelay ?? 0;
+  for (let index = 0; index < repeat; index += 1) {
+    const wait = delay + index * gap;
     if (wait <= 0) run();
     else window.setTimeout(run, wait);
   }
@@ -119,8 +125,28 @@ function jitter(placement: Placement, gridSize: number): Placement {
   return { ...placement, to: { x: placement.to.x + dx, y: placement.to.y + dy } };
 }
 
+function sprayed(placement: Placement, gridSize: number): Placement {
+  const angle = Math.random() * Math.PI * 2;
+  const reach = gridSize * (SPRAY_REACH.min + Math.random() * (SPRAY_REACH.max - SPRAY_REACH.min));
+  const to = {
+    x: placement.from.x + Math.cos(angle) * reach,
+    y: placement.from.y + Math.sin(angle) * reach,
+  };
+  return { ...placement, to };
+}
+
+function playProceduralStep(
+  step: ProceduralStep,
+  base: Placement,
+  anchors: SceneAnchors,
+  reduced: boolean,
+): void {
+  const placement = step.at === "spray" ? sprayed(base, anchors.gridSize) : base;
+  playProcedural(step.effect, placement, reduced);
+}
+
 function spriteSource(step: SpriteStep, placement: Placement, anchors: SceneAnchors) {
-  if (step.at !== "path") return randomOf(step.src) ?? null;
+  if (step.at !== "path" && step.at !== "spray") return randomOf(step.src) ?? null;
   const pixels = Math.hypot(placement.to.x - placement.from.x, placement.to.y - placement.from.y);
   const meters = (pixels / anchors.gridSize) * anchors.gridDistance;
   return pickVariant(step.src, meters * FEET_PER_METER);
@@ -132,10 +158,11 @@ function playSpriteStep(
   anchors: SceneAnchors,
   reduced: boolean,
 ): void {
-  const placement = step.randomOffset ? jitter(base, anchors.gridSize) : base;
+  const aimed = step.at === "spray" ? sprayed(base, anchors.gridSize) : base;
+  const placement = step.randomOffset ? jitter(aimed, anchors.gridSize) : aimed;
   const src = spriteSource(step, placement, anchors);
   if (!src) return;
-  const stretch = step.at === "path";
+  const stretch = step.at === "path" || step.at === "spray";
   const plain = step.template === null && step.opacity === 1 && step.playbackRate === 1 && !reduced;
   const duration = step.duration ?? 1000;
   if (plain && step.duration !== null && playSequencerSprite(src, placement, stretch, duration)) {
@@ -190,7 +217,7 @@ function play(input: unknown): void {
     const size = anchors.gridSize * step.scale * settings.intensity;
     for (const placement of placements(step, anchors, size)) {
       if (step.type === "procedural") {
-        playProcedural(step.effect, placement, reduced);
+        schedule(step, () => playProceduralStep(step, placement, anchors, reduced));
         continue;
       }
       schedule(step, () => playSpriteStep(step, placement, anchors, reduced));

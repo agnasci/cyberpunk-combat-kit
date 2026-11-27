@@ -1,5 +1,5 @@
 import { MODULE_ID } from "../constants";
-import type { Defense } from "../domain/attack-rules";
+import type { CriticalInjury, Defense } from "../domain/attack-rules";
 import { CHOKE_ROUNDS_TO_KNOCKOUT } from "../domain/grapple";
 import { isUndoable, type DamageResult } from "../domain/gm-request";
 import type { CardAudience } from "../domain/routing";
@@ -36,6 +36,7 @@ export interface TargetResult {
   error: string | null;
   effect: string | null;
   wound?: string | null;
+  injury?: CriticalInjury | null;
   undone: boolean;
 }
 
@@ -106,6 +107,8 @@ function targetView(target: TargetResult) {
     defenseLabel: defense ? DEFENSE_LABELS[defense.kind] : null,
     defenseValue: defense ? (defense.kind === "dv" ? defense.value : defense.total) : null,
     canUndo: !target.undone && isUndoable(target.applied),
+    injuryText: target.injury ? `CCK.Injury.${target.injury.reason}-${target.injury.table}` : null,
+    injuryRollLabel: target.injury ? `CCK.Injury.Roll-${target.injury.table}` : null,
     chokeLimit: CHOKE_ROUNDS_TO_KNOCKOUT,
   };
 }
@@ -157,6 +160,7 @@ export async function updateCard(message: ChatMessage, state: ResolutionState): 
 export interface CardHandlers {
   undo(message: ChatMessage, state: ResolutionState, index: number): Promise<void>;
   detonate(message: ChatMessage, state: ResolutionState): Promise<void>;
+  injury(message: ChatMessage, state: ResolutionState, index: number): Promise<void>;
 }
 
 function rootOf(html: JQuery | HTMLElement): HTMLElement | undefined {
@@ -185,6 +189,14 @@ export function bindResolutionCards(handlers: CardHandlers): void {
       }
       const index = Number(button.dataset.cckIndex);
       bindButton(button, () => handlers.undo(message, state, index));
+    }
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-cck-action='injury']")) {
+      if (!canEdit) {
+        button.remove();
+        continue;
+      }
+      const index = Number(button.dataset.cckIndex);
+      bindButton(button, () => handlers.injury(message, state, index));
     }
     const detonate = root.querySelector<HTMLButtonElement>("[data-cck-action='detonate']");
     if (!detonate) return;

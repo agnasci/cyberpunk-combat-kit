@@ -81,6 +81,8 @@ interface FoundryCombatant {
   readonly actorId: string | null;
   readonly isOwner: boolean;
   readonly defeated?: boolean;
+  readonly initiative?: number | null;
+  readonly players?: FoundryUser[];
   getFlag(scope: string, key: string): unknown;
   setFlag(scope: string, key: string, value: unknown): Promise<unknown>;
 }
@@ -90,7 +92,9 @@ interface FoundryCombat {
   readonly round: number;
   readonly turn: number | null;
   readonly started: boolean;
+  readonly previous?: FoundryCombatState;
   readonly combatant: FoundryCombatant | null;
+  rollInitiative(ids: string[]): Promise<unknown>;
   readonly scene: { readonly id: string } | null;
   readonly combatants: {
     readonly contents: FoundryCombatant[];
@@ -338,6 +342,7 @@ declare global {
         | "controlToken"
         | "updateActor"
         | "updateItem"
+        | "createItem"
         | "refreshToken",
       fn: (...args: unknown[]) => void,
     ): number;

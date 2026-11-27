@@ -266,6 +266,9 @@ describe("conversor de exportação de animações (E11-06)", () => {
           "attack.fire:ammo-zapCell-spicy+autofire": {
             from: "attack.fire:ammo-zapCell-spicy",
             sound: "boom.flac",
+            at: "spray",
+            repeat: 15,
+            repeatDelay: 90,
           },
           "attack.fire:x+autofire": { from: "attack.fire:none", sound: "boom.flac" },
         },
@@ -277,6 +280,7 @@ describe("conversor de exportação de animações (E11-06)", () => {
     expect(pack.cues["quickhack.jackIn"][0]).toMatchObject({ type: "sprite" });
     const burst = pack.cues["attack.fire:ammo-zapCell-spicy+autofire"];
     expect(burst.map((step: { type: string }) => step.type)).toEqual(["sprite", "sound"]);
+    expect(burst[0]).toMatchObject({ at: "spray", repeat: 15, repeatDelay: 90 });
     expect(pack.assets[burst[1].asset]).toBe("sounds/boom.flac");
     expect(pack.cues["attack.fire:x+autofire"]).toBeUndefined();
   });

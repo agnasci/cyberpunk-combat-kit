@@ -147,7 +147,9 @@ async function damageAll(
   const results: TargetResult[] = [];
   for (const target of targets) {
     results.push(
-      target.outcome === "hit" ? await applyTo(attackerUuid, target, application) : target,
+      target.outcome === "hit"
+        ? await applyTo(attackerUuid, target, application, "attack", damage.critical)
+        : target,
     );
   }
   return { targets: results, damageTotal: damage.total, critical: damage.critical };

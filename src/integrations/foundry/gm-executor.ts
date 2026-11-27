@@ -16,6 +16,7 @@ import {
 } from "../../domain/quickhack";
 import { countPart, interfaceRank } from "../cpr/net-adapter";
 import { applyNativeDamage, reverseNativeDamage, setHitPointsDirect } from "../cpr/damage-adapter";
+import { rollCriticalInjury } from "../cpr/injury-adapter";
 import { hitPoints } from "../cpr/weapon-adapter";
 import {
   clearStatuses,
@@ -179,6 +180,19 @@ async function execute(payload: unknown, senderId: string): Promise<DamageResult
       );
       await clearStatuses(target.actor, parsed.statuses);
       return { ...result, statuses: parsed.statuses };
+    }
+    case "criticalInjury": {
+      const injury = await rollCriticalInjury(target.actor, parsed.table);
+      if (!injury) throw new Error("failed");
+      const hp = hitPoints(target.actor);
+      return {
+        hpBefore: hp,
+        hpAfter: hp,
+        hpReduction: 0,
+        ablation: 0,
+        location: parsed.table,
+        injury,
+      };
     }
     case "choke":
       return choke(requireToken(attacker), target, parsed.body, parsed.round);

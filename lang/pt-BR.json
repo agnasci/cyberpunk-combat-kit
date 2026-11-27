@@ -344,5 +344,19 @@
   "CCK.Packs.Missing": "Precisa do módulo {modules}; enquanto ele não estiver ativo, os vídeos dele viram efeitos próprios.",
   "CCK.Packs.Overlap": "{modules} está ativo: os ataques podem tocar duas animações. Desligue-o neste mundo para usar só os efeitos do Combat Kit.",
   "CCK.Settings.StatusEffects": "Efeitos persistentes de estado",
-  "CCK.Settings.StatusEffectsHint": "Mostra efeitos em loop nos tokens enquanto um estado ou efeito ativo durar, quando um pacote ativo os define."
+  "CCK.Settings.StatusEffectsHint": "Mostra efeitos em loop nos tokens enquanto um estado ou efeito ativo durar, quando um pacote ativo os define.",
+  "CCK.Injury.sixes-body": "Dois ou mais 6 no dano: Lesão Crítica no corpo.",
+  "CCK.Injury.sixes-head": "Dois ou mais 6 no dano: Lesão Crítica na cabeça.",
+  "CCK.Injury.mortal-body": "Já estava Mortalmente Ferido: sofre também uma Lesão Crítica no corpo.",
+  "CCK.Injury.mortal-head": "Já estava Mortalmente Ferido: sofre também uma Lesão Crítica na cabeça.",
+  "CCK.Injury.Roll-body": "Rolar na tabela do corpo",
+  "CCK.Injury.Roll-head": "Rolar na tabela da cabeça",
+  "CCK.Injury.Rolled": "Lesão Crítica",
+  "CCK.Initiative.Title": "Combate iniciado",
+  "CCK.Initiative.Prompt": "Role a iniciativa de:",
+  "CCK.Initiative.PromptGm": "Role a iniciativa dos combatentes sem jogador conectado:",
+  "CCK.Initiative.Roll": "Rolar iniciativa",
+  "CCK.Initiative.Later": "Agora não",
+  "CCK.Settings.InitiativePrompt": "Lembrete de iniciativa",
+  "CCK.Settings.InitiativePromptHint": "Quando um combate começa, pede para rolar a iniciativa dos seus combatentes que ainda não têm (o mestre recebe os combatentes sem jogador conectado)."
 }

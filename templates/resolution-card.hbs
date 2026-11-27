@@ -43,7 +43,16 @@
         {{#if effect}}
           <div class="cck-card__detail">{{localize effect}}</div>
         {{/if}}
-        {{#if wound}}
+        {{#if injury}}
+          <div class="cck-card__warning">{{localize injuryText}}</div>
+          {{#if injury.rolled}}
+            <div class="cck-card__detail cck-card__injury">{{localize "CCK.Injury.Rolled"}}: {{injury.rolled}}</div>
+          {{else}}
+            <button type="button" class="cck-card__undo cck-card__roll-injury" data-cck-action="injury" data-cck-index="{{@index}}">
+              <i class="fa-solid fa-dice" aria-hidden="true"></i> {{localize injuryRollLabel}}
+            </button>
+          {{/if}}
+        {{else if wound}}
           <div class="cck-card__warning">{{localize wound}}</div>
         {{/if}}
         {{#if error}}

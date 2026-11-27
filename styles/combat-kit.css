@@ -5,6 +5,7 @@
   --cck-accent-line: var(--cck-panel-line, rgb(34 211 238 / 0.45));
   --cck-accent-ink: var(--cck-panel-ink, #05070b);
   --cck-bg: rgb(10 12 18 / 0.95);
+  --cck-solid: rgb(10 12 18);
   --cck-surface: rgb(22 26 37 / 0.92);
   --cck-raised: rgb(30 35 49 / 0.96);
   --cck-line: rgb(150 160 190 / 0.16);
@@ -793,7 +794,7 @@
 .cck-pslot__icon:focus-visible {
   outline: none;
   color: var(--cck-accent-strong);
-  background: var(--cck-accent-soft);
+  background: linear-gradient(var(--cck-accent-soft), var(--cck-accent-soft)), var(--cck-solid);
   box-shadow:
     inset 1px 0 0 var(--cck-accent),
     inset -1px 0 0 var(--cck-accent),
@@ -966,4 +967,16 @@
 :is(#combat, #combat-popout) .combat-tracker-header button.cck-death-saves:focus-visible {
   background: var(--cck-accent-soft);
   box-shadow: none;
+}
+
+.cck-card__roll-injury {
+  gap: 6px;
+  margin-top: 4px;
+}
+
+#tooltip.cck-tooltip {
+  background: var(--cck-solid, rgb(10 12 18));
+  color: var(--cck-text, #e7e9f0);
+  border: 1px solid var(--cck-accent-line, rgb(34 211 238 / 0.45));
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.6);
 }

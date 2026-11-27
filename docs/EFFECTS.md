@@ -58,7 +58,13 @@ Lista fechada e versionada, emitida pelos workflows. Contexto sempre com `source
   do ticker e é destruído ao terminar ou ao desmontar a cena.
 - Sons próprios sintetizados com WebAudio no contexto de interface do Foundry (`shot`,
   `burst`, `launch`, `swing`, `whoosh`, `impact`, `ricochet`, `explosion`, `alarm`,
-  `flatline`, `grab`): nenhum arquivo de áudio.
+  `flatline`, `grab`): nenhum arquivo de áudio. Acerto, erro e esquiva não têm som padrão
+  (só o efeito visual), a pedido do usuário (D54); `burst` tem 10 disparos.
+- Rajada e supressivo (D53): passo `procedural` aceita `delay`, `repeat` e `repeatDelay`
+  como sprite e som. Âncora `spray`: cada repetição sai da origem para um ponto sorteado a
+  4–10 quadrados em qualquer direção (sprite esticado como em `path`, com variante de
+  distância). Padrão: `attack.fire:autofire` repete o traço 10 vezes até o alvo;
+  `attack.fire:suppressive` espalha 10 traços em `spray`.
 - Ajustes por cliente (Configurar ajustes → Combat Kit): efeitos visuais, sons, volume
   (multiplica o volume de interface do Foundry), intensidade (tamanho) e movimento reduzido
   (seguir o sistema, sempre reduzido, sempre animado). Movimento reduzido mostra o quadro
@@ -129,7 +135,7 @@ Lista fechada e versionada, emitida pelos workflows. Contexto sempre com `source
   vídeo diz onde o projétil começa e termina: o motor estica só o trecho útil até o alvo e
   mantém a proporção (convenção dos vídeos de distância: `[200, 200, 200]`; golpes:
   `[200, 300, 300]`). Opções: `duration` (sem ela, a duração do vídeo; imagem 1 s),
-  `opacity`, `playbackRate` (0,25–4), `randomOffset`, `delay`, `repeat` (até 10) com
+  `opacity`, `playbackRate` (0,25–4), `randomOffset`, `delay`, `repeat` (até 20) com
   `repeatDelay`, `fallback` (efeito procedural se o arquivo não carregar) e `scale` até 10.
   Passo com essas opções vai sempre pelo backend próprio; o Sequencer só recebe o passo simples.
 - **Som (D47)**: `src` aceita lista (sorteia), `startTime` (ms, começa no meio do arquivo),
@@ -179,7 +185,9 @@ node scripts/import-aa.mjs --export <autorec.json> --sounds <pasta dos sons>
 - Ajustes (`--overrides`): `keys` (`"menu:rótulo": "chave"` ou `null` para tirar; o
   impacto de preset é `"preset-impact:rótulo"`), `videos` (chave do AA ou caminho próprio →
   outra chave do banco ou caminho de arquivo) e `extra` (`"chave nova": {from, sound,
-  volume?}`: copia os visuais de outro efeito e troca o som).
+  volume?, at?, repeat?, repeatDelay?}`: copia os visuais de outro efeito, troca o som e,
+  com as opções, muda a âncora e a repetição dos sprites, por exemplo rajada com 12 balas ou
+  supressivo em `spray`).
 - Saída: `cck-pack.json` (com `requires` e `external`), `sounds/` (só os usados, nomes em
   slug) e `import-report.json` (convertidos, ignorados com motivo, nota de cada vídeo,
   rótulos pelo nome do item, munição sem casamento, sons). Mesma entrada, mesmo arquivo.

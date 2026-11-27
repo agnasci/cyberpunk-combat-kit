@@ -125,7 +125,7 @@ describe("E11-02 variantes e opções do sprite", () => {
       parseCueSteps([
         { type: "sprite", src: "a.webm", at: "target", opacity: 3, playbackRate: 9, repeat: 99 },
       ]) ?? [];
-    expect(step).toMatchObject({ opacity: 1, playbackRate: 4, repeat: 10 });
+    expect(step).toMatchObject({ opacity: 1, playbackRate: 4, repeat: 20 });
   });
 });
 

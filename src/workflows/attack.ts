@@ -148,6 +148,8 @@ async function singleAttack(context: AttackContext, options: AttackOptions): Pro
         context.attacker.uuid,
         target,
         applicationFor(damage, profile.ignoreArmor),
+        "attack",
+        damage.critical,
       );
       if (profile.mode === "aimed") {
         const effect = aimedEffect(location, target.applied?.hpReduction ?? 0);

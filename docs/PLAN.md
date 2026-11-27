@@ -116,6 +116,18 @@ nenhum conteúdo no repositório.
 | E11-06 | Conversor genérico de exportação de autorec (`scripts/import-aa.mjs`) | `scripts/`, `tests/unit/import-aa.test.ts` | Testes com exportação fictícia |
 | E11-07 | Vários pacotes pessoais (`personalPacks`) | `scripts/build-personal.mjs`, `pack-store.ts`, `effects/packs.ts` | Dois pacotes pessoais ativos |
 
+## E12 — Correções do teste da 0.2.0
+
+Pedido do usuário (2026-11-26), concluído no mesmo dia (D52–D56).
+
+| ID | Entrega | Arquivos | Aceite |
+|---|---|---|---|
+| E12-01 | Hover e tooltip opacos nos botões do painel | `styles/combat-kit.css`, `workflows/panel-slots.ts` | Tooltip e botão não deixam o mapa aparecer |
+| E12-02 | Rajada e supressivo com várias balas (`repeat` em procedural, âncora `spray`, `extra` com repetição) | `domain/cues.ts`, `effects/engine.ts`, `fx-audio.ts`, `scripts/lib/aa-convert.mjs` | Rajada solta várias balas durante o som; supressivo espalha balas em volta do atirador |
+| E12-03 | Sem som padrão em acerto, erro e esquiva | `domain/cues.ts` | Nenhum som sintetizado nesses eventos |
+| E12-04 | Lembrete de iniciativa ao iniciar combate | `domain/initiative.ts`, `workflows/initiative-prompt.ts`, `settings.ts` | Diálogo lista quem está sem iniciativa e rola pelo sistema |
+| E12-05 | Lesão Crítica pelas regras e botão de rolar a tabela do sistema | `domain/attack-rules.ts`, `gm-request.ts`, `cpr/injury-adapter.ts`, `gm-executor.ts`, `ui/resolution-card.ts`, template | Dois 6 ou alvo Mortalmente Ferido mostram o botão; a lesão rolada entra na ficha e no card |
+
 ## P — Edição pessoal (somente `private/`)
 
 | ID | Entrega | Condição | Aceite |

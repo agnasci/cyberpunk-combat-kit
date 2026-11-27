@@ -1,10 +1,10 @@
 # Estado e passagem de contexto
 
-Atualizado em: 2026-11-23.
+Atualizado em: 2026-11-26.
 
 ## Situação
 
-- E0 a E11, F-01, P-02, P-04, P-05, a revisão de regras R-01 e os turnos (D41) concluídos (E11 e P-05 em 2026-11-23). Última release pública: `v0.2.0` (2026-11-23)
+- E0 a E12, F-01, P-02, P-04, P-05, a revisão de regras R-01 e os turnos (D41) concluídos (E12 em 2026-11-26). Última release pública: `v0.2.1` (2026-11-26)
   em https://github.com/agnasci/cyberpunk-combat-kit, com
   `module.json` e `module.zip`. Manifesto:
   `https://github.com/agnasci/cyberpunk-combat-kit/releases/latest/download/module.json`.
@@ -15,7 +15,48 @@ Atualizado em: 2026-11-23.
 - Character Panel: v0.2.0 (2026-11-19) trouxe a API v1, exigida pela integração; v0.2.1
   (2026-11-20) trouxe `setAttention`, exigido pelo destaque de turno (README).
 
-## Última entrega: release v0.2.0 e kit pessoal para teste (2026-11-23)
+## Última entrega: E12 — correções do teste da 0.2.0 (2026-11-26)
+
+- Pedido do usuário, 7 itens: hover transparente; rajada com poucas balas e som sem visual;
+  supressivo com uma bala só; tirar o "piu" do erro e o "pow" do acerto; aviso de iniciativa
+  ao iniciar combate; regras de Lesão Crítica; opção de rolar a tabela do sistema.
+- Código (D52–D56): `styles/combat-kit.css` e `workflows/panel-slots.ts` (hover opaco,
+  `cck-tooltip`); `domain/cues.ts` (âncora `spray`, repetição em procedural, `repeat` até
+  20, padrões de rajada/supressivo, sem som em acerto/erro/esquiva); `effects/engine.ts`;
+  `fx-audio.ts` (`burst` com 10 disparos); `scripts/lib/aa-convert.mjs` (`extra` com
+  `at`/`repeat`/`repeatDelay`); `domain/initiative.ts`, `workflows/initiative-prompt.ts`,
+  ajuste `initiativePrompt`; `domain/attack-rules.ts` (`criticalInjuryFor`),
+  `domain/gm-request.ts` (op `criticalInjury`), `cpr/injury-adapter.ts`, `gm-executor.ts`,
+  `combat-common.ts` (`rollTargetInjury`), `ui/resolution-card.ts` e template, textos.
+- Edição pessoal: ajustes do pacote gerado com rajada de 12–14 balas e supressivo de 16–20
+  balas em `spray`, alinhados à duração de cada som; pacote gerado de novo e
+  `build:personal` feito (a junção continua em `dist-personal/`).
+- Validação automatizada: `npm run check` exit 0 (18 arquivos, 261 testes; novo
+  `tests/unit/e12-fixes.test.ts`; `check:private` sem vazamento).
+- Teste manual real (Foundry 12.343, CPR v0.92.4, `cyberdeck-hud`, Gamemaster, edição
+  pessoal):
+  1. Tooltip dos botões do painel com fundo sólido e borda, acima do botão, sobre o mapa.
+  2. Rajada com o fuzil de assalto (munição Rifle Basic) a 6 quadrados: 12 sprites de bala
+     (variante de 60 pés) em 2,9 s com o som de rajada.
+  3. Supressivo: 20 balas em direções e distâncias sorteadas em 8,2 s, vistas na tela saindo
+     do atirador; padrão procedural (sem pacote, pela API de efeitos): 10 traços espalhados e
+     rajada com 10.
+  4. `attack.hit`, `attack.miss` (também `melee`) e `attack.dodged`: nenhuma fonte de som
+     criada; `attack.critical` ainda toca.
+  5. Combate com 3 tokens iniciado: o mestre recebeu o diálogo com os 3 (sem jogador
+     conectado); "Rolar iniciativa" deu 25, 23 e 13.
+  6. Pistola contra o PdM a 0 PV: aviso "já estava Mortalmente Ferido" e botão da tabela do
+     corpo; o clique rolou 2d6 no card nativo, pôs a lesão sorteada na ficha e
+     trocou o botão pelo nome. Dados forçados: dois 6 no corpo (+5 do sistema no dano) e tiro
+     mirado na cabeça (rolou na tabela da cabeça).
+- Restaurado: PdM com 9 PV, sem lesões, na posição 600,500; munição do fuzil 0 e da
+  espingarda 4; defesa dos PdMs de volta para "perguntar"; combate de teste apagado. Ficaram
+  mensagens de teste no chat e a pistola muito pesada com 8/8.
+- Não testado: lembrete de iniciativa como jogador (outro cliente); botão de lesão clicado
+  por jogador dono do card; lesão com a regra de duplicadas "reroll"; edição pública inteira
+  no Foundry.
+
+## Entrega anterior: release v0.2.0 e kit pessoal para teste (2026-11-23)
 
 - Pedido do usuário: publicar a versão atual e gerar a edição pessoal como pasta para um
   amigo testar.
@@ -158,11 +199,11 @@ Estados: `TODO`. Uma tarefa por vez; detalhe em docs/PLAN.md.
 - Página do pacote em foundryvtt.com (conta do usuário, manual) com o aviso da Homebrew
   Content Policy: item que falta do checklist do docs/LEGAL.md.
 
-- Decisões D15–D41 e D45–D51 aguardam confirmação do usuário em docs/DECISIONS.md.
-- Não testados no Foundry: crítico (dois 6) real; arremesso com dano que mostrasse a
+- Decisões D15–D41, D45–D51 e D55 aguardam confirmação do usuário em docs/DECISIONS.md.
+- Não testados no Foundry: crítico (dois 6) com dados naturais (só forçados); arremesso com dano que mostrasse a
   armadura inteira; espingarda com alvo de jogador; explosivo com cobertura; 60 s sem resposta; token não vinculado; dois donos ativos; defesa
   automática dos PdMs em supressão e agarrão; tiro rápido como jogador de outro cliente.
-- Limites conhecidos: desfazer não desfaz o fim do agarrão (D20, D42); lesão de perna
+- Limites conhecidos: desfazer não desfaz o fim do agarrão (D20, D42) nem a Lesão Crítica rolada (D55); lesão de perna
   e soltar item são avisos (D21); movimentos especiais de Artes Marciais não feitos; ROF 2
   do corpo a corpo é um ataque por chamada.
 - `npm audit`: aviso moderado em `minimatch` via `typescript-eslint` 8.72.2 (ferramenta de

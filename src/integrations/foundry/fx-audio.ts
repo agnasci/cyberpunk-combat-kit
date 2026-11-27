@@ -92,7 +92,7 @@ function whoosh(voice: Voice, peak: number, decay: number): void {
 const RECIPES: Record<SynthSound, (voice: Voice) => void> = {
   shot: (voice) => shot(voice),
   burst: (voice) => {
-    for (let index = 0; index < 5; index += 1) shot(voice, index * 0.075);
+    for (let index = 0; index < 10; index += 1) shot(voice, index * 0.075);
   },
   launch: (voice) => {
     tone(voice, { type: "sine", from: 110, to: 40, peak: 0.9, decay: 0.25 });

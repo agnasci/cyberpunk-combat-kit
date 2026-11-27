@@ -171,3 +171,9 @@ Releitura das p. 169–189 contra o código (D39):
 - Corrigido: alcance de 2 m medido entre as bordas dos tokens (p. 176); Artes Marciais
   exigem ao menos 1 ponto na perícia (p. 178); quem já está Mortalmente Ferido sofre uma
   Lesão Crítica sempre que leva dano de ataque (p. 186), mostrado como aviso no card.
+- Revisto em 2026-11-26 (D55; p. 186 e 188 do PDF): Lesão Crítica com dois ou mais 6 no dano
+  de ataque corpo a corpo ou a distância, ou quando o alvo já estava Mortalmente Ferido e foi
+  atingido; vale mesmo que o dano não passe do SP. Tabela da cabeça só com tiro mirado na
+  cabeça; senão, a do corpo. O card mostra o motivo e um botão que rola 2d6 na tabela do
+  sistema e põe a lesão na ficha; os +5 diretos vêm do dano crítico do sistema (no alvo já a
+  0 PV não mudam nada).

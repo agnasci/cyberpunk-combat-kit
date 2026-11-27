@@ -6,7 +6,7 @@ import {
   dodgeOffered,
   isCriticalInjury,
   damageTaken,
-  mortalCriticalInjury,
+  criticalInjuryFor,
   remainingArmorAfterIgnore,
   resolveAttack,
   type NativeDamageRoll,
@@ -132,11 +132,25 @@ describe("parâmetros do _applyDamage iguais ao card nativo", () => {
   });
 });
 
-describe("Mortalmente Ferido sofre Lesão Crítica ao levar dano de ataque (RULES §7, p. 186)", () => {
-  it("só quando já estava abaixo de 1 PV e levou dano", () => {
-    expect(mortalCriticalInjury(0, true)).toBe(true);
-    expect(mortalCriticalInjury(0, false)).toBe(false);
-    expect(mortalCriticalInjury(5, true)).toBe(false);
+describe("Lesão Crítica (RULES §7, livro base p. 186 e 188)", () => {
+  it("dois 6 no dano ou alvo já Mortalmente Ferido, mesmo sem passar do SP", () => {
+    expect(criticalInjuryFor({ critical: true, hpBefore: 20, location: "body" })).toEqual({
+      table: "body",
+      reason: "sixes",
+      rolled: null,
+    });
+    expect(criticalInjuryFor({ critical: false, hpBefore: 0, location: "body" })).toEqual({
+      table: "body",
+      reason: "mortal",
+      rolled: null,
+    });
+    expect(criticalInjuryFor({ critical: false, hpBefore: 5, location: "body" })).toBeNull();
+  });
+  it("tabela da cabeça só com tiro mirado na cabeça; os dois 6 têm prioridade no motivo", () => {
+    expect(criticalInjuryFor({ critical: true, hpBefore: 0, location: "head" })).toMatchObject({
+      table: "head",
+      reason: "sixes",
+    });
   });
   it("dano conta mesmo com os PV travados em 0 pelo sistema", () => {
     const base = { bonusDamage: 0, ignoreArmorPercent: 0, ignoreBelowSP: 0, hpReduction: 0 };

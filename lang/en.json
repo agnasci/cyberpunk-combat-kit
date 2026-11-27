@@ -344,5 +344,19 @@
   "CCK.Packs.Missing": "Needs the module {modules}; until it is active, its videos fall back to built-in effects.",
   "CCK.Packs.Overlap": "{modules} is active: attacks may play two animations. Turn it off in this world to use only Combat Kit effects.",
   "CCK.Settings.StatusEffects": "Persistent status effects",
-  "CCK.Settings.StatusEffectsHint": "Show looping effects on tokens while a status or active effect lasts, when an active pack defines them."
+  "CCK.Settings.StatusEffectsHint": "Show looping effects on tokens while a status or active effect lasts, when an active pack defines them.",
+  "CCK.Injury.sixes-body": "Two or more 6s on the damage: Critical Injury to the body.",
+  "CCK.Injury.sixes-head": "Two or more 6s on the damage: Critical Injury to the head.",
+  "CCK.Injury.mortal-body": "Was already Mortally Wounded: also suffers a Critical Injury to the body.",
+  "CCK.Injury.mortal-head": "Was already Mortally Wounded: also suffers a Critical Injury to the head.",
+  "CCK.Injury.Roll-body": "Roll on the body table",
+  "CCK.Injury.Roll-head": "Roll on the head table",
+  "CCK.Injury.Rolled": "Critical Injury",
+  "CCK.Initiative.Title": "Combat started",
+  "CCK.Initiative.Prompt": "Roll initiative for:",
+  "CCK.Initiative.PromptGm": "Roll initiative for the combatants without an online player:",
+  "CCK.Initiative.Roll": "Roll initiative",
+  "CCK.Initiative.Later": "Not now",
+  "CCK.Settings.InitiativePrompt": "Initiative reminder",
+  "CCK.Settings.InitiativePromptHint": "When a combat starts, asks you to roll initiative for your combatants that have none yet (the GM is asked about combatants without an online player)."
 }

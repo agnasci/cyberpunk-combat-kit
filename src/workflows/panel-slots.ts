@@ -13,6 +13,7 @@ import { warn } from "./combat-common";
 import { menuViewFor, openMenuFor, reloadFor, runMenuAction } from "./quick-menu";
 
 const RERENDER_MS = 120;
+const TOOLTIP_CLASS = "cck-tooltip";
 
 let drawerActions = new Map<string, MenuAction>();
 let drawerGeneration = 0;
@@ -38,6 +39,8 @@ function iconButton(action: string, icon: string, label: string): HTMLButtonElem
   button.dataset.slotAction = action;
   button.setAttribute("aria-label", label);
   button.dataset.tooltip = label;
+  button.dataset.tooltipClass = TOOLTIP_CLASS;
+  button.dataset.tooltipDirection = "UP";
   button.innerHTML = `<i class="${icon}" aria-hidden="true"></i>`;
   return button;
 }
@@ -72,6 +75,8 @@ function renderBarEnd(context: PanelSlotContext): Node | null {
   button.type = "button";
   button.dataset.slotAction = "attack";
   button.dataset.tooltip = game.i18n.format("CCK.Panel.AttackWith", { weapon: weapon.name });
+  button.dataset.tooltipClass = TOOLTIP_CLASS;
+  button.dataset.tooltipDirection = "UP";
   if (weapon.img) {
     const icon = element("img", "");
     icon.src = weapon.img;

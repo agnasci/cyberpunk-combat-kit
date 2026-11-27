@@ -22,13 +22,14 @@ import { openCueEditor } from "./ui/cue-editor";
 import { openPackManager } from "./ui/pack-manager";
 import { bindResolutionCards, RESOLUTION_TEMPLATE } from "./ui/resolution-card";
 import { detonatePending } from "./workflows/area";
-import { undoTarget } from "./workflows/combat-common";
+import { rollTargetInjury, undoTarget } from "./workflows/combat-common";
 import { initDefense } from "./workflows/defense";
 import { initFxPreload } from "./workflows/fx-preload";
 import { initStatusEffects } from "./workflows/status-fx";
 import { initPanelSlots } from "./workflows/panel-slots";
 import { initQuickMenu, registerQuickFireTool } from "./workflows/quick-menu";
 import { availableQuickhacks, initQuickhacks } from "./workflows/quickhack";
+import { initInitiativePrompt } from "./workflows/initiative-prompt";
 import { initNpcDeathSaves } from "./workflows/npc-death-saves";
 import { initTurnAttention, refreshTurnAttention } from "./workflows/turn-attention";
 import { initTurnEconomy, setBudgetListener } from "./workflows/turn-economy";
@@ -49,7 +50,7 @@ Hooks.once("init", () => {
   registerQuickFireTool();
   registerQuickhackSettings();
   void loadTemplates([RESOLUTION_TEMPLATE]);
-  bindResolutionCards({ undo: undoTarget, detonate: detonatePending });
+  bindResolutionCards({ undo: undoTarget, detonate: detonatePending, injury: rollTargetInjury });
   registerPackSettings({ packs: () => void reloadPacks(), overrides: applyOverrides });
   game.settings.registerMenu(MODULE_ID, "packManager", {
     name: "CCK.Packs.Title",
@@ -97,6 +98,7 @@ Hooks.once("ready", () => {
   initTargetMarker();
   initTurnEconomy();
   initNpcDeathSaves();
+  initInitiativePrompt();
   initTurnAttention();
   initTurnIndicator();
   Hooks.on("canvasReady", () => refreshTurnIndicator());

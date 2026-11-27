@@ -151,6 +151,13 @@ export function registerMenuSettings(): void {
     default: true,
     onChange: () => onTurnChange(),
   });
+  game.settings.register(MODULE_ID, "initiativePrompt", {
+    ...client,
+    name: "CCK.Settings.InitiativePrompt",
+    hint: "CCK.Settings.InitiativePromptHint",
+    type: Boolean,
+    default: true,
+  });
   game.settings.register(MODULE_ID, "actionEconomy", {
     scope: "world",
     config: true,
@@ -215,6 +222,10 @@ export function setTurnListener(listener: () => void): void {
 
 export function actionEconomy(): EconomyMode {
   return economyMode(game.settings.get(MODULE_ID, "actionEconomy"));
+}
+
+export function initiativePrompt(): boolean {
+  return game.settings.get(MODULE_ID, "initiativePrompt") !== false;
 }
 
 export function turnIndicatorOn(): boolean {

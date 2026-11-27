@@ -379,7 +379,14 @@ export function createConverter({ db, available, moduleId, system, overrides = {
           { enable: true, file: spec.sound, volume: spec.volume ?? 0.75 },
           `extra:${key}`,
         );
-        const visuals = base.filter((step) => step.type !== "sound");
+        const burst = Object.fromEntries(
+          ["at", "repeat", "repeatDelay"]
+            .filter((name) => spec[name] !== undefined)
+            .map((name) => [name, spec[name]]),
+        );
+        const visuals = base
+          .filter((step) => step.type !== "sound")
+          .map((step) => (step.type === "sprite" ? { ...step, ...burst } : step));
         addCue(key, sound ? [...visuals, sound] : visuals, `extra:${key}`);
       }
     },
